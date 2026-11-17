@@ -62,6 +62,16 @@ final class Finance {
     public static function ledger(string $paymentId,int $actor): array|\WP_Error {
         global $wpdb;
         if (!self::allowed($actor)) { return self::error('atlas_forbidden','Finance authorization required.',403); }
-        return $wpdb->get_results($wpdb->prepare('SELECT id,payment_id,refund_id,event_type,amount_irr,currency,created_at FROM '.DB::table('ledger').' WHERE payment_id=%s ORDER BY created_at,id',$paymentId),ARRAY_A);
+        $rows=$wpdb->get_results($wpdb->prepare('SELECT id,payment_id,refund_id,event_type,amount_irr,currency,created_at FROM '.DB::table('ledger').' WHERE payment_id=%s ORDER BY created_at,id',$paymentId),ARRAY_A);
+        if ($rows===null || !DB::audit($actor,0,'ledger.read',$paymentId,'read')) { return self::error('atlas_storage_error','Ledger could not be safely read.',503); }
+        return $rows;
+    }
+    public static function payment_exceptions(int $actor,int $page=1,int $limit=25): array|\WP_Error {
+        global $wpdb;
+        if (!self::allowed($actor)) { return self::error('atlas_forbidden','Finance authorization required.',403); }
+        if ($page<1 || $page>100000 || $limit<1 || $limit>50) { return self::error('atlas_invalid_request','Invalid exception queue filter.',422); }
+        $rows=$wpdb->get_results($wpdb->prepare('SELECT id AS payment_id,booking_id,amount_irr,currency,status,exception_code,verified_at FROM '.DB::table('payments')." WHERE exception_code<>'' ORDER BY verified_at,id LIMIT %d OFFSET %d",$limit,($page-1)*$limit),ARRAY_A);
+        if ($rows===null || !DB::audit($actor,0,'payment.exceptions','queue','read')) { return self::error('atlas_storage_error','Payment exceptions could not be safely read.',503); }
+        return $rows;
     }
 }

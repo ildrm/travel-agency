@@ -6,6 +6,7 @@
     window.wc.wcBlocksRegistry.registerPaymentMethod({
         name: 'atlas_simulator',
         label: el('span', null, settings.title || 'Simulated payment (local only)'),
+        ariaLabel: settings.title || 'Simulated payment (local only)',
         content: el('p', null, settings.description || 'No funds are transferred.'),
         edit: el('p', null, settings.description || 'No funds are transferred.'),
         canMakePayment: function () { return true; },

@@ -148,23 +148,80 @@ function atlas_theme_search_form() {
 }
 add_shortcode( 'atlas_theme_search', 'atlas_theme_search_form' );
 
-/** Keep the validated language on local navigation links without rewriting external URLs. */
+/** Resolve origin without copying caller query data into another URL. */
+function atlas_theme_same_origin_url( $href ) {
+    if ( ! is_string( $href ) || '' === $href || str_contains( $href, '\\' ) ) { return false; }
+    $parts = wp_parse_url( $href );
+    $home = wp_parse_url( home_url( '/' ) );
+    if ( false === $parts || false === $home ) { return false; }
+    if ( isset( $parts['scheme'] ) && ! in_array( strtolower( $parts['scheme'] ), array( 'http', 'https' ), true ) ) { return false; }
+    if ( isset( $parts['host'] ) ) {
+        $home_scheme = strtolower( $home['scheme'] ?? 'http' );
+        $scheme = strtolower( $parts['scheme'] ?? $home_scheme );
+        $home_port = (int) ( $home['port'] ?? ( 'https' === $home_scheme ? 443 : 80 ) );
+        $port = (int) ( $parts['port'] ?? ( 'https' === $scheme ? 443 : 80 ) );
+        if ( ! isset( $home['host'] ) || strtolower( $parts['host'] ) !== strtolower( $home['host'] ) || $scheme !== $home_scheme || $port !== $home_port ) { return false; }
+    } elseif ( isset( $parts['scheme'] ) ) { return false; }
+    return true;
+}
+/** Preserve the validated locale only on same-origin or relative navigation. */
+function atlas_theme_localized_url( $href, $language = null ) {
+    if ( ! atlas_theme_same_origin_url( $href ) || '#' === $href[0] ) { return $href; }
+    $language = in_array( $language, array( 'en', 'fa' ), true ) ? $language : atlas_theme_requested_language();
+    return add_query_arg( 'lang', $language, $href );
+}
+/** Core navigation blocks and configured classic menu locations share one URL policy. */
 function atlas_theme_navigation_locale( $block_content ) {
     if ( ! class_exists( 'WP_HTML_Tag_Processor' ) ) { return $block_content; }
     $processor = new WP_HTML_Tag_Processor( $block_content );
     if ( ! $processor->next_tag( 'a' ) ) { return $block_content; }
     $href = $processor->get_attribute( 'href' );
-    if ( ! is_string( $href ) || '' === $href || '#' === $href[0] ) { return $block_content; }
-    $parts = wp_parse_url( $href );
-    $home = wp_parse_url( home_url( '/' ) );
-    if ( false === $parts || false === $home ) { return $block_content; }
-    if ( isset( $parts['scheme'] ) && ! in_array( strtolower( $parts['scheme'] ), array( 'http', 'https' ), true ) ) { return $block_content; }
-    if ( isset( $parts['host'] ) && ( ! isset( $home['host'] ) || strtolower( $parts['host'] ) !== strtolower( $home['host'] ) ) ) { return $block_content; }
-    if ( ! isset( $parts['host'] ) && '/' !== $href[0] && '?' !== $href[0] ) { return $block_content; }
-    $processor->set_attribute( 'href', add_query_arg( 'lang', atlas_theme_requested_language(), $href ) );
+    if ( ! is_string( $href ) ) { return $block_content; }
+    $processor->set_attribute( 'href', atlas_theme_localized_url( $href ) );
     return $processor->get_updated_html();
 }
 add_filter( 'render_block_core/navigation-link', 'atlas_theme_navigation_locale' );
+function atlas_theme_menu_link_attributes( $attributes, $item, $args, $depth ) {
+    if ( ! isset( $args->theme_location ) || ! in_array( $args->theme_location, array( 'primary', 'footer' ), true ) ) { return $attributes; }
+    if ( isset( $attributes['href'] ) ) { $attributes['href'] = atlas_theme_localized_url( $attributes['href'] ); }
+    return $attributes;
+}
+add_filter( 'nav_menu_link_attributes', 'atlas_theme_menu_link_attributes', 10, 4 );
+
+/** Woo may build receipt URLs in a Store API request with no locale query. */
+function atlas_theme_woocommerce_url( $url ) {
+    if ( is_admin() || ! atlas_theme_same_origin_url( $url ) ) { return $url; }
+    $language = isset( $_GET['lang'] ) && is_string( $_GET['lang'] ) && in_array( $_GET['lang'], array( 'en', 'fa' ), true ) ? $_GET['lang'] : null;
+    if ( null === $language ) {
+        $query = array(); parse_str( wp_parse_url( $url, PHP_URL_QUERY ) ?? '', $query );
+        if ( isset( $query['lang'] ) && is_string( $query['lang'] ) && in_array( $query['lang'], array( 'en', 'fa' ), true ) ) { $language = $query['lang']; }
+    }
+    if ( null === $language && isset( $_SERVER['HTTP_REFERER'] ) && is_string( $_SERVER['HTTP_REFERER'] ) && atlas_theme_same_origin_url( $_SERVER['HTTP_REFERER'] ) ) {
+        $query = array(); parse_str( wp_parse_url( $_SERVER['HTTP_REFERER'], PHP_URL_QUERY ) ?? '', $query );
+        if ( isset( $query['lang'] ) && is_string( $query['lang'] ) && in_array( $query['lang'], array( 'en', 'fa' ), true ) ) { $language = $query['lang']; }
+    }
+    // Only the validated language is transferred; order keys and other source
+    // query values are never copied, logged or sent to a different origin.
+    return atlas_theme_localized_url( $url, $language );
+}
+foreach ( array( 'woocommerce_get_cart_url', 'woocommerce_get_checkout_url', 'woocommerce_get_checkout_payment_url', 'woocommerce_get_checkout_order_received_url' ) as $atlas_woo_url_filter ) {
+    add_filter( $atlas_woo_url_filter, 'atlas_theme_woocommerce_url' );
+}
+/** Translate only default English Woo system-page headings at presentation time. */
+function atlas_theme_woocommerce_page_title( $title, $post_id ) {
+    if ( is_admin() || 'fa' !== atlas_theme_requested_language() || ! function_exists( 'wc_get_page_id' ) ) { return $title; }
+    $defaults = array(
+        'cart' => array( array( 'Cart' ), 'سبد خرید' ),
+        'checkout' => array( array( 'Checkout' ), 'تسویه حساب' ),
+        'myaccount' => array( array( 'My account', 'My Account', 'My experiences', 'My Experiences' ), 'حساب من' ),
+        'shop' => array( array( 'Shop' ), 'فروشگاه' ),
+    );
+    foreach ( $defaults as $page => $copy ) {
+        if ( (int) $post_id > 0 && (int) $post_id === wc_get_page_id( $page ) && in_array( $title, $copy[0], true ) ) { return $copy[1]; }
+    }
+    return $title;
+}
+add_filter( 'the_title', 'atlas_theme_woocommerce_page_title', 10, 2 );
 
 /** Emit one skip link before every theme template. */
 function atlas_theme_print_skip() { echo atlas_theme_skip_link(); } // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- helper escapes content.

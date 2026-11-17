@@ -3,10 +3,22 @@
  * Plugin Name: Atlas Gateways
  * Description: Disabled provider boundaries and a local-only simulated payment method.
  * Version: 0.1.0
+ * WC tested up to: 11.3.0
  * Text Domain: atlas-gateways
  * Requires Plugins: woocommerce, atlas-core
  */
 if (!defined('ABSPATH')) { exit; }
+// Compatibility concerns this plugin's available local simulator. Domestic PSP
+// boundaries remain unavailable until their separate provider gates are met.
+add_action('before_woocommerce_init', static function (): void {
+    if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class)) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
+    }
+});
+add_action('init', static function () {
+    load_plugin_textdomain('atlas-gateways', false, dirname(plugin_basename(__FILE__)) . '/languages');
+}, 1);
 
 /** A deployment setting cannot turn a non-local environment into a payment simulator. */
 function atlas_gateways_demo_allowed() {

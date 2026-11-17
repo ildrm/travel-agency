@@ -26,8 +26,12 @@ jobs:
       - run: WP_CLI_CACHE_DIR="$PWD/.runtime/cache" wp --path="$PWD/.runtime/wordpress" eval-file deploy/seed.php
       - run: python3 tests/static.py
       - run: python3 tests/run-integration.py
-      - name: Build installable artifacts
-        run: python3 deploy/package.py
+      - name: Build and compare installable artifacts
+        run: python3 deploy/verify-packages.py
+      - name: Install actual archives in a disposable database
+        run: python3 deploy/clean-install-check.py
+      - name: Rehearse restore into a disposable database
+        run: python3 deploy/recovery-check.py
       - name: Stop isolated runtime
         if: always()
         run: python3 deploy/local.py stop

@@ -10,8 +10,10 @@ final class Offers {
         }
     }
     private static function utc(string $value): string|false {
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|\+00:00)$/D', $value)) { return false; }
         try { $d=new \DateTimeImmutable($value); } catch (\Throwable $e) { return false; }
-        if (!preg_match('/(?:Z|[+-]00:00)$/', $value)) { return false; }
+        $errors=\DateTimeImmutable::getLastErrors();
+        if (is_array($errors) && ($errors['warning_count'] || $errors['error_count'])) { return false; }
         return $d->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s.u');
     }
     public static function save(int $id, array $data, int $actorId): int|\WP_Error {
@@ -76,7 +78,7 @@ final class Offers {
         $row=$wpdb->get_row($wpdb->prepare('SELECT offer_snapshot FROM '.DB::table('inventory').' WHERE offer_id=%d',$id));
         $d=$row ? json_decode($row->offer_snapshot,true) : null;
         if (!is_array($d) || ($public && $d['status']!=='published')) { return new \WP_Error('atlas_not_found','Offer not found.', ['status'=>404]); }
-        if (!$public && !Auth::can('atlas_manage_offers',(int)$d['org_id'] ?: null,$id)) { return new \WP_Error('atlas_not_found','Offer not found.', ['status'=>404]); }
+        if (!$public && !Auth::can('atlas_manage_offers',(int)$d['org_id'] ?: null,$id,'read')) { return new \WP_Error('atlas_not_found','Offer not found.', ['status'=>404]); }
         return self::projection($id,$d);
     }
     public static function listing(array $filters = []): array {

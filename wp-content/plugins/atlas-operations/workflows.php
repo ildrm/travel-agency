@@ -31,6 +31,7 @@ final class Atlas_Operation_Workflows {
     }
     public static function before_transition($type, $record, $target) {
         $fields=$record['fields'];
+        if ($type==='partner_application' && in_array($target,array('approved','rejected','closed'),true)) return self::error(__('Use the partner application review workflow.','atlas-operations'));
         if ($target==='approved' && (int)$record['owner_id']===get_current_user_id()) return new WP_Error('atlas_self_approval',__('A different agency reviewer must approve.','atlas-operations'),array('status'=>403));
         if ($type==='tour_version' && in_array($target,array('submitted','approved'),true)) {
             $valid=self::validate_tour($fields); if (is_wp_error($valid)) return $valid;
@@ -49,9 +50,27 @@ final class Atlas_Operation_Workflows {
             if (is_wp_error($attendance) || is_wp_error($assessment) || $attendance['state']!=='approved' || $assessment['state']!=='approved' || empty($attendance['fields']['attended']) || ($assessment['fields']['result']??'')!=='pass') return self::error(__('Approved attendance and a passing assessment are required.','atlas-operations'));
             foreach (array($attendance,$assessment) as $dependency) if (($dependency['fields']['cohort_id']??'')!==($fields['cohort_id']??'') || (int)($dependency['fields']['learner_id']??0)!==(int)($fields['learner_id']??0)) return self::error(__('Completion evidence does not match the learner and cohort.','atlas-operations'));
         }
+        if ($type==='rfq' && $target==='submitted' && (empty($fields['deadline']) || !self::future($fields['deadline']) || empty($fields['recipients']))) return self::error(__('A future deadline and invited suppliers are required.','atlas-operations'));
+        if ($type==='supplier_quote' && $target==='submitted') {
+            global $wpdb;
+            $rfq=$wpdb->get_row($wpdb->prepare('SELECT payload,state FROM '.DB::table('records').' WHERE id=%s AND type=%s',(string)($fields['rfq_id']??''),'rfq'));
+            $rfq_fields=$rfq ? json_decode($rfq->payload,true) : null;
+            if (!$rfq || !in_array($rfq->state,array('submitted','approved'),true) || !is_array($rfq_fields) ||
+                empty($rfq_fields['deadline']) || !self::future($rfq_fields['deadline']) ||
+                empty($fields['expiry']) || !self::future($fields['expiry'])) return self::error(__('This request or quote is no longer open for submission.','atlas-operations'));
+        }
+        if ($type==='supplier_quote' && $target==='approved' && (empty($fields['expiry']) || !self::future($fields['expiry']))) return self::error(__('The supplier quote expired; obtain a renewed quote.','atlas-operations'));
+        if ($type==='production' && $target==='approved') {
+            $quote=Records::get('supplier_quote',(string)($fields['quote_id']??''),get_current_user_id());
+            if (is_wp_error($quote) || empty($quote['fields']['expiry']) || !self::future($quote['fields']['expiry'])) return self::error(__('The supplier quote expired; obtain a renewed quote.','atlas-operations'));
+        }
         if ($type==='production' && $target==='closed' && (empty($fields['shipment_ref']) || empty($fields['inspection']) || empty($fields['invoice_ref']) || empty($fields['payout_evidence']))) return self::error(__('Shipment, inspection, invoice and manual settlement evidence are required before closing.','atlas-operations'));
         if ($type==='production' && $target==='approved' && empty($fields['sample_approved'])) return self::error(__('The production sample must be approved first.','atlas-operations'));
         return true;
+    }
+    public static function future($value) {
+        if (!self::utc($value)) return false;
+        try { return new DateTimeImmutable($value) > new DateTimeImmutable(DB::now(),new DateTimeZone('UTC')); } catch (Throwable $error) { return false; }
     }
     /** Resolve only an unambiguous reviewed cohort linked to the same organization and approved course. */
     public static function cohort_for_offer($offer_id,$org_id,$lock=false) {

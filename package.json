@@ -4,12 +4,13 @@
   "private": true,
   "license": "GPL-2.0-only",
   "scripts": {
+    "demo": "python3 deploy/local.py demo",
     "setup": "python3 deploy/local.py setup --activate-atlas",
     "start": "python3 deploy/local.py start",
     "stop": "python3 deploy/local.py stop",
     "test:static": "python3 tests/static.py",
     "test:integration": "python3 tests/run-integration.py",
-    "test:browser": "playwright test --workers=1",
+    "test:browser": "python3 tests/run-browser.py",
     "package": "python3 deploy/package.py"
   },
   "devDependencies": {

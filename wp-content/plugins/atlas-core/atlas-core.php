@@ -4,10 +4,17 @@
  * Description: Transactional booking, organization permissions, records, and WooCommerce bridge for Atlas.
  * Version: 0.1.0
  * Requires PHP: 8.2
+ * WC tested up to: 11.3.0
  * Text Domain: atlas-core
  * License: GPL-2.0-or-later
  */
 if (!defined('ABSPATH')) { exit; }
+add_action('before_woocommerce_init', static function (): void {
+    if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class)) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
+    }
+});
 define('ATLAS_CORE_VERSION', '0.1.0');
 define('ATLAS_CORE_PATH', __DIR__);
 foreach (['DB', 'Auth', 'Records', 'Eligibility', 'Offers', 'Money', 'Booking', 'Finance', 'Woo', 'Rest', 'Privacy'] as $file) {

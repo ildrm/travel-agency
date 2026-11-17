@@ -8,6 +8,17 @@ if (!class_exists('Atlas\Core\Offers') || !class_exists('WooCommerce')) {
 }
 $admins = get_users(['role' => 'administrator', 'number' => 1]);
 wp_set_current_user($admins[0]->ID);
+$privatePath = dirname(__DIR__) . '/.runtime/credentials.json';
+$private = json_decode(file_get_contents($privatePath), true);
+if (empty($private['customer_user']) || !username_exists($private['customer_user'])) {
+    $private['customer_user'] = 'atlas_demo_customer';
+    $private['customer_password'] = wp_generate_password(32, true, true);
+    $customer = wp_insert_user(['user_login'=>$private['customer_user'], 'user_pass'=>$private['customer_password'],
+        'user_email'=>'customer@example.test', 'role'=>'customer', 'display_name'=>'Fictional local customer']);
+    if (is_wp_error($customer)) { WP_CLI::error('Could not create fictional local customer.'); }
+    file_put_contents($privatePath, wp_json_encode($private, JSON_PRETTY_PRINT));
+    chmod($privatePath, 0600);
+}
 $fixtures = get_option('atlas_demo_fixtures', []);
 $open = gmdate('Y-m-d\TH:i:s\Z', time() - DAY_IN_SECONDS);
 $close = gmdate('Y-m-d\TH:i:s\Z', time() + 14 * DAY_IN_SECONDS);
@@ -46,7 +57,7 @@ foreach ($offers as [$kind, $en, $fa, $descriptionEn, $descriptionFa, $amount]) 
         'registration_open_at' => $amount ? $open : '', 'registration_close_at' => $amount ? $close : '',
         'timezone' => 'Asia/Tehran', 'capacity' => $amount ? 30 : 0,
         'amount_irr' => $amount, 'mode' => $amount ? 'local' : 'request_only',
-        'status' => $kind === 'tour' ? 'draft' : 'published', 'product_id' => $productId,
+        'status' => in_array($kind, ['tour','cohort'], true) ? 'draft' : 'published', 'product_id' => $productId,
     ], get_current_user_id());
     if (is_wp_error($id)) {
         WP_CLI::error($id->get_error_message());
@@ -64,14 +75,40 @@ if (empty($fixtures['merch_product'])) {
     $product->set_stock_quantity(10);
     $fixtures['merch_product'] = $product->save();
 }
-foreach (['Discover' => '[atlas_catalog]', 'My experiences' => '[atlas_account]', 'Partner workspace' => '[atlas_portal]', 'Cart' => '<!-- wp:woocommerce/cart /-->', 'Checkout' => '<!-- wp:woocommerce/checkout /-->'] as $title => $content) {
+// Use Woo's public installer/filter to obtain its actual nested block templates.
+// A self-closing checkout comment has no inner blocks and renders an empty form.
+$wooPages = [];
+$capturePages = static function ($pages) use (&$wooPages) { $wooPages = $pages; return $pages; };
+add_filter('woocommerce_create_pages', $capturePages, 999);
+WC_Install::create_pages();
+remove_filter('woocommerce_create_pages', $capturePages, 999);
+foreach (['cart', 'checkout'] as $pageKind) {
+    if (empty($wooPages[$pageKind]['content'])) { WP_CLI::error('WooCommerce default block template unavailable.'); }
+}
+foreach (['Discover' => '[atlas_catalog]', 'My experiences' => '[atlas_account]', 'Partner workspace' => '[atlas_portal]', 'Cart' => $wooPages['cart']['content'], 'Checkout' => $wooPages['checkout']['content']] as $title => $content) {
     $key = 'page_' . sanitize_title($title);
-    if (!empty($fixtures[$key]) && get_post($fixtures[$key])) { continue; }
+    if (!empty($fixtures[$key]) && ($existingPage = get_post($fixtures[$key]))) {
+        // Repair only our exact earlier invalid fixture, preserving all edited pages.
+        if (in_array($title, ['Cart','Checkout'], true)
+            && trim($existingPage->post_content) === '<!-- wp:woocommerce/' . strtolower($title) . ' /-->') {
+            wp_update_post(['ID'=>$existingPage->ID, 'post_content'=>$content]);
+        }
+        continue;
+    }
+    if (in_array($title, ['Cart','Checkout'], true) && wc_get_page_id(strtolower($title)) > 0) {
+        $fixtures[$key] = wc_get_page_id(strtolower($title));
+        continue;
+    }
     $page = wp_insert_post(['post_type' => 'page', 'post_status' => 'publish', 'post_title' => $title, 'post_content' => $content]);
     $fixtures[$key] = $page;
     if ($title === 'Cart') { update_option('woocommerce_cart_page_id', $page); }
     if ($title === 'Checkout') { update_option('woocommerce_checkout_page_id', $page); }
+    if ($title === 'My experiences') { update_option('woocommerce_myaccount_page_id', $page); }
 }
+foreach (['cart','checkout'] as $pageKind) {
+    update_option('woocommerce_' . $pageKind . '_page_id', $fixtures['page_' . $pageKind]);
+}
+if (!empty($fixtures['page_my-experiences'])) { update_option('woocommerce_myaccount_page_id', $fixtures['page_my-experiences']); }
 update_option('atlas_demo_fixtures', $fixtures, false);
 file_put_contents(dirname(__DIR__) . '/.runtime/browser-fixtures.json', wp_json_encode($fixtures));
 WP_CLI::success('Seeded fictional local fixtures; real supplier/payment capabilities remain disabled.');

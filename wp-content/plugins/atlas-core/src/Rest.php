@@ -22,7 +22,25 @@ final class Rest {
                 if (is_wp_error($result)) { return $result; } $response=new \WP_REST_Response($result,201); $response->header('Cache-Control','private, no-store'); return $response;
             }]
         ]);
-        register_rest_route('agency/v1','/bookings/(?P<id>[a-f0-9-]{36})',['methods'=>'GET','permission_callback'=>static function() { return is_user_logged_in(); },'callback'=>static function(\WP_REST_Request $r) { $result=Booking::get((string)$r['id'],get_current_user_id()); return is_wp_error($result) ? $result : rest_ensure_response($result); }]);
+        register_rest_route('agency/v1','/bookings/(?P<id>[a-f0-9-]{36})',['methods'=>'GET','permission_callback'=>static function() { return is_user_logged_in(); },'callback'=>static function(\WP_REST_Request $r) {
+            $result=Booking::get((string)$r['id'],get_current_user_id());
+            if (is_wp_error($result)) { return $result; }
+            $response=rest_ensure_response($result); $response->header('Cache-Control','private, no-store'); return $response;
+        }]);
+        register_rest_route('agency/v1','/booking-queue',[
+            'methods'=>'GET','permission_callback'=>static function() { return Auth::agency() && Auth::can('atlas_manage_bookings',null,null,'read'); },
+            'args'=>['page'=>['type'=>'integer','default'=>1,'minimum'=>1,'maximum'=>100000],'limit'=>['type'=>'integer','default'=>25,'minimum'=>1,'maximum'=>50],'status'=>['type'=>'string','default'=>'paid_pending_confirmation','enum'=>['paid_pending_confirmation','exception','confirmed']]],
+            'callback'=>static function(\WP_REST_Request $r) { $result=Booking::queue(get_current_user_id(),(int)$r['page'],(int)$r['limit'],(string)$r['status']); if (is_wp_error($result)) { return $result; } $response=new \WP_REST_Response($result,200); $response->header('Cache-Control','private, no-store'); return $response; }
+        ]);
+        register_rest_route('agency/v1','/bookings/(?P<id>[a-f0-9-]{36})/confirm',[
+            'methods'=>'POST','permission_callback'=>static function() { return Auth::agency() && Auth::can('atlas_manage_bookings'); },
+            'callback'=>static function(\WP_REST_Request $r) {
+                $data=$r->get_json_params(); $key=(string)$r->get_header('Idempotency-Key');
+                if (!is_array($data) || array_diff(array_keys($data),['reason']) || !isset($data['reason']) || !is_string($data['reason']) || trim($data['reason'])==='' || strlen($data['reason'])>190 || !preg_match('/^[A-Za-z0-9._:-]{8,128}$/',$key)) { return new \WP_Error('atlas_invalid_request','A bounded reason and idempotency key are required.',['status'=>422]); }
+                $result=Booking::confirm((string)$r['id'],get_current_user_id(),$data['reason'],$key);
+                if (is_wp_error($result)) { return $result; } $response=new \WP_REST_Response($result,200); $response->header('Cache-Control','private, no-store'); return $response;
+            }
+        ]);
     }
 }
 final class CLI {

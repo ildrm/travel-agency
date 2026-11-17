@@ -2,9 +2,10 @@
 namespace Atlas\Core;
 if (!defined('ABSPATH')) { exit; }
 final class Woo {
+    private static int $payOrderId=0;
     public static function register(): void {
         if (!class_exists('WooCommerce')) { return; }
-        add_filter('woocommerce_add_to_cart_validation',[self::class,'add_validation'],10,3);
+        add_filter('woocommerce_add_to_cart_validation',[self::class,'add_validation'],10,6);
         add_filter('woocommerce_add_cart_item_data',[self::class,'cart_item_data'],10,3);
         add_filter('woocommerce_store_api_add_to_cart_data',[self::class,'store_cart_data'],10,2);
         add_action('woocommerce_check_cart_items',[self::class,'classic_cart_validation']);
@@ -13,23 +14,91 @@ final class Woo {
         add_action('woocommerce_checkout_create_order_line_item',[self::class,'line_item'],10,4);
         add_action('woocommerce_checkout_order_processed',[self::class,'classic_order'],10,3);
         add_action('woocommerce_store_api_checkout_order_processed',[self::class,'store_order'],10,1);
+        add_filter('woocommerce_available_payment_gateways',[self::class,'available_gateways'],PHP_INT_MAX);
+        add_action('woocommerce_before_pay_action',[self::class,'before_pay'],0);
+        add_action('woocommerce_after_pay_action',[self::class,'after_pay'],PHP_INT_MAX,0);
+        // Checkout Blocks and the Store API existing-order endpoint both dispatch here.
+        // Run before Woo's legacy gateway adapter (priority 999) can initiate payment.
+        add_action('woocommerce_rest_checkout_process_payment_with_context',[self::class,'guard_store_payment'],0,1);
     }
     private static function offer_id(int $product): int { return (int)get_post_meta($product,'_atlas_offer_id',true); }
-    public static function add_validation(bool $passed,int $productId,int $quantity): bool {
+    private static function service_cart(): bool {
+        if (!function_exists('WC') || !WC()->cart) { return false; }
+        foreach (WC()->cart->get_cart() as $item) {
+            if (!empty($item['atlas_booking_id']) || self::offer_id((int)($item['product_id'] ?? 0))>0) { return true; }
+        }
+        return false;
+    }
+    private static function service_order($order): bool {
+        if (!$order instanceof \WC_Order) { return false; }
+        foreach ($order->get_items('line_item') as $item) {
+            if ($item->get_meta('_atlas_booking_id',true)!=='' || self::offer_id((int)$item->get_product_id())>0) { return true; }
+        }
+        return false;
+    }
+    private static function service_gateway_allowed(string $method): bool {
+        // No live provider has a reviewed domain-verification bridge yet. Merely
+        // enabling a Woo gateway must never authorize it to collect service money.
+        return $method==='atlas_simulator' && wp_get_environment_type()==='local'
+            && defined('ATLAS_DEMO_MODE') && ATLAS_DEMO_MODE===true;
+    }
+    public static function available_gateways(array $gateways): array {
+        global $wp;
+        $orderId=self::$payOrderId ?: absint($wp->query_vars['order-pay'] ?? 0);
+        // The existing order governs order-pay, even when an unrelated cart exists.
+        $service=$orderId ? self::service_order(wc_get_order($orderId)) : self::service_cart();
+        if (!$service) { return $gateways; }
+        foreach ($gateways as $id=>$gateway) { if (!self::service_gateway_allowed((string)$id)) { unset($gateways[$id]); } }
+        return $gateways;
+    }
+    public static function before_pay($order): void {
+        self::$payOrderId=$order instanceof \WC_Order ? (int)$order->get_id() : 0;
+        $method=isset($_POST['payment_method']) && is_string($_POST['payment_method']) ? sanitize_key(wp_unslash($_POST['payment_method'])) : '';
+        // This Woo hook is outside its exception handler; an error notice safely
+        // prevents dispatch, while the availability filter rejects the method too.
+        if (self::service_order($order) && !self::service_gateway_allowed($method)) { wc_add_notice(__('This payment method is not available for service bookings.','atlas-core'),'error'); }
+    }
+    public static function after_pay(): void { self::$payOrderId=0; }
+    public static function guard_store_payment($context): void {
+        if (self::service_order($context->order) && !self::service_gateway_allowed((string)$context->payment_method)) { throw new \Exception(__('This payment method is not available for service bookings.','atlas-core')); }
+    }
+    private static function guard_order_payment($order): void {
+        if (self::service_order($order) && !self::service_gateway_allowed((string)$order->get_payment_method())) { throw new \Exception(__('This payment method is not available for service bookings.','atlas-core')); }
+    }
+    public static function add_validation(bool $passed,int $productId,int $quantity,int $variationId=0,array $variation=[],?array $cartItemData=null): bool {
         if (!$passed || !function_exists('WC') || !WC()->cart) { return $passed; }
         $incoming=self::offer_id($productId);
+        // Classic handlers pass three/five arguments; Store API supplies the final
+        // cart-item data as argument six. An empty API payload must never read POST.
+        $booking=$cartItemData===null ? ($_POST['atlas_booking_id'] ?? null) : ($cartItemData['atlas_booking_id'] ?? null);
+        if ($cartItemData===null && is_string($booking)) { $booking=wp_unslash($booking); }
+        if ($incoming>0 && (!is_string($booking) || !preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/D',$booking))) {
+            wc_add_notice(__('A valid reservation reference is required before adding this service.','atlas-core'),'error'); return false;
+        }
         foreach (WC()->cart->get_cart() as $item) {
             $existing=self::offer_id((int)$item['product_id']);
             if (($incoming>0) !== ($existing>0) || ($incoming>0 && $incoming!==$existing)) { wc_add_notice(__('Service and merchandise or different services require separate checkouts.','atlas-core'),'error'); return false; }
+            if ($incoming>0) {
+                $same=is_string($item['atlas_booking_id'] ?? null) && $item['atlas_booking_id']===$booking;
+                wc_add_notice($same ? __('This reservation is already in your cart. Open the cart to continue.','atlas-core') : __('Complete or remove the service already in your cart before adding another reservation.','atlas-core'),'error'); return false;
+            }
         }
         return true;
     }
     public static function cart_item_data(array $data,int $productId,int $variationId): array {
-        if (self::offer_id($productId)>0 && isset($_POST['atlas_booking_id'])) { $data['atlas_booking_id']=sanitize_text_field(wp_unslash($_POST['atlas_booking_id'])); }
+        if (self::offer_id($productId)>0 && !array_key_exists('atlas_booking_id',$data) && isset($_POST['atlas_booking_id']) && is_string($_POST['atlas_booking_id'])) { $data['atlas_booking_id']=sanitize_text_field(wp_unslash($_POST['atlas_booking_id'])); }
         return $data;
     }
     public static function store_cart_data(array $data,\WP_REST_Request $request): array {
-        $id=$request->get_param('atlas_booking_id'); if (is_string($id)) { $data['cart_item_data']['atlas_booking_id']=sanitize_text_field($id); } return $data;
+        $productId=(int)($data['id'] ?? 0);
+        if (get_post_type($productId)==='product_variation') { $productId=(int)wp_get_post_parent_id($productId); }
+        if (self::offer_id($productId)>0) {
+            $id=$request->get_param('atlas_booking_id');
+            // Preserve a missing/malformed marker so the classic data filter cannot
+            // inject unrelated POST state into a Store API request before validation.
+            $data['cart_item_data']['atlas_booking_id']=is_string($id) ? $id : '';
+        }
+        return $data;
     }
     private static function integer_amount(string $amount): ?int {
         if (!preg_match('/^([0-9]+)(?:\.0+)?$/',$amount,$m) || strlen($m[1])>18 || (float)$m[1]>PHP_INT_MAX) { return null; }
@@ -63,8 +132,8 @@ final class Woo {
     public static function line_item($item,string $cartItemKey,array $values,$order): void {
         if (!empty($values['atlas_booking_id'])) { $item->add_meta_data('_atlas_booking_id',sanitize_text_field((string)$values['atlas_booking_id']),true); }
     }
-    public static function classic_order(int $orderId,array $data,$order): void { self::bind_order($order); }
-    public static function store_order($order): void { self::bind_order($order); }
+    public static function classic_order(int $orderId,array $data,$order): void { self::guard_order_payment($order); self::bind_order($order); }
+    public static function store_order($order): void { self::guard_order_payment($order); self::bind_order($order); }
     private static function bind_order($order): void {
         global $wpdb;
         if (!is_user_logged_in() || (int)$order->get_customer_id()!==get_current_user_id()) { throw new \Exception(__('Sign in before checkout.','atlas-core')); }

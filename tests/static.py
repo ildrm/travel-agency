@@ -1,12 +1,20 @@
 #!/usr/bin/env python3
 """Sequential syntax, source schema and packaging safety checks."""
 from pathlib import Path
+from datetime import datetime, timezone
+import hashlib
 import json
 import subprocess
 import sys
 import re
 
 ROOT=Path(__file__).resolve().parents[1]
+def fingerprint():
+    result=hashlib.sha256()
+    for path in sorted((ROOT/'wp-content').rglob('*')):
+        if path.is_file(): result.update(str(path.relative_to(ROOT)).encode()+b'\0'+path.read_bytes()+b'\0')
+    return result.hexdigest()
+before=fingerprint()
 checks=[]
 def record(name,ok,detail=''):
     checks.append({'name':name,'passed':bool(ok),'detail':detail})
@@ -36,7 +44,9 @@ for path in sorted((ROOT/'wp-content').rglob('*')):
         record('secret-pattern:'+str(path.relative_to(ROOT)),not bool(re.search(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|AKIA[0-9A-Z]{16}',data)))
 theme=ROOT/'wp-content/themes/atlas-leisure'
 record('block-theme-required-files',all((theme/x).exists() for x in ['style.css','theme.json','templates/index.html']))
-result={'suite':'static','executed_at':'2026-11-17','checks':checks,'passed':sum(c['passed'] for c in checks),'failed':sum(not c['passed'] for c in checks)}
+record('source-unchanged-during-run',before==fingerprint())
+result={'suite':'static','executed_at':datetime.now(timezone.utc).isoformat(),'source_sha256':before,
+        'checks':checks,'passed':sum(c['passed'] for c in checks),'failed':sum(not c['passed'] for c in checks)}
 out=ROOT/'implementation/evidence/static-results.json'
 out.write_text(json.dumps(result,indent=2)+'\n')
 print(json.dumps({k:v for k,v in result.items() if k!='checks'},indent=2))

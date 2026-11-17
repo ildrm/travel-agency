@@ -57,6 +57,75 @@ $_GET = array( 'lang' => 'en' );
 $navigation = atlas_theme_navigation( array( 'location' => 'primary' ) );
 $atlas_check( false !== strpos( $navigation, '<nav' ) && false !== strpos( $navigation, 'aria-label="' ) && false !== strpos( $navigation, '<ul' ) && 0 === preg_match( '/<ul[^>]*>\s*<ul/i', $navigation ), 'navigation renders a named list without a directly nested list' );
 $atlas_check( false === strpos( $navigation, 'wc-block-mini-cart__drawer' ), 'default navigation does not inject the mini-cart drawer' );
+// Exercise an actual configured WordPress menu, not just the theme fallback.
+$menu_id = wp_create_nav_menu( 'Atlas locale fixture ' . wp_generate_uuid4() );
+$prior_locations = get_theme_mod( 'nav_menu_locations', array() );
+if ( is_wp_error( $menu_id ) ) {
+    $atlas_failures[] = 'create isolated configured menu fixture';
+} else {
+    try {
+        $local_url = home_url( '/discover/?kind=event#schedule' );
+        $external_url = 'https://external.example.invalid/guide?kind=event#details';
+        foreach ( array( 'Local fixture' => $local_url, 'External fixture' => $external_url ) as $label => $url ) {
+            $item = wp_update_nav_menu_item( $menu_id, 0, array( 'menu-item-title' => $label, 'menu-item-url' => $url, 'menu-item-type' => 'custom', 'menu-item-status' => 'publish' ) );
+            if ( is_wp_error( $item ) ) { throw new RuntimeException( 'Could not create configured menu item.' ); }
+        }
+        set_theme_mod( 'nav_menu_locations', array_merge( $prior_locations, array( 'primary' => $menu_id, 'footer' => $menu_id ) ) );
+        $_GET = array( 'lang' => 'fa' );
+        foreach ( array( 'primary', 'footer' ) as $location ) {
+            $configured = html_entity_decode( atlas_theme_navigation( array( 'location' => $location ) ), ENT_QUOTES, 'UTF-8' );
+            $atlas_check( false !== strpos( $configured, add_query_arg( 'lang', 'fa', $local_url ) ), $location . ' configured menu preserves FA locale, query and fragment' );
+            $atlas_check( false !== strpos( $configured, $external_url ) && false === strpos( $configured, 'external.example.invalid/guide?kind=event&lang=' ), $location . ' configured menu leaves external links unchanged' );
+        }
+        $home_parts = wp_parse_url( home_url( '/' ) );
+        $other_port = ( $home_parts['scheme'] ?? 'http' ) . '://' . $home_parts['host'] . ':65534/guide#details';
+        $atlas_check( atlas_theme_localized_url( $other_port ) === $other_port, 'different-origin port is not rewritten' );
+        $atlas_check( atlas_theme_localized_url( 'mailto:help@example.invalid' ) === 'mailto:help@example.invalid' && atlas_theme_localized_url( '#schedule' ) === '#schedule', 'non-HTTP links and same-page anchors remain unchanged' );
+        $atlas_check( atlas_theme_localized_url( '?kind=event#schedule' ) === '?kind=event&lang=fa#schedule', 'relative query links retain query and fragment while preserving locale' );
+        $_GET = array( 'lang' => array( 'fa' ) );
+        $invalid = wp_parse_url( atlas_theme_localized_url( $local_url ), PHP_URL_QUERY );
+        parse_str( $invalid ?? '', $parsed_query );
+        $atlas_check( isset( $parsed_query['lang'] ) && in_array( $parsed_query['lang'], array( 'en', 'fa' ), true ), 'malformed locale input is ignored and cannot enter menu URLs' );
+    } catch ( Throwable $error ) { $atlas_failures[] = 'configured menu fixture: ' . $error->getMessage(); }
+    finally { set_theme_mod( 'nav_menu_locations', $prior_locations ); wp_delete_nav_menu( $menu_id ); }
+}
+$_GET = array( 'lang' => 'en' );
+if ( function_exists( 'wc_get_cart_url' ) && function_exists( 'wc_get_checkout_url' ) ) {
+    $prior_referer = $_SERVER['HTTP_REFERER'] ?? null;
+    $prior_cart_page = get_option( 'woocommerce_cart_page_id', 0 );
+    $title_fixture = 0;
+    try {
+        $_GET = array( 'lang' => 'fa' );
+        foreach ( array( 'cart' => wc_get_cart_url(), 'checkout' => wc_get_checkout_url() ) as $name => $url ) {
+            parse_str( wp_parse_url( $url, PHP_URL_QUERY ) ?? '', $query );
+            $atlas_check( ( $query['lang'] ?? null ) === 'fa', 'Woo ' . $name . ' URL retains validated FA locale' );
+        }
+        $_GET = array();
+        $_SERVER['HTTP_REFERER'] = home_url( '/checkout/?lang=fa&unrelated=must-not-copy' );
+        $receipt_base = home_url( '/checkout/order-received/0/?key=fictional-order-key#confirmation' );
+        foreach ( array( 'woocommerce_get_checkout_order_received_url', 'woocommerce_get_checkout_payment_url' ) as $filter ) {
+            $url = apply_filters( $filter, $receipt_base );
+            parse_str( wp_parse_url( $url, PHP_URL_QUERY ) ?? '', $query );
+            $atlas_check( ( $query['lang'] ?? null ) === 'fa' && ( $query['key'] ?? null ) === 'fictional-order-key' && ! isset( $query['unrelated'] ) && wp_parse_url( $url, PHP_URL_FRAGMENT ) === 'confirmation', $filter . ' transfers only validated same-origin locale and preserves existing key/fragment' );
+        }
+        $outside = 'https://external.example.invalid/checkout/?key=fictional#receipt';
+        $atlas_check( apply_filters( 'woocommerce_get_checkout_url', $outside ) === $outside, 'Woo locale filters never rewrite external payment/checkout URLs' );
+        $_GET = array( 'lang' => 'fa' );
+        $title_fixture = wp_insert_post( array( 'post_type' => 'page', 'post_status' => 'publish', 'post_title' => 'Cart' ), true );
+        if ( is_wp_error( $title_fixture ) || ! $title_fixture ) { throw new RuntimeException( 'Could not create Woo system title fixture.' ); }
+        update_option( 'woocommerce_cart_page_id', $title_fixture );
+        $atlas_check( get_the_title( $title_fixture ) === 'سبد خرید', 'configured Woo cart default heading is presented in FA' );
+        $atlas_check( get_post( $title_fixture )->post_title === 'Cart', 'localized Woo heading never mutates CMS source content' );
+        wp_update_post( array( 'ID' => $title_fixture, 'post_title' => 'Custom agency cart heading' ) );
+        $atlas_check( get_the_title( $title_fixture ) === 'Custom agency cart heading', 'custom agency headings are not overwritten by default-title fallback' );
+    } catch ( Throwable $error ) { $atlas_failures[] = 'Woo locale fixture: ' . $error->getMessage(); }
+    finally {
+        update_option( 'woocommerce_cart_page_id', $prior_cart_page );
+        if ( $title_fixture && ! is_wp_error( $title_fixture ) ) { wp_delete_post( $title_fixture, true ); }
+        if ( null === $prior_referer ) { unset( $_SERVER['HTTP_REFERER'] ); } else { $_SERVER['HTTP_REFERER'] = $prior_referer; }
+    }
+}
+$_GET = array( 'lang' => 'en' );
 $skip = atlas_theme_skip_link();
 $atlas_check( false !== strpos( $skip, 'href="#atlas-main-content"' ), 'localized skip link targets the main region' );
 $unknown = atlas_theme_companion( 'atlas_not_installed_fixture' );

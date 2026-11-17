@@ -8,6 +8,13 @@ final class Records {
         foreach ($schema['fields'] as $name=>$field) {
             if (!preg_match('/^[a-z][a-z0-9_]{0,63}$/', (string)$name) || !is_array($field) || !in_array($field['type'] ?? '', ['string','int','bool','array','datetime','timezone'], true)) { return new \WP_Error('atlas_invalid_schema', 'Invalid field definition.'); }
         }
+        if (isset($schema['organization_roles'])) {
+            if (!is_array($schema['organization_roles']) || array_diff(array_keys($schema['organization_roles']),['read','write'])) { return new \WP_Error('atlas_invalid_schema','Invalid organization role policy.'); }
+            foreach ($schema['organization_roles'] as $roles) {
+                if (!is_array($roles)) { return new \WP_Error('atlas_invalid_schema','Invalid organization role policy.'); }
+                foreach ($roles as $role) { if (!is_string($role) || !in_array($role,Auth::organization_roles(),true)) { return new \WP_Error('atlas_invalid_schema','Unknown organization role.'); } }
+            }
+        }
         self::$types[$type] = $schema; return true;
     }
     private static function valid(string $type, array $fields, bool $partial = false): array|\WP_Error {
@@ -34,12 +41,19 @@ final class Records {
     private static function project(object $row): array {
         return ['id'=>$row->id,'type'=>$row->type,'org_id'=>(int)$row->org_id,'owner_id'=>(int)$row->owner_id,'state'=>$row->state,'fields'=>json_decode($row->payload,true) ?: [],'version'=>(int)$row->version,'created_at'=>$row->created_at,'updated_at'=>$row->updated_at];
     }
-    private static function allowed(object $row, int $actor): bool {
+    private static function org_allowed(string $type, int $org, string $operation): bool {
+        if ($org <= 0 || Auth::agency()) { return true; }
+        $rules=self::$types[$type]['organization_roles'] ?? null;
+        return Auth::role_allows($org,$operation,$rules === null ? null : ($rules[$operation] ?? []));
+    }
+    private static function allowed(object $row, int $actor, string $operation = 'read'): bool {
         if (!self::actor_ok($actor) || !isset(self::$types[$row->type])) { return false; }
         if ($row->type==='traveler') { return (int)$row->org_id===0 && (int)$row->owner_id===$actor; }
         if (Auth::agency()) { return true; }
         $cap=self::$types[$row->type]['capability'] ?? 'read';
-        return current_user_can($cap) && ((int)$row->org_id > 0 ? Auth::member((int)$row->org_id,$actor) : (int)$row->owner_id === $actor);
+        $org=(int)$row->org_id;
+        return Auth::can($cap,$org ?: null,null,$operation) && self::org_allowed($row->type,$org,$operation)
+            && ($org > 0 || (int)$row->owner_id === $actor);
     }
     private static function actor_ok(int $actor): bool { return Auth::actor($actor); }
     public static function create(string $type, array $fields, int $actorId): array|\WP_Error {
@@ -55,7 +69,7 @@ final class Records {
         global $wpdb;
         if (!self::actor_ok($actorId) || !isset(self::$types[$type])) { return new \WP_Error('atlas_forbidden','Access denied.', ['status'=>403]); }
         $org=(int)($fields['org_id'] ?? 0); unset($fields['org_id']);
-        if (isset($fields['owner_id']) || !Auth::can(self::$types[$type]['capability'] ?? 'read', $org ?: null)) { return new \WP_Error('atlas_forbidden','Access denied.', ['status'=>403]); }
+        if (isset($fields['owner_id']) || !Auth::can(self::$types[$type]['capability'] ?? 'read', $org ?: null,null,'write') || !self::org_allowed($type,$org,'write')) { return new \WP_Error('atlas_forbidden','Access denied.', ['status'=>403]); }
         $values=self::valid($type,$fields); if (is_wp_error($values)) { return $values; }
         $state=(string)($values['state'] ?? 'draft');
         $initial=self::$types[$type]['initial_states'] ?? ['draft'];
@@ -101,7 +115,7 @@ final class Records {
         $wpdb->query('START TRANSACTION');
         try {
             $row=$wpdb->get_row($wpdb->prepare('SELECT * FROM '.DB::table('records').' WHERE id=%s AND type=%s FOR UPDATE',$id,$type));
-            if (!$row || !self::allowed($row,$actorId)) { $wpdb->query('ROLLBACK'); return new \WP_Error('atlas_not_found','Record not found.', ['status'=>404]); }
+            if (!$row || !self::allowed($row,$actorId,'write')) { $wpdb->query('ROLLBACK'); return new \WP_Error('atlas_not_found','Record not found.', ['status'=>404]); }
             if (isset($changes['org_id']) || isset($changes['owner_id'])) { $wpdb->query('ROLLBACK'); return new \WP_Error('atlas_forbidden','Ownership cannot be changed here.', ['status'=>403]); }
             $values=self::valid($type,$changes,true); if (is_wp_error($values)) { $wpdb->query('ROLLBACK'); return $values; }
             if ((int)$row->version !== $expectedVersion) { $wpdb->query('ROLLBACK'); return new \WP_Error('atlas_conflict','Record changed.', ['status'=>409]); }
