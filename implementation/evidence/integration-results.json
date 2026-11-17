@@ -1,0 +1,47 @@
+{
+  "executed_at": "2026-11-17",
+  "results": [
+    {
+      "suite": "core-integration",
+      "exit_code": 255,
+      "status": "FAILED",
+      "command": "nice -n 19 wp --path=/Users/shahinilderemi/Documents/tmp/iranbroker/.runtime/wordpress eval-file /Users/shahinilderemi/Documents/tmp/iranbroker/tests/core-integration.php",
+      "log": "implementation/evidence/core-integration.log"
+    },
+    {
+      "suite": "core-woo-integration",
+      "exit_code": 0,
+      "status": "PASSED",
+      "command": "nice -n 19 wp --path=/Users/shahinilderemi/Documents/tmp/iranbroker/.runtime/wordpress eval-file /Users/shahinilderemi/Documents/tmp/iranbroker/tests/core-woo-integration.php",
+      "log": "implementation/evidence/core-woo-integration.log"
+    },
+    {
+      "suite": "domain-integration",
+      "exit_code": 255,
+      "status": "FAILED",
+      "command": "nice -n 19 wp --path=/Users/shahinilderemi/Documents/tmp/iranbroker/.runtime/wordpress eval-file /Users/shahinilderemi/Documents/tmp/iranbroker/tests/domain-integration.php",
+      "log": "implementation/evidence/domain-integration.log"
+    },
+    {
+      "suite": "gateway-integration",
+      "exit_code": 0,
+      "status": "PASSED",
+      "command": "nice -n 19 wp --path=/Users/shahinilderemi/Documents/tmp/iranbroker/.runtime/wordpress eval-file /Users/shahinilderemi/Documents/tmp/iranbroker/tests/gateway-integration.php",
+      "log": "implementation/evidence/gateway-integration.log"
+    },
+    {
+      "suite": "frontend-integration",
+      "exit_code": 0,
+      "status": "PASSED",
+      "command": "nice -n 19 wp --path=/Users/shahinilderemi/Documents/tmp/iranbroker/.runtime/wordpress eval-file /Users/shahinilderemi/Documents/tmp/iranbroker/tests/frontend-integration.php",
+      "log": "implementation/evidence/frontend-integration.log"
+    },
+    {
+      "suite": "inventory-integration",
+      "exit_code": 0,
+      "status": "PASSED",
+      "command": "nice -n 19 wp --path=/Users/shahinilderemi/Documents/tmp/iranbroker/.runtime/wordpress eval-file /Users/shahinilderemi/Documents/tmp/iranbroker/tests/inventory-integration.php",
+      "log": "implementation/evidence/inventory-integration.log"
+    }
+  ]
+}

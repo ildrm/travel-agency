@@ -1,0 +1,15 @@
+# Implemented local operations and recovery guide
+
+Use `python3 deploy/local.py setup --activate-atlas` from repository root to install pinned runtime dependencies, link/activate custom packages and migrate. The script stores generated credentials in private `.runtime/credentials.json`, uses a socket-only project database (32 MB InnoDB buffer, no TCP) and never changes Homebrew/system services. The first download needs network access. `python3 deploy/local.py start` binds PHP only to `127.0.0.1:8840`. `python3 deploy/local.py stop` stops only project runtime processes.
+
+`WP_CLI_CACHE_DIR="$PWD/.runtime/cache" wp --path="$PWD/.runtime/wordpress" eval-file deploy/seed.php` creates fictional demo offers/products/pages idempotently. Demo tour remains draft until an actual structured itinerary is independently reviewed; no real supplier or trip is implied. Do not seed production. Source packages live outside runtime and are symlinked locally; the development router explicitly serves only runtime/owned-content file paths.
+
+Reliable worker in a real deployment: schedule `wp atlas run_due` through an actual server scheduler, not visitor-only WP-Cron. Review its persisted outbox errors and paid-unconfirmed exceptions; no provider retry should initiate duplicate financial action. Local runtime disables WP-Cron to prevent unsolicited background load. No real scheduled server job is installed on this workstation.
+
+Payment exception: preserve independently verified monetary evidence; do not mark a supplier ticket from Woo status. Released allocation stays released; booking expired→exception, payment verified; assign manual refund/alternative owner. Domestic gateway availability cannot be enabled by a settings checkbox alone. Simulator works only in local+explicit demo mode and must never be used as a production PSP.
+
+Backup: `python3 deploy/local.py backup` writes private `.runtime/backup.sql` using single-transaction dump. Restore rehearsal must use a separate database and compare table counts/integrity before changing status; do not restore over the working database without explicit selection. Restoring WordPress does not reverse real provider events. After any real restore, reconcile out-of-band payment/refund/supplier evidence from the backup timestamp before reopening sales.
+
+Deployment rollback: stop new financial initiation, preserve backup/build hash and evidence; revert only code compatible with schema. Do not delete records to undo a failed deploy. Validate auth/org boundaries, inventory allocation, queued side effects and Woo order linkage. Production deployment, actual merchant tests and external notifications have not been executed or authorized here.
+
+User workstation policy: one sequential test runner at low priority, hidden/headless Chrome with separate temporary profile and one worker, no visible browser focus or system-service changes. Large peak-load and 100-process stress gates require a separate approved environment; deferred tests remain deferred in evidence.

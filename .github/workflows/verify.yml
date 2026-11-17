@@ -1,0 +1,40 @@
+name: Verify Atlas source and local integration
+on:
+  workflow_dispatch:
+  push:
+    paths: ['wp-content/**', 'tests/**', 'deploy/**', 'package*.json', '.github/workflows/**']
+  pull_request:
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install isolated runtime prerequisites
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq mariadb-server php-cli php-mysql php-xml php-mbstring php-curl php-zip
+          curl -fsSLo /tmp/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+          chmod +x /tmp/wp
+          sudo mv /tmp/wp /usr/local/bin/wp
+      - run: npm ci --ignore-scripts
+      - run: python3 deploy/local.py setup --activate-atlas
+      - run: WP_CLI_CACHE_DIR="$PWD/.runtime/cache" wp --path="$PWD/.runtime/wordpress" eval-file deploy/seed.php
+      - run: python3 tests/static.py
+      - run: python3 tests/run-integration.py
+      - name: Build installable artifacts
+        run: python3 deploy/package.py
+      - name: Stop isolated runtime
+        if: always()
+        run: python3 deploy/local.py stop
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: atlas-test-and-package-evidence
+          path: |
+            implementation/evidence/*results.json
+            dist/

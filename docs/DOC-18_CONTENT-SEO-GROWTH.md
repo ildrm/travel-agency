@@ -1,0 +1,31 @@
+# DOC-18 — Content, SEO and growth
+
+**Status:** DRAFT specification; review pending. **Purpose:** define factual editorial governance, multilingual discovery and privacy-aware measurement. **Prepared from perspectives:** content strategy, SEO, localization, product, privacy and operations. **Accountable reviewer:** content lead. **Dependencies:** [IA](DOC-10_INFORMATION-ARCHITECTURE.md), [localization](DOC-17_I18N-EN-FA-RTL.md), [analytics](DOC-42_ANALYTICS-OBSERVABILITY-KPIS.md). **Approval gate:** content and product owners approve editorial policy; legal and privacy reviewers approve terms, claims and measurement.
+
+## 1. Editorial model and lifecycle
+
+Each public content record has stable ID, type, language, translated relationship, title, short summary, factual body, author/owner, source and verification date, accessibility text, publication/review status, last updated and canonical URL. Travel offers additionally have destination, itinerary/venue, exclusions, price unit, terms, eligibility and availability source/status. Supplier draft and agency-approved published version are distinct; confidential supplier costs and staff notes never enter public content or metadata.
+
+State: draft → editorial review → fact/legal review where needed → approved → published → scheduled review → revised/withdrawn. Material edits to booked offerings trigger operations impact review and customer communication before publication as appropriate. Agency controls publication and assigns responsible owners for supplier translations. An unavailable or outdated translation is flagged and follows an approved fallback; avoid machine-translated legal terms without qualified review. Preserve revisions and reason; retention is governed separately.
+
+## 2. Discoverability and URL rules
+
+Use descriptive stable, language-specific slugs under an approved route model; preserve stable IDs across language and slug changes. On a genuine move, redirect old public URLs to their equivalent canonical replacement, testing chains and loops. A removed offer with no suitable replacement gets a truthful unavailable page or appropriate HTTP status per editorial policy; never redirect indiscriminately to an unrelated home page. Public indexation only after approval; account, cart, checkout, payment return and partner/agency routes must be protected by authorization, not robots rules alone. Control search and filter URL indexation to avoid low-value duplicates.
+
+Each indexable page has one title/H1 and a unique, accurate search description; use canonical URLs and reciprocal hreflang only for genuine corresponding published translations. Avoid invented ratings, offers, prices, certifications or freshness. Apply structured data only to eligible factual content after confirming current official requirements and manual tests; do not assert rich-result eligibility. Sitemaps contain canonical public pages and are checked after language and publishing changes. Proper headings, accessible link labels, internal destination/offer links and performance support discovery and human use alike.
+
+## 3. Campaigns, consent and measurement
+
+Campaign landing pages identify offer, verified availability, price currency, conditions, expiry and contact; claims must link to an owned source and be rechecked by an accountable editor. Use a review date and removal trigger for expired promotions. Distinguish local destination guidance from bookable service availability. Recommended funnel events are anonymous/pseudonymous where possible: catalog filter applied, offer viewed, registration attempt, hold result, checkout started, payment verification outcome and support request; record stable event ID, locale, aggregate outcome and timestamp, not names, passport data, free text, precise payment secrets or medical details. Consent requirements and retention must be approved for applicable jurisdictions before deployment. No experiment or uplift is claimed.
+
+Proposed content metrics: published-translation completeness, stale-content count, search-to-detail rate, registration completion and support contacts per booking. Establish baselines and definitions only after instrumentation and consent review; segment carefully to avoid exposing individuals. If used, experiments must avoid misleading prices, consent dark patterns or unsafe service claims, and require a stopping and rollback plan.
+
+## 4. Sample editorial artifact
+
+**Fictional occurrence:** title “Mountain Day Walk”; English and Persian descriptions explain date/time and named zone, route length, confirmed inclusions and exclusions, age/fitness criteria, price in labeled IRR/toman, registration opening and closing, cancellation terms, contact and accessibility information. A card in search states “Registration opens [date]”, not “Seats available now” before the window. Agency editor attaches a verified route/venue source and review date before publication. If the route or timetable changes after booking, operator reviews affected travelers and sends approved notices; history remains available internally.
+
+## 5. Quality and release gates
+
+Content owner checks factual sources and rights, tests dates/units and all links, reviews EN/FA correspondence and reads critical copy with accessibility tooling. SEO reviewer checks noindex/private access, canonical/alternate relationships, redirects and sitemap on staging. Privacy reviewer verifies event fields and consent; provider or legal review determines whether required claims can be published. Actual market, brand, permitted marketing channels, content inventory, search evidence and supplier publishing agreements remain OPEN DECISIONS.
+
+**Self-assessment (0–5):** completeness 4 (editorial/discovery/analytics); specificity 4 (fields and workflow); consistency 4 (independent availability states); user value 4 (truthful content); WP feasibility 4 (CPT/editorial integration optional); security/privacy 4 (private fields and events); compliance 2 (rights, consent and legal review pending, blocker); accessibility/localization 4 (translation and headings); testability 4 (staging checks); traceability 4 (FR-CMS-001/FR-CAT-001). No ranking, audit or research outcome is claimed.

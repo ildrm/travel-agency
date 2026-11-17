@@ -1,0 +1,3 @@
+/* Keep editable post content readable with the same fallback system typography. */
+.editor-styles-wrapper { color: #132638; font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; }
+.editor-styles-wrapper a { color: #005f73; }

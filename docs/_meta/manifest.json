@@ -1,0 +1,652 @@
+{
+  "package": "Atlas Leisure Ecosystem",
+  "baseline_date": "2026-11-17",
+  "source": "_sources/ORIGINAL-PROMPT.md",
+  "state": "draft_specification_review_pending",
+  "document_count": 49,
+  "word_count": 56506,
+  "implementation_test_status": "not_implemented_not_executed",
+  "documents": [
+    {
+      "id": "DOC-00",
+      "filename": "DOC-00_MASTER-INDEX.md",
+      "status": "draft_written_review_pending",
+      "word_count": 994,
+      "references": [
+        "DOC-01_VISION-BUSINESS-MODEL.md",
+        "DOC-02_RESEARCH-BENCHMARKS.md",
+        "DOC-03_PERSONAS-JTBD-JOURNEYS.md",
+        "DOC-04_STAKEHOLDERS-TEAM-RACI.md",
+        "DOC-05_SCOPE-MVP-ROADMAP.md",
+        "DOC-06_TERMINOLOGY-RULES-DECISIONS.md",
+        "DOC-07_BRD-SRS.md",
+        "DOC-08_USER-STORIES-ACCEPTANCE.md",
+        "DOC-09_USE-CASES-SERVICE-BLUEPRINTS.md",
+        "DOC-10_INFORMATION-ARCHITECTURE.md",
+        "DOC-11_UX-FLOWS-WIREFRAMES.md",
+        "DOC-12_DESIGN-SYSTEM-UI-KIT.md",
+        "DOC-13_MOTION-MICROINTERACTIONS.md",
+        "DOC-14_2D-ILLUSTRATION-ART-DIRECTION.md",
+        "DOC-15_3D-FANTASY-CHARACTERS.md",
+        "DOC-16_ACCESSIBILITY-INCLUSIVE-DESIGN.md",
+        "DOC-17_I18N-EN-FA-RTL.md",
+        "DOC-18_CONTENT-SEO-GROWTH.md",
+        "DOC-19_SYSTEM-ARCHITECTURE-ADRS.md",
+        "DOC-20_WORDPRESS-THEME-SPEC.md",
+        "DOC-21_CUSTOM-PLUGIN-ARCHITECTURE.md",
+        "DOC-22_DATA-MODEL-ERD-DICTIONARY.md",
+        "DOC-23_IDENTITY-RBAC-TENANCY.md",
+        "DOC-24_BOOKING-INVENTORY-REGISTRATION.md",
+        "DOC-25_WOOCOMMERCE-COMMERCE-ENGINE.md",
+        "DOC-26_APIS-INTEGRATION-CONTRACTS.md",
+        "DOC-27_SECURITY-PRIVACY-THREAT-MODEL.md",
+        "DOC-28_INFRA-DEVOPS-RELIABILITY.md",
+        "DOC-29_TOUR-LEADER-ITINERARIES.md",
+        "DOC-30_EVENTS-MANAGEMENT.md",
+        "DOC-31_ACADEMY-COURSES-COHORTS.md",
+        "DOC-32_ACCOMMODATION-PORTAL.md",
+        "DOC-33_FLIGHTS-RAIL-BUS-TICKETING.md",
+        "DOC-34_TRANSFERS-AND-RENTALS.md",
+        "DOC-35_SOUVENIRS-MANUFACTURING.md",
+        "DOC-36_PARTNER-PORTALS-CONTRACTS.md",
+        "DOC-37_PAYMENTS-DOMESTIC-GATEWAYS.md",
+        "DOC-38_CRYPTO-PAYMENT-COMPLIANCE.md",
+        "DOC-39_FINANCE-PRICING-SETTLEMENTS.md",
+        "DOC-40_SUPPORT-NOTIFICATIONS-CRM.md",
+        "DOC-41_QA-TEST-STRATEGY.md",
+        "DOC-42_ANALYTICS-OBSERVABILITY-KPIS.md",
+        "DOC-43_LEGAL-REGULATORY-REVIEW.md",
+        "DOC-44_IMPLEMENTATION-BACKLOG-ESTIMATES.md",
+        "DOC-45_RISKS-DECISIONS-CONTROLS.md",
+        "DOC-46_TRACEABILITY-MATRIX.md",
+        "DOC-47_OPERATIONS-RUNBOOKS.md",
+        "DOC-48_LAUNCH-UAT-HANDOVER.md"
+      ]
+    },
+    {
+      "id": "DOC-01",
+      "filename": "DOC-01_VISION-BUSINESS-MODEL.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1046,
+      "references": [
+        "DOC-06_TERMINOLOGY-RULES-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "DOC-02",
+      "filename": "DOC-02_RESEARCH-BENCHMARKS.md",
+      "status": "draft_written_review_pending",
+      "word_count": 903,
+      "references": []
+    },
+    {
+      "id": "DOC-03",
+      "filename": "DOC-03_PERSONAS-JTBD-JOURNEYS.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1140,
+      "references": [
+        "DOC-01_VISION-BUSINESS-MODEL.md",
+        "DOC-02_RESEARCH-BENCHMARKS.md",
+        "DOC-46_TRACEABILITY-MATRIX.md"
+      ]
+    },
+    {
+      "id": "DOC-04",
+      "filename": "DOC-04_STAKEHOLDERS-TEAM-RACI.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1281,
+      "references": [
+        "DOC-01_VISION-BUSINESS-MODEL.md"
+      ]
+    },
+    {
+      "id": "DOC-05",
+      "filename": "DOC-05_SCOPE-MVP-ROADMAP.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1115,
+      "references": [
+        "DOC-01_VISION-BUSINESS-MODEL.md",
+        "DOC-02_RESEARCH-BENCHMARKS.md",
+        "DOC-06_TERMINOLOGY-RULES-DECISIONS.md",
+        "DOC-41_QA-TEST-STRATEGY.md",
+        "DOC-48_LAUNCH-UAT-HANDOVER.md"
+      ]
+    },
+    {
+      "id": "DOC-06",
+      "filename": "DOC-06_TERMINOLOGY-RULES-DECISIONS.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1806,
+      "references": [
+        "DOC-02_RESEARCH-BENCHMARKS.md",
+        "DOC-07_BRD-SRS.md",
+        "DOC-22_DATA-MODEL-ERD-DICTIONARY.md",
+        "DOC-26_APIS-INTEGRATION-CONTRACTS.md"
+      ]
+    },
+    {
+      "id": "DOC-07",
+      "filename": "DOC-07_BRD-SRS.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1837,
+      "references": [
+        "DOC-05_SCOPE-MVP-ROADMAP.md",
+        "DOC-06_TERMINOLOGY-RULES-DECISIONS.md",
+        "DOC-41_QA-TEST-STRATEGY.md",
+        "DOC-46_TRACEABILITY-MATRIX.md",
+        "DOC-24_BOOKING-INVENTORY-REGISTRATION.md",
+        "DOC-23_IDENTITY-RBAC-TENANCY.md",
+        "DOC-10_INFORMATION-ARCHITECTURE.md",
+        "DOC-29_TOUR-LEADER-ITINERARIES.md",
+        "DOC-30_EVENTS-MANAGEMENT.md",
+        "DOC-31_ACADEMY-COURSES-COHORTS.md",
+        "DOC-32_ACCOMMODATION-PORTAL.md",
+        "DOC-33_FLIGHTS-RAIL-BUS-TICKETING.md",
+        "DOC-34_TRANSFERS-AND-RENTALS.md",
+        "DOC-35_SOUVENIRS-MANUFACTURING.md",
+        "DOC-36_PARTNER-PORTALS-CONTRACTS.md",
+        "DOC-25_WOOCOMMERCE-COMMERCE-ENGINE.md",
+        "DOC-37_PAYMENTS-DOMESTIC-GATEWAYS.md",
+        "DOC-39_FINANCE-PRICING-SETTLEMENTS.md",
+        "DOC-40_SUPPORT-NOTIFICATIONS-CRM.md",
+        "DOC-18_CONTENT-SEO-GROWTH.md",
+        "DOC-17_I18N-EN-FA-RTL.md",
+        "DOC-20_WORDPRESS-THEME-SPEC.md",
+        "DOC-14_2D-ILLUSTRATION-ART-DIRECTION.md",
+        "DOC-38_CRYPTO-PAYMENT-COMPLIANCE.md",
+        "DOC-22_DATA-MODEL-ERD-DICTIONARY.md",
+        "DOC-27_SECURITY-PRIVACY-THREAT-MODEL.md",
+        "DOC-16_ACCESSIBILITY-INCLUSIVE-DESIGN.md",
+        "DOC-28_INFRA-DEVOPS-RELIABILITY.md"
+      ]
+    },
+    {
+      "id": "DOC-08",
+      "filename": "DOC-08_USER-STORIES-ACCEPTANCE.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1076,
+      "references": [
+        "DOC-07_BRD-SRS.md",
+        "DOC-24_BOOKING-INVENTORY-REGISTRATION.md"
+      ]
+    },
+    {
+      "id": "DOC-09",
+      "filename": "DOC-09_USE-CASES-SERVICE-BLUEPRINTS.md",
+      "status": "draft_written_review_pending",
+      "word_count": 934,
+      "references": [
+        "DOC-07_BRD-SRS.md",
+        "DOC-24_BOOKING-INVENTORY-REGISTRATION.md",
+        "DOC-40_SUPPORT-NOTIFICATIONS-CRM.md"
+      ]
+    },
+    {
+      "id": "DOC-10",
+      "filename": "DOC-10_INFORMATION-ARCHITECTURE.md",
+      "status": "draft_written_review_pending",
+      "word_count": 768,
+      "references": [
+        "DOC-05_SCOPE-MVP-ROADMAP.md",
+        "DOC-07_BRD-SRS.md",
+        "DOC-17_I18N-EN-FA-RTL.md",
+        "DOC-18_CONTENT-SEO-GROWTH.md"
+      ]
+    },
+    {
+      "id": "DOC-11",
+      "filename": "DOC-11_UX-FLOWS-WIREFRAMES.md",
+      "status": "draft_written_review_pending",
+      "word_count": 2868,
+      "references": [
+        "DOC-10_INFORMATION-ARCHITECTURE.md",
+        "DOC-12_DESIGN-SYSTEM-UI-KIT.md",
+        "DOC-24_BOOKING-INVENTORY-REGISTRATION.md",
+        "DOC-42_ANALYTICS-OBSERVABILITY-KPIS.md"
+      ]
+    },
+    {
+      "id": "DOC-12",
+      "filename": "DOC-12_DESIGN-SYSTEM-UI-KIT.md",
+      "status": "draft_written_review_pending",
+      "word_count": 872,
+      "references": [
+        "DOC-20_WORDPRESS-THEME-SPEC.md",
+        "DOC-16_ACCESSIBILITY-INCLUSIVE-DESIGN.md",
+        "DOC-17_I18N-EN-FA-RTL.md"
+      ]
+    },
+    {
+      "id": "DOC-13",
+      "filename": "DOC-13_MOTION-MICROINTERACTIONS.md",
+      "status": "draft_written_review_pending",
+      "word_count": 701,
+      "references": [
+        "DOC-12_DESIGN-SYSTEM-UI-KIT.md",
+        "DOC-16_ACCESSIBILITY-INCLUSIVE-DESIGN.md"
+      ]
+    },
+    {
+      "id": "DOC-14",
+      "filename": "DOC-14_2D-ILLUSTRATION-ART-DIRECTION.md",
+      "status": "draft_written_review_pending",
+      "word_count": 720,
+      "references": [
+        "DOC-06_TERMINOLOGY-RULES-DECISIONS.md",
+        "DOC-12_DESIGN-SYSTEM-UI-KIT.md",
+        "DOC-15_3D-FANTASY-CHARACTERS.md"
+      ]
+    },
+    {
+      "id": "DOC-15",
+      "filename": "DOC-15_3D-FANTASY-CHARACTERS.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1313,
+      "references": [
+        "DOC-14_2D-ILLUSTRATION-ART-DIRECTION.md",
+        "DOC-13_MOTION-MICROINTERACTIONS.md",
+        "DOC-28_INFRA-DEVOPS-RELIABILITY.md"
+      ]
+    },
+    {
+      "id": "DOC-16",
+      "filename": "DOC-16_ACCESSIBILITY-INCLUSIVE-DESIGN.md",
+      "status": "draft_written_review_pending",
+      "word_count": 847,
+      "references": [
+        "DOC-11_UX-FLOWS-WIREFRAMES.md",
+        "DOC-12_DESIGN-SYSTEM-UI-KIT.md",
+        "DOC-17_I18N-EN-FA-RTL.md"
+      ]
+    },
+    {
+      "id": "DOC-17",
+      "filename": "DOC-17_I18N-EN-FA-RTL.md",
+      "status": "draft_written_review_pending",
+      "word_count": 986,
+      "references": [
+        "DOC-10_INFORMATION-ARCHITECTURE.md",
+        "DOC-12_DESIGN-SYSTEM-UI-KIT.md",
+        "DOC-24_BOOKING-INVENTORY-REGISTRATION.md"
+      ]
+    },
+    {
+      "id": "DOC-18",
+      "filename": "DOC-18_CONTENT-SEO-GROWTH.md",
+      "status": "draft_written_review_pending",
+      "word_count": 775,
+      "references": [
+        "DOC-10_INFORMATION-ARCHITECTURE.md",
+        "DOC-17_I18N-EN-FA-RTL.md",
+        "DOC-42_ANALYTICS-OBSERVABILITY-KPIS.md"
+      ]
+    },
+    {
+      "id": "DOC-19",
+      "filename": "DOC-19_SYSTEM-ARCHITECTURE-ADRS.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1086,
+      "references": [
+        "DOC-05_SCOPE-MVP-ROADMAP.md",
+        "DOC-06_TERMINOLOGY-RULES-DECISIONS.md",
+        "DOC-22_DATA-MODEL-ERD-DICTIONARY.md",
+        "DOC-26_APIS-INTEGRATION-CONTRACTS.md",
+        "DOC-24_BOOKING-INVENTORY-REGISTRATION.md",
+        "DOC-45_RISKS-DECISIONS-CONTROLS.md"
+      ]
+    },
+    {
+      "id": "DOC-20",
+      "filename": "DOC-20_WORDPRESS-THEME-SPEC.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1129,
+      "references": [
+        "DOC-19_SYSTEM-ARCHITECTURE-ADRS.md",
+        "DOC-12_DESIGN-SYSTEM-UI-KIT.md",
+        "DOC-17_I18N-EN-FA-RTL.md",
+        "DOC-45_RISKS-DECISIONS-CONTROLS.md"
+      ]
+    },
+    {
+      "id": "DOC-21",
+      "filename": "DOC-21_CUSTOM-PLUGIN-ARCHITECTURE.md",
+      "status": "draft_written_review_pending",
+      "word_count": 981,
+      "references": [
+        "DOC-19_SYSTEM-ARCHITECTURE-ADRS.md",
+        "DOC-22_DATA-MODEL-ERD-DICTIONARY.md",
+        "DOC-26_APIS-INTEGRATION-CONTRACTS.md",
+        "DOC-45_RISKS-DECISIONS-CONTROLS.md"
+      ]
+    },
+    {
+      "id": "DOC-22",
+      "filename": "DOC-22_DATA-MODEL-ERD-DICTIONARY.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1507,
+      "references": [
+        "DOC-19_SYSTEM-ARCHITECTURE-ADRS.md",
+        "DOC-24_BOOKING-INVENTORY-REGISTRATION.md",
+        "DOC-23_IDENTITY-RBAC-TENANCY.md",
+        "DOC-45_RISKS-DECISIONS-CONTROLS.md"
+      ]
+    },
+    {
+      "id": "DOC-23",
+      "filename": "DOC-23_IDENTITY-RBAC-TENANCY.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1077,
+      "references": [
+        "DOC-22_DATA-MODEL-ERD-DICTIONARY.md",
+        "DOC-27_SECURITY-PRIVACY-THREAT-MODEL.md",
+        "DOC-36_PARTNER-PORTALS-CONTRACTS.md",
+        "DOC-45_RISKS-DECISIONS-CONTROLS.md"
+      ]
+    },
+    {
+      "id": "DOC-24",
+      "filename": "DOC-24_BOOKING-INVENTORY-REGISTRATION.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1378,
+      "references": [
+        "DOC-22_DATA-MODEL-ERD-DICTIONARY.md",
+        "DOC-25_WOOCOMMERCE-COMMERCE-ENGINE.md",
+        "DOC-26_APIS-INTEGRATION-CONTRACTS.md",
+        "DOC-45_RISKS-DECISIONS-CONTROLS.md"
+      ]
+    },
+    {
+      "id": "DOC-25",
+      "filename": "DOC-25_WOOCOMMERCE-COMMERCE-ENGINE.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1076,
+      "references": [
+        "DOC-24_BOOKING-INVENTORY-REGISTRATION.md",
+        "DOC-37_PAYMENTS-DOMESTIC-GATEWAYS.md",
+        "DOC-39_FINANCE-PRICING-SETTLEMENTS.md",
+        "DOC-45_RISKS-DECISIONS-CONTROLS.md"
+      ]
+    },
+    {
+      "id": "DOC-26",
+      "filename": "DOC-26_APIS-INTEGRATION-CONTRACTS.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1407,
+      "references": [
+        "DOC-23_IDENTITY-RBAC-TENANCY.md",
+        "DOC-22_DATA-MODEL-ERD-DICTIONARY.md",
+        "DOC-24_BOOKING-INVENTORY-REGISTRATION.md",
+        "DOC-45_RISKS-DECISIONS-CONTROLS.md"
+      ]
+    },
+    {
+      "id": "DOC-27",
+      "filename": "DOC-27_SECURITY-PRIVACY-THREAT-MODEL.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1031,
+      "references": [
+        "DOC-23_IDENTITY-RBAC-TENANCY.md",
+        "DOC-26_APIS-INTEGRATION-CONTRACTS.md",
+        "DOC-43_LEGAL-REGULATORY-REVIEW.md",
+        "DOC-47_OPERATIONS-RUNBOOKS.md",
+        "DOC-45_RISKS-DECISIONS-CONTROLS.md"
+      ]
+    },
+    {
+      "id": "DOC-28",
+      "filename": "DOC-28_INFRA-DEVOPS-RELIABILITY.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1106,
+      "references": [
+        "DOC-19_SYSTEM-ARCHITECTURE-ADRS.md",
+        "DOC-21_CUSTOM-PLUGIN-ARCHITECTURE.md",
+        "DOC-47_OPERATIONS-RUNBOOKS.md",
+        "DOC-45_RISKS-DECISIONS-CONTROLS.md"
+      ]
+    },
+    {
+      "id": "DOC-29",
+      "filename": "DOC-29_TOUR-LEADER-ITINERARIES.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1129,
+      "references": [
+        "DOC-22_DATA-MODEL-ERD-DICTIONARY.md",
+        "DOC-24_BOOKING-INVENTORY-REGISTRATION.md",
+        "DOC-36_PARTNER-PORTALS-CONTRACTS.md",
+        "DOC-06_TERMINOLOGY-RULES-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "DOC-30",
+      "filename": "DOC-30_EVENTS-MANAGEMENT.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1209,
+      "references": [
+        "DOC-24_BOOKING-INVENTORY-REGISTRATION.md",
+        "DOC-37_PAYMENTS-DOMESTIC-GATEWAYS.md",
+        "DOC-06_TERMINOLOGY-RULES-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "DOC-31",
+      "filename": "DOC-31_ACADEMY-COURSES-COHORTS.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1130,
+      "references": [
+        "DOC-24_BOOKING-INVENTORY-REGISTRATION.md",
+        "DOC-30_EVENTS-MANAGEMENT.md",
+        "DOC-27_SECURITY-PRIVACY-THREAT-MODEL.md",
+        "DOC-06_TERMINOLOGY-RULES-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "DOC-32",
+      "filename": "DOC-32_ACCOMMODATION-PORTAL.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1044,
+      "references": [
+        "DOC-24_BOOKING-INVENTORY-REGISTRATION.md",
+        "DOC-36_PARTNER-PORTALS-CONTRACTS.md",
+        "DOC-39_FINANCE-PRICING-SETTLEMENTS.md",
+        "DOC-06_TERMINOLOGY-RULES-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "DOC-33",
+      "filename": "DOC-33_FLIGHTS-RAIL-BUS-TICKETING.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1052,
+      "references": [
+        "DOC-24_BOOKING-INVENTORY-REGISTRATION.md",
+        "DOC-26_APIS-INTEGRATION-CONTRACTS.md",
+        "DOC-37_PAYMENTS-DOMESTIC-GATEWAYS.md",
+        "DOC-06_TERMINOLOGY-RULES-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "DOC-34",
+      "filename": "DOC-34_TRANSFERS-AND-RENTALS.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1201,
+      "references": [
+        "DOC-24_BOOKING-INVENTORY-REGISTRATION.md",
+        "DOC-36_PARTNER-PORTALS-CONTRACTS.md",
+        "DOC-39_FINANCE-PRICING-SETTLEMENTS.md",
+        "DOC-06_TERMINOLOGY-RULES-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "DOC-35",
+      "filename": "DOC-35_SOUVENIRS-MANUFACTURING.md",
+      "status": "draft_written_review_pending",
+      "word_count": 990,
+      "references": [
+        "DOC-25_WOOCOMMERCE-COMMERCE-ENGINE.md",
+        "DOC-36_PARTNER-PORTALS-CONTRACTS.md",
+        "DOC-39_FINANCE-PRICING-SETTLEMENTS.md",
+        "DOC-06_TERMINOLOGY-RULES-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "DOC-36",
+      "filename": "DOC-36_PARTNER-PORTALS-CONTRACTS.md",
+      "status": "draft_written_review_pending",
+      "word_count": 997,
+      "references": [
+        "DOC-23_IDENTITY-RBAC-TENANCY.md",
+        "DOC-27_SECURITY-PRIVACY-THREAT-MODEL.md",
+        "DOC-39_FINANCE-PRICING-SETTLEMENTS.md",
+        "DOC-06_TERMINOLOGY-RULES-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "DOC-37",
+      "filename": "DOC-37_PAYMENTS-DOMESTIC-GATEWAYS.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1077,
+      "references": [
+        "DOC-24_BOOKING-INVENTORY-REGISTRATION.md",
+        "DOC-25_WOOCOMMERCE-COMMERCE-ENGINE.md",
+        "DOC-39_FINANCE-PRICING-SETTLEMENTS.md",
+        "DOC-38_CRYPTO-PAYMENT-COMPLIANCE.md",
+        "DOC-06_TERMINOLOGY-RULES-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "DOC-38",
+      "filename": "DOC-38_CRYPTO-PAYMENT-COMPLIANCE.md",
+      "status": "draft_written_review_pending",
+      "word_count": 872,
+      "references": [
+        "DOC-37_PAYMENTS-DOMESTIC-GATEWAYS.md",
+        "DOC-39_FINANCE-PRICING-SETTLEMENTS.md",
+        "DOC-43_LEGAL-REGULATORY-REVIEW.md",
+        "DOC-06_TERMINOLOGY-RULES-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "DOC-39",
+      "filename": "DOC-39_FINANCE-PRICING-SETTLEMENTS.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1057,
+      "references": [
+        "DOC-25_WOOCOMMERCE-COMMERCE-ENGINE.md",
+        "DOC-37_PAYMENTS-DOMESTIC-GATEWAYS.md",
+        "DOC-36_PARTNER-PORTALS-CONTRACTS.md",
+        "DOC-06_TERMINOLOGY-RULES-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "DOC-40",
+      "filename": "DOC-40_SUPPORT-NOTIFICATIONS-CRM.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1037,
+      "references": [
+        "DOC-27_SECURITY-PRIVACY-THREAT-MODEL.md",
+        "DOC-28_INFRA-DEVOPS-RELIABILITY.md",
+        "DOC-39_FINANCE-PRICING-SETTLEMENTS.md",
+        "DOC-06_TERMINOLOGY-RULES-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "DOC-41",
+      "filename": "DOC-41_QA-TEST-STRATEGY.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1375,
+      "references": [
+        "DOC-07_BRD-SRS.md",
+        "DOC-24_BOOKING-INVENTORY-REGISTRATION.md",
+        "DOC-25_WOOCOMMERCE-COMMERCE-ENGINE.md",
+        "DOC-48_LAUNCH-UAT-HANDOVER.md",
+        "DOC-45_RISKS-DECISIONS-CONTROLS.md"
+      ]
+    },
+    {
+      "id": "DOC-42",
+      "filename": "DOC-42_ANALYTICS-OBSERVABILITY-KPIS.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1287,
+      "references": [
+        "DOC-25_WOOCOMMERCE-COMMERCE-ENGINE.md",
+        "DOC-26_APIS-INTEGRATION-CONTRACTS.md",
+        "DOC-28_INFRA-DEVOPS-RELIABILITY.md",
+        "DOC-43_LEGAL-REGULATORY-REVIEW.md",
+        "DOC-45_RISKS-DECISIONS-CONTROLS.md"
+      ]
+    },
+    {
+      "id": "DOC-43",
+      "filename": "DOC-43_LEGAL-REGULATORY-REVIEW.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1214,
+      "references": [
+        "DOC-05_SCOPE-MVP-ROADMAP.md",
+        "DOC-37_PAYMENTS-DOMESTIC-GATEWAYS.md",
+        "DOC-38_CRYPTO-PAYMENT-COMPLIANCE.md",
+        "DOC-27_SECURITY-PRIVACY-THREAT-MODEL.md",
+        "DOC-45_RISKS-DECISIONS-CONTROLS.md"
+      ]
+    },
+    {
+      "id": "DOC-44",
+      "filename": "DOC-44_IMPLEMENTATION-BACKLOG-ESTIMATES.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1265,
+      "references": [
+        "DOC-05_SCOPE-MVP-ROADMAP.md",
+        "DOC-19_SYSTEM-ARCHITECTURE-ADRS.md",
+        "DOC-41_QA-TEST-STRATEGY.md",
+        "DOC-45_RISKS-DECISIONS-CONTROLS.md"
+      ]
+    },
+    {
+      "id": "DOC-45",
+      "filename": "DOC-45_RISKS-DECISIONS-CONTROLS.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1136,
+      "references": [
+        "DOC-06_TERMINOLOGY-RULES-DECISIONS.md",
+        "DOC-19_SYSTEM-ARCHITECTURE-ADRS.md",
+        "DOC-43_LEGAL-REGULATORY-REVIEW.md"
+      ]
+    },
+    {
+      "id": "DOC-46",
+      "filename": "DOC-46_TRACEABILITY-MATRIX.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1220,
+      "references": [
+        "DOC-07_BRD-SRS.md",
+        "DOC-11_UX-FLOWS-WIREFRAMES.md",
+        "DOC-22_DATA-MODEL-ERD-DICTIONARY.md",
+        "DOC-26_APIS-INTEGRATION-CONTRACTS.md",
+        "DOC-41_QA-TEST-STRATEGY.md"
+      ]
+    },
+    {
+      "id": "DOC-47",
+      "filename": "DOC-47_OPERATIONS-RUNBOOKS.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1235,
+      "references": [
+        "DOC-28_INFRA-DEVOPS-RELIABILITY.md",
+        "DOC-37_PAYMENTS-DOMESTIC-GATEWAYS.md",
+        "DOC-39_FINANCE-PRICING-SETTLEMENTS.md",
+        "DOC-40_SUPPORT-NOTIFICATIONS-CRM.md"
+      ]
+    },
+    {
+      "id": "DOC-48",
+      "filename": "DOC-48_LAUNCH-UAT-HANDOVER.md",
+      "status": "draft_written_review_pending",
+      "word_count": 1219,
+      "references": [
+        "DOC-41_QA-TEST-STRATEGY.md",
+        "DOC-43_LEGAL-REGULATORY-REVIEW.md",
+        "DOC-44_IMPLEMENTATION-BACKLOG-ESTIMATES.md",
+        "DOC-45_RISKS-DECISIONS-CONTROLS.md",
+        "DOC-47_OPERATIONS-RUNBOOKS.md"
+      ]
+    }
+  ]
+}

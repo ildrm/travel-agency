@@ -1,0 +1,48 @@
+# DOC-15 — Optional 3D and fantasy characters
+
+**Status:** DRAFT specification; review pending. **Purpose:** provide original, optional character and production briefs, not a commitment to create 3D assets. **Prepared from perspectives:** creative direction, character design, technical art, cultural review and accessibility. **Accountable reviewer:** creative director. **Dependencies:** [2D direction](DOC-14_2D-ILLUSTRATION-ART-DIRECTION.md), [motion](DOC-13_MOTION-MICROINTERACTIONS.md), [performance](DOC-28_INFRA-DEVOPS-RELIABILITY.md). **Approval gate:** brand, cultural, rights, accessibility and performance reviewers; characters are future/investigation under ADR-017.
+
+## 1. Creative direction and choices
+
+Use an original family of abstract creatures formed from mapmaking and travel tools, rather than representing any national group as a fantasy species. These are conceptual proposals, not cleared names, trademarks, commissioned art or claims about real places. Their function is optional education and wayfinding, never a fabricated customer-service agent or substitute for price, safety and accessibility details. Direction A “Atlas paper” is recommended from DOC-14; starlit expedition and local field notes remain alternatives requiring research.
+
+| Character / role | Shape, colors and personality | Use and restraint |
+|---|---|---|
+| **Nava**, pathfinder | rounded folded-paper bird, teal/cream, patient and curious | explains itinerary navigation; never gives safety guarantees |
+| **Rumiq**, organizer | small abstract satchel with soft square silhouette, clay/ink, thoughtful | checklist prompts; no copyrighted literary association implied |
+| **Piko**, learner | pebble-like creature with leaf-shaped ears, moss/cream, inquisitive | optional Academy editorial illustrations; not an instructor |
+| **Luma**, event host | softly luminous oval with ribbon arms, amber/ink, welcoming | event calendar introductory spot; no flashing or autoplay sound |
+| **Daro**, maker | geometric shell with paper-fold hands, blue/clay, attentive | explains souvenir production milestones, never invents a product claim |
+
+Names are provisional and need linguistic, cultural, trademark and similarity checks; replace any that fail. Every character needs front, 3/4, side and rear views, neutral/excited/concerned expressions, pointing/holding/idle gestures and silhouette tests at small sizes. Give readable, respectful shapes, non-gendered defaults and culturally reviewed costumes without stereotypical dress. Decorative images use empty alt; when a character demonstrates an action, provide text conveying that action rather than a personality description. Avoid expressions or metaphors that obscure warning severity.
+
+## 2. Rig, animation and formats
+
+A future artist may create a simple skeleton with controlled root, torso, head and appendages; define neutral bind pose, joints, naming and clean deformations. Suggested clips: idle, greeting and gesture, each optional and independently stoppable; no required audio. Provide a static poster for every motion and text equivalent for instructional material. For 2D, provide original layered vectors and approved sprite/Lottie exports only after assessing script/content safety and library cost. For 3D, supply source mesh, UVs, materials, texture sources, rig, animation clips and provenance, plus glTF/GLB and poster. Verify accessibility and loading before any WebGL usage; a feature flag defaults off.
+
+## 3. Proposed technical budgets and pipeline
+
+Budgets are targets, not measurements: hero character ≤20k triangles at highest LOD and ≤5k at mobile LOD; ≤2 texture sets at up to 1024×1024 each; one compressed delivery file ideally ≤1 MB, including animation, subject to actual network/CPU tests. Supply LODs, optimized materials, no unnecessary transparency, texture compression compatible with target browsers and fallback poster. Reduce draw calls; no animation on checkout. If budget fails, use static 2D. Respect reduced motion and data preferences, pause offscreen and dispose resources when unmounted. Test real low-end hardware and slow connection; defer or omit models if experience degrades.
+
+## 4. Concept art prompts and governance
+
+**Fictional concept prompt:** “Original folded-paper bird guide with a rounded silhouette and tiny compass-shaped satchel, mineral teal and warm cream, front/three-quarter/side/back on plain background, consistent proportions, neutral and welcoming expressions; no text, logo or resemblance to known characters.” Other characters get separate prompts and visual distinction; final artwork must undergo independent similarity and rights review. Storyboard: a visitor selects an itinerary day, Nava points toward a corresponding factual list; static alternative has the same list and labels. The character never claims a transfer, ticket or venue exists.
+
+Register creator and source, model/asset license terms, usage territories, derivative rights, approvals and version; store original files and exports separately. Approval requires brand owner selection, similarity review, cultural review, accessibility and real performance tests. Exact costs, rights, target devices and implementation library remain OPEN DECISIONS.
+
+**Self-assessment (0–5):** completeness 4 (five concepts and pipeline); specificity 4 (turnarounds and budgets); consistency 4 (future only); user value 4 (decorative and bounded); WP feasibility 4 (static fallback); security/privacy 4 (asset review); compliance 2 (names/rights not cleared, blocker); accessibility/localization 4 (alternatives); testability 4 (real-device gates); traceability 4 (FR-ART-001). No art, rig or trademark clearance is claimed.
+
+
+## 5. Character sheets and production review
+
+The following invented backstories are conceptual, not factual travel advice or approved brand history. Each character is distinguishable in silhouette, restrained in checkout-adjacent content and reviewed by native speakers and cultural consultants before selection. All have a shared folded-paper material system with matte finish, soft ambient shadows and no dependence on detailed textures. Produce neutral, curious, pleased, concerned and attentive facial-expression sheets; produce greeting, pointing, carrying and rest gestures, plus front/three-quarter/side/back orthographic turnarounds with scale markers. All expression and pose variants must remain distinguishable at small sizes and in monochrome.
+
+| Character | Backstory and personality | Proportions, palette, costume and gestures | Customer use and cultural/accessibility review |
+|---|---|---|---|
+| Nava | An imaginary route keeper who collects blank path shapes and helps readers follow a sequence; patient and curious. | Rounded winged silhouette, head roughly half total height, small folded compass pouch; teal `#005F73`, cream `#F4F0E6`, dark ink outlines. Rain cape and plain daypack variants; open-wing pointing, never directional text embedded in art. | Adjacent to a factual itinerary list; alt is empty for decoration or “A bird points to the itinerary” if instructional. Avoid national costume, religious symbols and claims that a route is safe. |
+| Rumiq | A fictional organizer who sorts travel checklists and learns to leave space for the unexpected; methodical and reassuring. | Soft rectangular satchel body, two short articulated handles, generous negative space, clay `#A1400B` and ink `#132638`; scarf and plain label-tag variants, hand-held blank checklist. | Optional checklist illustration, never a substitute for an actual required-document list. Check name pronunciation/meaning and avoid using the pouch as a caricature of any occupation. |
+| Piko | A curious imaginary learner who asks questions and keeps a small notebook; open-minded and quietly persistent. | Smooth pebble body, leaf-shaped ears, wide baseline, moss `#446B4A` and cream; simple book strap or weather vest, question/attentive gestures. | Academy welcome artwork only; do not represent Piko as a qualified teacher or a child completing an adult course. Explain course prerequisites in ordinary text. |
+| Luma | A fictional light marker who helps people find an event gathering point, calm and welcoming. | Tall rounded oval, two broad ribbon-like arms, no rapid glow, amber `#A96000` and ink; fabric band or plain badge variant, gentle wave or pointing gesture. | Event orientation only; the accessible directions remain text. No flashing, safety-beacon implication or reliance on color to indicate location. |
+| Daro | A careful imaginary maker who examines samples and documents each change before sharing it; conscientious and collaborative. | Stacked geometric shell, soft paper-fold hands, stable wide base, deep blue `#254E70` and clay; plain apron or shoulder pouch, holding a blank sample board. | Illustrates a generic proofing step; actual sample and delivery specifications remain factual. Check for cultural associations of tools/clothing; avoid implying a real manufacturer endorsed it. |
+
+For each approved concept, production files must include clean layer names, pivot points, bounds, facial blend-shape or equivalent rig map, texture/material references, animation clip list, turnaround scale and rights record. Export both a static transparent 2D version and accessible surrounding copy before attempting 3D. Test silhouettes against backgrounds, contrast where artwork conveys information, and perspective consistency; no eye contact, forced animation or character click is required. Product and cultural reviewers may reject or revise any name or image independently of the technical pipeline.

@@ -1,0 +1,7 @@
+{
+  "name": "atlas/leisure-platform",
+  "description": "WordPress/WooCommerce theme and modular travel agency companions",
+  "license": "GPL-2.0-only",
+  "require": {"php": ">=8.2"},
+  "scripts": {"test": "python3 tests/run-integration.py"}
+}

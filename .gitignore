@@ -1,0 +1,11 @@
+.runtime/
+node_modules/
+vendor/
+.env
+*.log
+.DS_Store
+test-results/
+playwright-report/
+dist/*.zip
+dist/*.tar.gz
+implementation/evidence/*-private.json

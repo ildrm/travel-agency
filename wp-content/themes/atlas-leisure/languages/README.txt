@@ -1,0 +1,1 @@
+English and Persian interface copy is supplied in the theme presentation helper. WordPress and WooCommerce text domains use installed language packs. Native Persian editorial and legal/financial copy review is still required. Supplier content localization is provided by the companion, not this theme.

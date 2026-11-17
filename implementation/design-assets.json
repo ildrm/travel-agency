@@ -1,0 +1,44 @@
+[
+  {
+    "path": "wp-content/themes/atlas-leisure/assets/svg/character-rumiq-concept.svg",
+    "sha256": "546b86806d3ee9d095a27a74de8d6abf1161165f763cd132c103ae2e5c40f902",
+    "bytes": 1327,
+    "origin": "Original source-controlled SVG development concept; AI-authored in this implementation",
+    "approval": "brand/native/cultural/rights review pending"
+  },
+  {
+    "path": "wp-content/themes/atlas-leisure/assets/svg/character-nava-concept.svg",
+    "sha256": "32a4e5b0fa6141cdc75c50f08ffb4424375ab1e972735598fd4af0f13d42bff0",
+    "bytes": 1296,
+    "origin": "Original source-controlled SVG development concept; AI-authored in this implementation",
+    "approval": "brand/native/cultural/rights review pending"
+  },
+  {
+    "path": "wp-content/themes/atlas-leisure/assets/svg/character-piko-concept.svg",
+    "sha256": "9db30e2034084c7782a36bbdd83fedaee82a20eb74726ed0e7cf29c5f83af7fb",
+    "bytes": 1185,
+    "origin": "Original source-controlled SVG development concept; AI-authored in this implementation",
+    "approval": "brand/native/cultural/rights review pending"
+  },
+  {
+    "path": "wp-content/themes/atlas-leisure/assets/svg/character-daro-concept.svg",
+    "sha256": "ad05e067c33c05803ff044b5b09f8071eae96555d8ac003f0010519a86589715",
+    "bytes": 1206,
+    "origin": "Original source-controlled SVG development concept; AI-authored in this implementation",
+    "approval": "brand/native/cultural/rights review pending"
+  },
+  {
+    "path": "wp-content/themes/atlas-leisure/assets/svg/character-luma-concept.svg",
+    "sha256": "63900d2bf7a1659de179e194f0f7dcbd3d7d03bc746f7fe9dce2011c364ea297",
+    "bytes": 1152,
+    "origin": "Original source-controlled SVG development concept; AI-authored in this implementation",
+    "approval": "brand/native/cultural/rights review pending"
+  },
+  {
+    "path": "wp-content/themes/atlas-leisure/assets/svg/paper-landscape.svg",
+    "sha256": "9a86cab07aebe16c161cfc45ebb5b295c22525ef773aa8eac1b6090d82647c1b",
+    "bytes": 1618,
+    "origin": "Original source-controlled SVG development concept; AI-authored in this implementation",
+    "approval": "brand/native/cultural/rights review pending"
+  }
+]
