@@ -1,10 +1,13 @@
 {
-  "executed_at": "2026-11-17",
+  "executed_at": "2026-11-17T12:58:20.175077+00:00",
+  "source_sha256": "661f53daaacfd85f1928c26235e030904a8e2d0446150f513a514005f09496f6",
+  "database": "atlas_integration",
+  "source_unchanged_during_run": true,
   "results": [
     {
       "suite": "core-integration",
-      "exit_code": 255,
-      "status": "FAILED",
+      "exit_code": 0,
+      "status": "PASSED",
       "command": "nice -n 19 wp --path=/Users/shahinilderemi/Documents/tmp/iranbroker/.runtime/wordpress eval-file /Users/shahinilderemi/Documents/tmp/iranbroker/tests/core-integration.php",
       "log": "implementation/evidence/core-integration.log"
     },
@@ -17,8 +20,8 @@
     },
     {
       "suite": "domain-integration",
-      "exit_code": 255,
-      "status": "FAILED",
+      "exit_code": 0,
+      "status": "PASSED",
       "command": "nice -n 19 wp --path=/Users/shahinilderemi/Documents/tmp/iranbroker/.runtime/wordpress eval-file /Users/shahinilderemi/Documents/tmp/iranbroker/tests/domain-integration.php",
       "log": "implementation/evidence/domain-integration.log"
     },

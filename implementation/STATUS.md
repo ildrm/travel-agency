@@ -1,26 +1,31 @@
 # Implementation status
 
-Baseline: 2026-11-17. Overall **IN_PROGRESS**; full documented framework not complete. No production deployment or external approval.
+Updated 17 November 2026. Overall task status: **IN_PROGRESS**. Release decision: **IMPLEMENTED**, a development checkpoint with scoped local verification. The complete documented framework is not finished or production-approved.
 
-Completed intake: 56 files under docs, 49 primary specifications, zero unreadable. Full-text team intake and 31 baseline FR/NFR mappings, 811 section/ID evidence rows exist. Original documentation preserved.
+Intake: 56 files under `docs`, 49 primary specifications, zero unreadable; 31 baseline FR/NFR mappings and 811 documentation evidence rows. Original specifications remain unchanged. [Inventory](00-docs-inventory.md), [traceability](01-requirements-traceability.csv) and [feature gaps](FEATURE-GAPS.md) preserve the scope.
 
-Local runtime installed from official sources: WordPress 7.1.4, WooCommerce 11.3.0, PHP 8.5.8, MariaDB 13.0.2. Socket-only DB with 32 MB buffer and loopback-only PHP; no system services or visible browser touched. Existing WP-CLI vendor emits PHP 8.5 deprecation warnings, retained in logs.
+## Current tested build
 
-| Area | Status | Current evidence / gap |
-|---|---|---|
-| Core schema, roles/org ACL, offers | IMPLEMENTED | First integration checks pass; schema4 migration/new coverage pending rerun |
-| Booking/time/payment | IN_PROGRESS | First run 16 passed/1 race-worker bootstrap failure; fix written, rerun pending |
-| Theme/ENFA | IMPLEMENTED | Actual files and SVG sources; first browser found routing/a11y defects, fixes written and pending rerun |
-| Woo bridge / checkout / HPOS | IN_PROGRESS | Real Woo installed, bridge and local simulator code; full browser/Store API purchase proof pending |
-| Tours/events/Academy | IN_PROGRESS | Typed records, approval/itinerary and attendance/eligibility workflows; detailed coverage incomplete |
-| Local stays/vehicle inventory | IMPLEMENTED | New staff-only transactional plugin; integration tests unrun |
-| Passenger/transfer connectors | BLOCKED_EXTERNAL | Safe request paths; no live inventory/issuance/provider access |
-| Procurement/partner/support/finance | IN_PROGRESS | Scoped forms/workflows and tests written; incomplete advanced coverage |
-| SEP/Saman | BLOCKED_EXTERNAL | Disabled Woo boundary, no official merchant contract/credentials/sandbox proof |
-| Mellat | BLOCKED_EXTERNAL | Disabled Woo boundary, no official merchant contract/credentials/sandbox proof |
-| ZarinPal | BLOCKED_EXTERNAL | Disabled Woo boundary, no official merchant contract/credentials/sandbox proof |
-| Crypto | BLOCKED_EXTERNAL | Forced OFF; no wallet/address/activation path |
-| Security/a11y/performance/recovery | IN_PROGRESS | Source checks and first browser reports; independent/human/production-like evidence pending |
-| Packaging/CI/operating evidence | IN_PROGRESS | Packaging/test scripts exist; clean-install archives and restore evidence pending |
+WordPress 7.1.4 / WooCommerce 11.3.0 / PHP 8.5.8 / MariaDB 13.0.2. Core schema 6, local inventory 3, check-ins 1. Product SHA-256: `1eb48d209a970d77b1c1cbc982037e37734ed09c34ad78c7c21c2507d396fb71`. [TEST-EVIDENCE.md](TEST-EVIDENCE.md) records exact commands, hashes, dates and limitations.
 
-Read TEST-EVIDENCE.md / RELEASE-READINESS.md when present for final executed results; this checkpoint will be updated after integration. No work continues after a final response unless another turn starts.
+| Delivered scope | Local status | Evidence |
+| --- | --- | --- |
+| Core authorization/records/seat holds/money/audits | TESTED | Core 53 pass; actual two-connection seat race; migration/fault/ownership regressions |
+| Woo CRUD/HPOS/Store API/cart/payment guards | TESTED | Woo 34 pass; local simulator only; money separate from confirmation |
+| Tours/events/Academy/partner/support/finance subworkflows | TESTED | Domain 115 pass; advanced per-module behavior still incomplete |
+| Staff room-night/villa/vehicle inventory | TESTED | Inventory 50 pass; independent-process room and vehicle races; actual pickup and eligibility policy |
+| Editable block theme, EN/FA, theme-switch persistence | TESTED | Frontend 34 pass; actual theme-only ZIP render and screenshots |
+| Customer hold→Checkout Blocks→local payment→agency UI confirmation | TESTED | Eight browser tests pass; complete English and Persian journeys |
+| Source syntax/formats/limited secret patterns | TESTED | 96 static checks pass |
+| Five ZIPs, SBOM, integrity manifest | TESTED | Two builds match for all eight delivery files; actual fresh archive installation passes |
+| Local DB backup/restore | TESTED | 69 tables/1,736 rows, matching logical checksums and counts in new disposable DB |
+| Entire FR/NFR baseline | IN_PROGRESS | All 31 broad acceptance families remain open with specific code and external gaps |
+| Live domestic PSPs and contracted supplier issuance | BLOCKED_EXTERNAL | Unavailable; no genuine provider adapter or acceptance proof claimed |
+| Crypto activation | BLOCKED_EXTERNAL | Forced OFF, no wallet/address/payment route |
+| Accessibility/native/security/production operations | IN_PROGRESS | Critical incomplete checkout ARIA reference and human/staging/operating gates remain open |
+
+## Remaining work
+
+[RELEASE-READINESS.md](RELEASE-READINESS.md) lists every module and gate. [FEATURE-GAPS.md](FEATURE-GAPS.md) distinguishes incomplete feasible code from contracts/credentials/approvals. Next implementation slice: catalog search/facets, followed by public accommodation/rental booking that atomically connects resource allocations to Woo and independently verified money. These are code tasks, not merely waiting for providers.
+
+The development runtime is loopback/socket-only, uses low priority and a small DB buffer, and blocks outbound mail. No visible browser, system database service, live site, real PSP transaction or supplier service was controlled. No large peak-load test ran on the active workstation. Runtime is stopped at handoff; `rtk proxy nice -n 19 python3 deploy/local.py demo` restarts it without opening a browser. Work does not continue after a final response until another turn begins.

@@ -1,0 +1,383 @@
+{
+    "captured_at": "2026-11-17T13:01:24+00:00",
+    "routes": [
+        {
+            "route": "/atlas-inventory/v1",
+            "methods": [
+                "GET"
+            ],
+            "permission_callback_present": false,
+            "registered_argument_names": [
+                "namespace",
+                "context"
+            ]
+        },
+        {
+            "route": "/atlas-inventory/v1/resources",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/atlas-inventory/v1/resources/(?P<id>[a-fA-F0-9-]{36})",
+            "methods": [
+                "GET"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/atlas-inventory/v1/stay",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/atlas-inventory/v1/vehicle",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/atlas-inventory/v1/capacity",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/atlas-inventory/v1/blackout",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/atlas-inventory/v1/start",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/atlas-inventory/v1/return",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/atlas-inventory/v1/release",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/atlas-inventory/v1/resolve-dispute",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/atlas-inventory/v1/reconcile-pickup",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/atlas-inventory/v1/rental-policy",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/atlas-inventory/v1/eligibility-review",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1",
+            "methods": [
+                "GET"
+            ],
+            "permission_callback_present": false,
+            "registered_argument_names": [
+                "namespace",
+                "context"
+            ]
+        },
+        {
+            "route": "/agency/v1/catalog",
+            "methods": [
+                "GET"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/holds",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/travelers",
+            "methods": [
+                "GET"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/travelers",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/bookings/(?P<id>[a-f0-9-]{36})",
+            "methods": [
+                "GET"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/booking-queue",
+            "methods": [
+                "GET"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": [
+                "page",
+                "limit",
+                "status"
+            ]
+        },
+        {
+            "route": "/agency/v1/bookings/(?P<id>[a-f0-9-]{36})/confirm",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/support-cases/(?P<id>[a-f0-9-]{36})/messages",
+            "methods": [
+                "GET"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/support-cases/(?P<id>[a-f0-9-]{36})/messages",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/support-cases/(?P<id>[a-f0-9-]{36})/triage",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/partner-applications/(?P<id>[a-f0-9-]{36})/review",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/organizations/(?P<id>\\d+)/members",
+            "methods": [
+                "GET"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/organizations/(?P<id>\\d+)/members",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/finance/payment-exceptions",
+            "methods": [
+                "GET"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/finance/payments/(?P<id>[a-f0-9-]{36})/ledger",
+            "methods": [
+                "GET"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/finance/refunds",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/finance/refunds/(?P<id>[a-f0-9-]{36})/approve",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/events/(?P<id>\\d+)/checkins",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/stay-requests",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/ticket-requests",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/transfer-requests",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/rental-requests",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/support-cases",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/rfqs",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/cohorts/(?P<id>[a-f0-9-]+)/materials",
+            "methods": [
+                "GET"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/cohorts/(?P<id>[a-f0-9-]+)/enrollments",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/rfqs/(?P<id>[a-f0-9-]+)",
+            "methods": [
+                "GET"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/operations/(?P<type>[a-z_]+)",
+            "methods": [
+                "GET"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/operations/(?P<type>[a-z_]+)",
+            "methods": [
+                "POST"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/operations/(?P<type>[a-z_]+)/(?P<id>[a-f0-9-]+)",
+            "methods": [
+                "GET"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        },
+        {
+            "route": "/agency/v1/operations/(?P<type>[a-z_]+)/(?P<id>[a-f0-9-]+)",
+            "methods": [
+                "PATCH"
+            ],
+            "permission_callback_present": true,
+            "registered_argument_names": []
+        }
+    ]
+}

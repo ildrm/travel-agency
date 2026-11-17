@@ -2,7 +2,7 @@
   "config": {
     "argv": [
       "/opt/homebrew/Cellar/node/26.12.0/bin/node",
-      "/Users/shahinilderemi/Documents/tmp/iranbroker/node_modules/.bin/playwright",
+      "/Users/shahinilderemi/Documents/tmp/iranbroker/node_modules/@playwright/test/cli.js",
       "test",
       "--workers=1"
     ],
@@ -125,12 +125,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4270,
+                  "duration": 1680,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-17T08:26:30.020Z",
+                  "startTime": "2026-11-17T12:59:13.580Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -140,7 +140,7 @@
           ],
           "id": "2c5b3257cb27d2f45169-a2147cc160dcdc9e0605",
           "file": "platform.spec.cjs",
-          "line": 7,
+          "line": 17,
           "column": 3
         },
         {
@@ -159,12 +159,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1450,
+                  "duration": 1172,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-17T08:26:37.690Z",
+                  "startTime": "2026-11-17T12:59:17.317Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -174,7 +174,7 @@
           ],
           "id": "2c5b3257cb27d2f45169-e27c11f979c75748e6dd",
           "file": "platform.spec.cjs",
-          "line": 24,
+          "line": 52,
           "column": 3
         },
         {
@@ -193,12 +193,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1364,
+                  "duration": 1111,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-17T08:26:39.160Z",
+                  "startTime": "2026-11-17T12:59:18.497Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -208,7 +208,7 @@
           ],
           "id": "2c5b3257cb27d2f45169-4f2c7d539efe1e32c6cc",
           "file": "platform.spec.cjs",
-          "line": 7,
+          "line": 17,
           "column": 3
         },
         {
@@ -227,12 +227,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1383,
+                  "duration": 1486,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-17T08:26:40.533Z",
+                  "startTime": "2026-11-17T12:59:19.614Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -242,12 +242,12 @@
           ],
           "id": "2c5b3257cb27d2f45169-be124795509688d171f3",
           "file": "platform.spec.cjs",
-          "line": 24,
+          "line": 52,
           "column": 3
         },
         {
           "title": "authentication, customer account and scoped partner portal",
-          "ok": false,
+          "ok": true,
           "tags": [],
           "tests": [
             {
@@ -260,45 +260,23 @@
                 {
                   "workerIndex": 0,
                   "parallelIndex": 0,
-                  "status": "timedOut",
-                  "duration": 45301,
-                  "error": {
-                    "message": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m",
-                    "stack": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m"
-                  },
-                  "errors": [
-                    {
-                      "message": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m"
-                    },
-                    {
-                      "location": {
-                        "file": "/Users/shahinilderemi/Documents/tmp/iranbroker/tests/browser/platform.spec.cjs",
-                        "column": 14,
-                        "line": 37
-                      },
-                      "message": "Error: page.waitForURL: Test timeout of 45000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n  35 |   await page.locator('#user_pass').fill(credentials.admin_password);\n  36 |   await page.locator('#wp-submit').click();\n> 37 |   await page.waitForURL(/wp-admin/);\n     |              ^\n  38 |   await page.goto('/?atlas_area=account&lang=fa', { waitUntil: 'networkidle' });\n  39 |   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');\n  40 |   await expect(page.locator('body')).not.toContainText('[atlas_account]');\n    at /Users/shahinilderemi/Documents/tmp/iranbroker/tests/browser/platform.spec.cjs:37:14"
-                    }
-                  ],
+                  "status": "passed",
+                  "duration": 2105,
+                  "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-17T08:26:41.922Z",
+                  "startTime": "2026-11-17T12:59:21.112Z",
                   "annotations": [],
-                  "attachments": [
-                    {
-                      "name": "error-context",
-                      "contentType": "text/markdown",
-                      "path": "/Users/shahinilderemi/Documents/tmp/iranbroker/test-results/platform-authentication-cu-e0560-t-and-scoped-partner-portal/error-context.md"
-                    }
-                  ]
+                  "attachments": []
                 }
               ],
-              "status": "unexpected"
+              "status": "expected"
             }
           ],
           "id": "2c5b3257cb27d2f45169-a758e7956e716621a9b6",
           "file": "platform.spec.cjs",
-          "line": 31,
+          "line": 59,
           "column": 1
         },
         {
@@ -314,15 +292,15 @@
               "projectName": "",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 289,
+                  "duration": 180,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-17T08:27:27.987Z",
+                  "startTime": "2026-11-17T12:59:23.229Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -332,19 +310,87 @@
           ],
           "id": "2c5b3257cb27d2f45169-164616205df001ec8324",
           "file": "platform.spec.cjs",
-          "line": 47,
+          "line": 79,
           "column": 1
+        },
+        {
+          "title": "customer reserve -> Woo Blocks simulated payment -> agency confirmation: en",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4257,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-17T12:59:23.420Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5b3257cb27d2f45169-0b1252b453d7389d864e",
+          "file": "platform.spec.cjs",
+          "line": 101,
+          "column": 3
+        },
+        {
+          "title": "customer reserve -> Woo Blocks simulated payment -> agency confirmation: fa",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4549,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-17T12:59:27.690Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5b3257cb27d2f45169-93da0d995fc461922f4c",
+          "file": "platform.spec.cjs",
+          "line": 101,
+          "column": 3
         }
       ]
     }
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-11-17T08:26:28.932Z",
-    "duration": 59367.078,
-    "expected": 5,
+    "startTime": "2026-11-17T12:59:13.260Z",
+    "duration": 19111.367,
+    "expected": 8,
     "skipped": 0,
-    "unexpected": 1,
+    "unexpected": 0,
     "flaky": 0
   }
 }

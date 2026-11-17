@@ -10,4 +10,16 @@
 - Executed first integration and hidden-browser passes. Fixed race-harness bootstrap, symlink stylesheet routing, skip link/navigation markup and a faulty regex assertion. Initial failures retained in evidence; new fixes require rerun before pass claims.
 - Code review identified suspended-org access and audit atomicity issues; remediation/regression work tracked explicitly. No security, legal, merchant, asset, native-editor or production approval has been fabricated.
 
-This is an evolving development change record. Final executed test/version/package evidence supersedes the initial status notes; a planned or coded fix alone is not a verified result.
+## Verified local checkpoint — 2026-11-17
+
+- Completed core schema 6 validation, per-organization role ceilings, unscoped offer ownership, transactional audits and explicit UUID audit formats. Existing malformed demo audit associations were preserved rather than rewritten as trustworthy history.
+- Preserved confirmed/fulfilled entitlement when additional verified money arrives; recorded payment-specific exceptions and bounded refund review separately. Added owner payment-status projection and no-store transport.
+- Added actual booking confirmation queue, customer receipt/account states, agency finance exception/ledger/refund intent/approval UI, scoped partner onboarding/membership and private support triage. No approval initiates a real transfer.
+- Hardened classic/order-pay/Store API service gateway allowlists and pre-add cart conflict/duplicate behavior. Actual Woo HPOS/Blocks local simulator compatibility is declared; domestic PSP boundaries remain unavailable.
+- Added inventory schema 3 with immutable actual pickup evidence, explicit agency rental policy and reviewed age/licence/coverage references. Real MariaDB contention required locking current reads and bounded fresh-transaction retries; separate-process room and vehicle races now pass.
+- Repaired generated native cart/checkout block templates, local coming-soon visibility, simulator accessible registration label, and bilingual checkout/receipt navigation. Native Persian review and full operational translation remain open.
+- Final six integration suites passed; eight hidden-browser journeys passed, including both customer-to-agency flows; 96 static checks passed. Exact source hashes and counts are in TEST-EVIDENCE.md.
+- Built five deterministic installable ZIPs with SBOM/manifest/checksums; compared two identical generations and installed actual archives in a new database. Rehearsed restore of 69 tables with matching logical checksums and counts, without overwriting the demo.
+- Added release, test, accessibility, performance and security evidence plus honest module-level gaps and a deterministic next slice. Npm audit reported no known vulnerabilities for the pinned development dependencies; this is not application certification.
+
+This remains an incomplete development release. No production deployment, external PSP/supplier acceptance, professional 3D asset delivery or human security/legal/native/brand/accessibility signoff has been fabricated.

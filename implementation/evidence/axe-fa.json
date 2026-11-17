@@ -13,7 +13,7 @@
     "orientationAngle": 0,
     "orientationType": "landscape-primary"
   },
-  "timestamp": "2026-11-17T08:26:41.660Z",
+  "timestamp": "2026-11-17T12:59:20.796Z",
   "url": "http://127.0.0.1:8840/?lang=fa",
   "toolOptions": {
     "runOnly": {
@@ -3209,121 +3209,121 @@
                   ]
                 },
                 {
-                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=47&amp;lang=fa\">Fictional Store API event</a></h3>",
+                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=58&amp;lang=fa\">Fictional Store API event</a></h3>",
                   "target": [
                     "article:nth-child(1) > h3"
                   ]
                 },
                 {
-                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=44&amp;lang=fa\">Fictional age-limited event</a></h3>",
+                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=55&amp;lang=fa\">Fictional test occurrence</a></h3>",
                   "target": [
                     "article:nth-child(2) > h3"
                   ]
                 },
                 {
-                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=43&amp;lang=fa\">Fictional test occurrence</a></h3>",
+                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=54&amp;lang=fa\">Fictional test occurrence</a></h3>",
                   "target": [
                     "article:nth-child(3) > h3"
                   ]
                 },
                 {
-                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=42&amp;lang=fa\">Fictional test occurrence</a></h3>",
+                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=53&amp;lang=fa\">Fictional test occurrence</a></h3>",
                   "target": [
                     "article:nth-child(4) > h3"
                   ]
                 },
                 {
-                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=41&amp;lang=fa\">Fictional test occurrence</a></h3>",
+                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=52&amp;lang=fa\">Fictional test occurrence</a></h3>",
                   "target": [
                     "article:nth-child(5) > h3"
                   ]
                 },
                 {
-                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=40&amp;lang=fa\">Fictional test occurrence</a></h3>",
+                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=47&amp;lang=fa\">Fictional Store API event</a></h3>",
                   "target": [
                     "article:nth-child(6) > h3"
                   ]
                 },
                 {
-                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=39&amp;lang=fa\">Fictional test occurrence</a></h3>",
+                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=44&amp;lang=fa\">Fictional age-limited event</a></h3>",
                   "target": [
                     "article:nth-child(7) > h3"
                   ]
                 },
                 {
-                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=36&amp;lang=fa\">Fictional age-limited event</a></h3>",
+                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=43&amp;lang=fa\">Fictional test occurrence</a></h3>",
                   "target": [
                     "article:nth-child(8) > h3"
                   ]
                 },
                 {
-                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=35&amp;lang=fa\">Fictional test occurrence</a></h3>",
+                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=42&amp;lang=fa\">Fictional test occurrence</a></h3>",
                   "target": [
                     "article:nth-child(9) > h3"
                   ]
                 },
                 {
-                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=34&amp;lang=fa\">Fictional test occurrence</a></h3>",
+                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=41&amp;lang=fa\">Fictional test occurrence</a></h3>",
                   "target": [
                     "article:nth-child(10) > h3"
                   ]
                 },
                 {
-                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=33&amp;lang=fa\">Fictional test occurrence</a></h3>",
+                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=40&amp;lang=fa\">Fictional test occurrence</a></h3>",
                   "target": [
                     "article:nth-child(11) > h3"
                   ]
                 },
                 {
-                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=32&amp;lang=fa\">Fictional test occurrence</a></h3>",
+                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=39&amp;lang=fa\">Fictional test occurrence</a></h3>",
                   "target": [
                     "article:nth-child(12) > h3"
                   ]
                 },
                 {
-                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=31&amp;lang=fa\">Fictional test occurrence</a></h3>",
+                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=36&amp;lang=fa\">Fictional age-limited event</a></h3>",
                   "target": [
                     "article:nth-child(13) > h3"
                   ]
                 },
                 {
-                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=23&amp;lang=fa\">مسیر بعدی شما · درخواست بلیت</a></h3>",
+                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=35&amp;lang=fa\">Fictional test occurrence</a></h3>",
                   "target": [
                     "article:nth-child(14) > h3"
                   ]
                 },
                 {
-                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=22&amp;lang=fa\">با برنامه برسید · درخواست ترانسفر</a></h3>",
+                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=34&amp;lang=fa\">Fictional test occurrence</a></h3>",
                   "target": [
                     "article:nth-child(15) > h3"
                   ]
                 },
                 {
-                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=21&amp;lang=fa\">با ریتم خودتان · درخواست وسیلهٔ نقلیه</a></h3>",
+                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=33&amp;lang=fa\">Fictional test occurrence</a></h3>",
                   "target": [
                     "article:nth-child(16) > h3"
                   ]
                 },
                 {
-                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=20&amp;lang=fa\">فرصتی برای آرامش · درخواست اقامت</a></h3>",
+                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=32&amp;lang=fa\">Fictional test occurrence</a></h3>",
                   "target": [
                     "article:nth-child(17) > h3"
                   ]
                 },
                 {
-                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=18&amp;lang=fa\">راهنمای حرفه‌ای تور · دورهٔ نمایشی</a></h3>",
+                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=31&amp;lang=fa\">Fictional test occurrence</a></h3>",
                   "target": [
                     "article:nth-child(18) > h3"
                   ]
                 },
                 {
-                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=16&amp;lang=fa\">صبحی در طبیعت · نمایش محلی</a></h3>",
+                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=23&amp;lang=fa\">مسیر بعدی شما · درخواست بلیت</a></h3>",
                   "target": [
                     "article:nth-child(19) > h3"
                   ]
                 },
                 {
-                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=14&amp;lang=fa\">Fictional test occurrence</a></h3>",
+                  "html": "<h3><a href=\"http://127.0.0.1:8840/?offer_id=22&amp;lang=fa\">با برنامه برسید · درخواست ترانسفر</a></h3>",
                   "target": [
                     "article:nth-child(20) > h3"
                   ]
@@ -3870,7 +3870,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=47&amp;lang=fa\">Fictional Store API event</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=58&amp;lang=fa\">Fictional Store API event</a>",
           "target": [
             "article:nth-child(1) > h3 > a"
           ]
@@ -3920,7 +3920,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=44&amp;lang=fa\">Fictional age-limited event</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=55&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(2) > h3 > a"
           ]
@@ -3970,7 +3970,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=43&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=54&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(3) > h3 > a"
           ]
@@ -4020,7 +4020,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=42&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=53&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(4) > h3 > a"
           ]
@@ -4070,7 +4070,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=41&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=52&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(5) > h3 > a"
           ]
@@ -4120,7 +4120,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=40&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=47&amp;lang=fa\">Fictional Store API event</a>",
           "target": [
             "article:nth-child(6) > h3 > a"
           ]
@@ -4170,7 +4170,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=39&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=44&amp;lang=fa\">Fictional age-limited event</a>",
           "target": [
             "article:nth-child(7) > h3 > a"
           ]
@@ -4220,7 +4220,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=36&amp;lang=fa\">Fictional age-limited event</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=43&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(8) > h3 > a"
           ]
@@ -4270,7 +4270,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=35&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=42&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(9) > h3 > a"
           ]
@@ -4320,7 +4320,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=34&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=41&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(10) > h3 > a"
           ]
@@ -4370,7 +4370,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=33&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=40&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(11) > h3 > a"
           ]
@@ -4420,7 +4420,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=32&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=39&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(12) > h3 > a"
           ]
@@ -4470,7 +4470,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=31&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=36&amp;lang=fa\">Fictional age-limited event</a>",
           "target": [
             "article:nth-child(13) > h3 > a"
           ]
@@ -4520,209 +4520,9 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=23&amp;lang=fa\">مسیر بعدی شما · درخواست بلیت</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=35&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(14) > h3 > a"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "color-contrast",
-              "data": {
-                "fgColor": "#132638",
-                "bgColor": "#ffffff",
-                "contrastRatio": 15.41,
-                "fontSize": "17.4pt (23.2px)",
-                "fontWeight": "normal",
-                "expectedContrastRatio": "4.5:1"
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Element has sufficient color contrast of 15.41"
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=22&amp;lang=fa\">با برنامه برسید · درخواست ترانسفر</a>",
-          "target": [
-            "article:nth-child(15) > h3 > a"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "color-contrast",
-              "data": {
-                "fgColor": "#132638",
-                "bgColor": "#ffffff",
-                "contrastRatio": 15.41,
-                "fontSize": "17.4pt (23.2px)",
-                "fontWeight": "normal",
-                "expectedContrastRatio": "4.5:1"
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Element has sufficient color contrast of 15.41"
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=21&amp;lang=fa\">با ریتم خودتان · درخواست وسیلهٔ نقلیه</a>",
-          "target": [
-            "article:nth-child(16) > h3 > a"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "color-contrast",
-              "data": {
-                "fgColor": "#132638",
-                "bgColor": "#ffffff",
-                "contrastRatio": 15.41,
-                "fontSize": "17.4pt (23.2px)",
-                "fontWeight": "normal",
-                "expectedContrastRatio": "4.5:1"
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Element has sufficient color contrast of 15.41"
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=20&amp;lang=fa\">فرصتی برای آرامش · درخواست اقامت</a>",
-          "target": [
-            "article:nth-child(17) > h3 > a"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "color-contrast",
-              "data": {
-                "fgColor": "#132638",
-                "bgColor": "#ffffff",
-                "contrastRatio": 15.41,
-                "fontSize": "17.4pt (23.2px)",
-                "fontWeight": "normal",
-                "expectedContrastRatio": "4.5:1"
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Element has sufficient color contrast of 15.41"
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=18&amp;lang=fa\">راهنمای حرفه‌ای تور · دورهٔ نمایشی</a>",
-          "target": [
-            "article:nth-child(18) > h3 > a"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "color-contrast",
-              "data": {
-                "fgColor": "#405f60",
-                "bgColor": "#ffffff",
-                "contrastRatio": 6.94,
-                "fontSize": "10.5pt (14px)",
-                "fontWeight": "normal",
-                "expectedContrastRatio": "4.5:1"
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Element has sufficient color contrast of 6.94"
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<p>18,000,000 IRR</p>",
-          "target": [
-            "article:nth-child(18) > p"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "color-contrast",
-              "data": {
-                "fgColor": "#132638",
-                "bgColor": "#ffffff",
-                "contrastRatio": 15.41,
-                "fontSize": "17.4pt (23.2px)",
-                "fontWeight": "normal",
-                "expectedContrastRatio": "4.5:1"
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Element has sufficient color contrast of 15.41"
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=16&amp;lang=fa\">صبحی در طبیعت · نمایش محلی</a>",
-          "target": [
-            "article:nth-child(19) > h3 > a"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "color-contrast",
-              "data": {
-                "fgColor": "#405f60",
-                "bgColor": "#ffffff",
-                "contrastRatio": 6.94,
-                "fontSize": "10.5pt (14px)",
-                "fontWeight": "normal",
-                "expectedContrastRatio": "4.5:1"
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Element has sufficient color contrast of 6.94"
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<p>11,800,000 IRR</p>",
-          "target": [
-            "article:nth-child(19) > p"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "color-contrast",
-              "data": {
-                "fgColor": "#132638",
-                "bgColor": "#ffffff",
-                "contrastRatio": 15.41,
-                "fontSize": "17.4pt (23.2px)",
-                "fontWeight": "normal",
-                "expectedContrastRatio": "4.5:1"
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Element has sufficient color contrast of 15.41"
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=14&amp;lang=fa\">Fictional test occurrence</a>",
-          "target": [
-            "article:nth-child(20) > h3 > a"
           ]
         },
         {
@@ -4747,7 +4547,257 @@
           "impact": null,
           "html": "<p>1,000,000 IRR</p>",
           "target": [
-            "article:nth-child(20) > p"
+            "article:nth-child(14) > p"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#132638",
+                "bgColor": "#ffffff",
+                "contrastRatio": 15.41,
+                "fontSize": "17.4pt (23.2px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 15.41"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=34&amp;lang=fa\">Fictional test occurrence</a>",
+          "target": [
+            "article:nth-child(15) > h3 > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#405f60",
+                "bgColor": "#ffffff",
+                "contrastRatio": 6.94,
+                "fontSize": "10.5pt (14px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 6.94"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<p>1,000,000 IRR</p>",
+          "target": [
+            "article:nth-child(15) > p"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#132638",
+                "bgColor": "#ffffff",
+                "contrastRatio": 15.41,
+                "fontSize": "17.4pt (23.2px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 15.41"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=33&amp;lang=fa\">Fictional test occurrence</a>",
+          "target": [
+            "article:nth-child(16) > h3 > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#405f60",
+                "bgColor": "#ffffff",
+                "contrastRatio": 6.94,
+                "fontSize": "10.5pt (14px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 6.94"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<p>1,000,000 IRR</p>",
+          "target": [
+            "article:nth-child(16) > p"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#132638",
+                "bgColor": "#ffffff",
+                "contrastRatio": 15.41,
+                "fontSize": "17.4pt (23.2px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 15.41"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=32&amp;lang=fa\">Fictional test occurrence</a>",
+          "target": [
+            "article:nth-child(17) > h3 > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#405f60",
+                "bgColor": "#ffffff",
+                "contrastRatio": 6.94,
+                "fontSize": "10.5pt (14px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 6.94"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<p>1,000,000 IRR</p>",
+          "target": [
+            "article:nth-child(17) > p"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#132638",
+                "bgColor": "#ffffff",
+                "contrastRatio": 15.41,
+                "fontSize": "17.4pt (23.2px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 15.41"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=31&amp;lang=fa\">Fictional test occurrence</a>",
+          "target": [
+            "article:nth-child(18) > h3 > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#405f60",
+                "bgColor": "#ffffff",
+                "contrastRatio": 6.94,
+                "fontSize": "10.5pt (14px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 6.94"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<p>1,000,000 IRR</p>",
+          "target": [
+            "article:nth-child(18) > p"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#132638",
+                "bgColor": "#ffffff",
+                "contrastRatio": 15.41,
+                "fontSize": "17.4pt (23.2px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 15.41"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=23&amp;lang=fa\">مسیر بعدی شما · درخواست بلیت</a>",
+          "target": [
+            "article:nth-child(19) > h3 > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#132638",
+                "bgColor": "#ffffff",
+                "contrastRatio": 15.41,
+                "fontSize": "17.4pt (23.2px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 15.41"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=22&amp;lang=fa\">با برنامه برسید · درخواست ترانسفر</a>",
+          "target": [
+            "article:nth-child(20) > h3 > a"
           ]
         },
         {
@@ -5721,7 +5771,7 @@
             }
           ],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=47&amp;lang=fa\">Fictional Store API event</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=58&amp;lang=fa\">Fictional Store API event</a>",
           "target": [
             "article:nth-child(1) > h3 > a"
           ]
@@ -5747,7 +5797,7 @@
             }
           ],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=44&amp;lang=fa\">Fictional age-limited event</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=55&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(2) > h3 > a"
           ]
@@ -5773,7 +5823,7 @@
             }
           ],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=43&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=54&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(3) > h3 > a"
           ]
@@ -5799,7 +5849,7 @@
             }
           ],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=42&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=53&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(4) > h3 > a"
           ]
@@ -5825,7 +5875,7 @@
             }
           ],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=41&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=52&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(5) > h3 > a"
           ]
@@ -5851,7 +5901,7 @@
             }
           ],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=40&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=47&amp;lang=fa\">Fictional Store API event</a>",
           "target": [
             "article:nth-child(6) > h3 > a"
           ]
@@ -5877,7 +5927,7 @@
             }
           ],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=39&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=44&amp;lang=fa\">Fictional age-limited event</a>",
           "target": [
             "article:nth-child(7) > h3 > a"
           ]
@@ -5903,7 +5953,7 @@
             }
           ],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=36&amp;lang=fa\">Fictional age-limited event</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=43&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(8) > h3 > a"
           ]
@@ -5929,7 +5979,7 @@
             }
           ],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=35&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=42&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(9) > h3 > a"
           ]
@@ -5955,7 +6005,7 @@
             }
           ],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=34&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=41&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(10) > h3 > a"
           ]
@@ -5981,7 +6031,7 @@
             }
           ],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=33&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=40&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(11) > h3 > a"
           ]
@@ -6007,7 +6057,7 @@
             }
           ],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=32&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=39&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(12) > h3 > a"
           ]
@@ -6033,7 +6083,7 @@
             }
           ],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=31&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=36&amp;lang=fa\">Fictional age-limited event</a>",
           "target": [
             "article:nth-child(13) > h3 > a"
           ]
@@ -6059,7 +6109,7 @@
             }
           ],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=23&amp;lang=fa\">مسیر بعدی شما · درخواست بلیت</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=35&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(14) > h3 > a"
           ]
@@ -6085,7 +6135,7 @@
             }
           ],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=22&amp;lang=fa\">با برنامه برسید · درخواست ترانسفر</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=34&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(15) > h3 > a"
           ]
@@ -6111,7 +6161,7 @@
             }
           ],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=21&amp;lang=fa\">با ریتم خودتان · درخواست وسیلهٔ نقلیه</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=33&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(16) > h3 > a"
           ]
@@ -6137,7 +6187,7 @@
             }
           ],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=20&amp;lang=fa\">فرصتی برای آرامش · درخواست اقامت</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=32&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(17) > h3 > a"
           ]
@@ -6163,7 +6213,7 @@
             }
           ],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=18&amp;lang=fa\">راهنمای حرفه‌ای تور · دورهٔ نمایشی</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=31&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(18) > h3 > a"
           ]
@@ -6189,7 +6239,7 @@
             }
           ],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=16&amp;lang=fa\">صبحی در طبیعت · نمایش محلی</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=23&amp;lang=fa\">مسیر بعدی شما · درخواست بلیت</a>",
           "target": [
             "article:nth-child(19) > h3 > a"
           ]
@@ -6215,7 +6265,7 @@
             }
           ],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=14&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=22&amp;lang=fa\">با برنامه برسید · درخواست ترانسفر</a>",
           "target": [
             "article:nth-child(20) > h3 > a"
           ]
@@ -7335,7 +7385,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=47&amp;lang=fa\">Fictional Store API event</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=58&amp;lang=fa\">Fictional Store API event</a>",
           "target": [
             "article:nth-child(1) > h3 > a"
           ]
@@ -7346,12 +7396,12 @@
               "id": "target-size",
               "data": {
                 "minSize": 24,
-                "width": 209.3,
-                "height": 61.8
+                "width": 252.5,
+                "height": 27
               },
               "relatedNodes": [],
               "impact": "serious",
-              "message": "Control has sufficient size (209.3px by 61.8px, should be at least 24px by 24px)"
+              "message": "Control has sufficient size (252.5px by 27px, should be at least 24px by 24px)"
             },
             {
               "id": "target-offset",
@@ -7367,7 +7417,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=44&amp;lang=fa\">Fictional age-limited event</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=55&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(2) > h3 > a"
           ]
@@ -7399,7 +7449,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=43&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=54&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(3) > h3 > a"
           ]
@@ -7431,7 +7481,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=42&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=53&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(4) > h3 > a"
           ]
@@ -7463,7 +7513,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=41&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=52&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(5) > h3 > a"
           ]
@@ -7474,12 +7524,12 @@
               "id": "target-size",
               "data": {
                 "minSize": 24,
-                "width": 252.5,
+                "width": 248.9,
                 "height": 27
               },
               "relatedNodes": [],
               "impact": "serious",
-              "message": "Control has sufficient size (252.5px by 27px, should be at least 24px by 24px)"
+              "message": "Control has sufficient size (248.9px by 27px, should be at least 24px by 24px)"
             },
             {
               "id": "target-offset",
@@ -7495,41 +7545,9 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=40&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=47&amp;lang=fa\">Fictional Store API event</a>",
           "target": [
             "article:nth-child(6) > h3 > a"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "target-size",
-              "data": {
-                "minSize": 24,
-                "width": 252.5,
-                "height": 27
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Control has sufficient size (252.5px by 27px, should be at least 24px by 24px)"
-            },
-            {
-              "id": "target-offset",
-              "data": {
-                "closestOffset": 24,
-                "minOffset": 24
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=39&amp;lang=fa\">Fictional test occurrence</a>",
-          "target": [
-            "article:nth-child(7) > h3 > a"
           ]
         },
         {
@@ -7559,7 +7577,39 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=36&amp;lang=fa\">Fictional age-limited event</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=44&amp;lang=fa\">Fictional age-limited event</a>",
+          "target": [
+            "article:nth-child(7) > h3 > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "target-size",
+              "data": {
+                "minSize": 24,
+                "width": 252.5,
+                "height": 27
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Control has sufficient size (252.5px by 27px, should be at least 24px by 24px)"
+            },
+            {
+              "id": "target-offset",
+              "data": {
+                "closestOffset": 24,
+                "minOffset": 24
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=43&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(8) > h3 > a"
           ]
@@ -7591,7 +7641,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=35&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=42&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(9) > h3 > a"
           ]
@@ -7623,7 +7673,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=34&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=41&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(10) > h3 > a"
           ]
@@ -7655,7 +7705,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=33&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=40&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(11) > h3 > a"
           ]
@@ -7687,9 +7737,169 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=32&amp;lang=fa\">Fictional test occurrence</a>",
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=39&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(12) > h3 > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "target-size",
+              "data": {
+                "minSize": 24,
+                "width": 209.3,
+                "height": 61.8
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Control has sufficient size (209.3px by 61.8px, should be at least 24px by 24px)"
+            },
+            {
+              "id": "target-offset",
+              "data": {
+                "closestOffset": 24,
+                "minOffset": 24
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=36&amp;lang=fa\">Fictional age-limited event</a>",
+          "target": [
+            "article:nth-child(13) > h3 > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "target-size",
+              "data": {
+                "minSize": 24,
+                "width": 252.5,
+                "height": 27
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Control has sufficient size (252.5px by 27px, should be at least 24px by 24px)"
+            },
+            {
+              "id": "target-offset",
+              "data": {
+                "closestOffset": 24,
+                "minOffset": 24
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=35&amp;lang=fa\">Fictional test occurrence</a>",
+          "target": [
+            "article:nth-child(14) > h3 > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "target-size",
+              "data": {
+                "minSize": 24,
+                "width": 252.5,
+                "height": 27
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Control has sufficient size (252.5px by 27px, should be at least 24px by 24px)"
+            },
+            {
+              "id": "target-offset",
+              "data": {
+                "closestOffset": 24,
+                "minOffset": 24
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=34&amp;lang=fa\">Fictional test occurrence</a>",
+          "target": [
+            "article:nth-child(15) > h3 > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "target-size",
+              "data": {
+                "minSize": 24,
+                "width": 252.5,
+                "height": 27
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Control has sufficient size (252.5px by 27px, should be at least 24px by 24px)"
+            },
+            {
+              "id": "target-offset",
+              "data": {
+                "closestOffset": 24,
+                "minOffset": 24
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=33&amp;lang=fa\">Fictional test occurrence</a>",
+          "target": [
+            "article:nth-child(16) > h3 > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "target-size",
+              "data": {
+                "minSize": 24,
+                "width": 252.5,
+                "height": 27
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Control has sufficient size (252.5px by 27px, should be at least 24px by 24px)"
+            },
+            {
+              "id": "target-offset",
+              "data": {
+                "closestOffset": 24,
+                "minOffset": 24
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=32&amp;lang=fa\">Fictional test occurrence</a>",
+          "target": [
+            "article:nth-child(17) > h3 > a"
           ]
         },
         {
@@ -7721,7 +7931,7 @@
           "impact": null,
           "html": "<a href=\"http://127.0.0.1:8840/?offer_id=31&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
-            "article:nth-child(13) > h3 > a"
+            "article:nth-child(18) > h3 > a"
           ]
         },
         {
@@ -7753,7 +7963,7 @@
           "impact": null,
           "html": "<a href=\"http://127.0.0.1:8840/?offer_id=23&amp;lang=fa\">مسیر بعدی شما · درخواست بلیت</a>",
           "target": [
-            "article:nth-child(14) > h3 > a"
+            "article:nth-child(19) > h3 > a"
           ]
         },
         {
@@ -7784,166 +7994,6 @@
           "none": [],
           "impact": null,
           "html": "<a href=\"http://127.0.0.1:8840/?offer_id=22&amp;lang=fa\">با برنامه برسید · درخواست ترانسفر</a>",
-          "target": [
-            "article:nth-child(15) > h3 > a"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "target-size",
-              "data": {
-                "minSize": 24,
-                "width": 237.7,
-                "height": 61.8
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Control has sufficient size (237.7px by 61.8px, should be at least 24px by 24px)"
-            },
-            {
-              "id": "target-offset",
-              "data": {
-                "closestOffset": 24,
-                "minOffset": 24
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=21&amp;lang=fa\">با ریتم خودتان · درخواست وسیلهٔ نقلیه</a>",
-          "target": [
-            "article:nth-child(16) > h3 > a"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "target-size",
-              "data": {
-                "minSize": 24,
-                "width": 182.2,
-                "height": 61.8
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Control has sufficient size (182.2px by 61.8px, should be at least 24px by 24px)"
-            },
-            {
-              "id": "target-offset",
-              "data": {
-                "closestOffset": 24,
-                "minOffset": 24
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=20&amp;lang=fa\">فرصتی برای آرامش · درخواست اقامت</a>",
-          "target": [
-            "article:nth-child(17) > h3 > a"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "target-size",
-              "data": {
-                "minSize": 24,
-                "width": 237.3,
-                "height": 61.8
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Control has sufficient size (237.3px by 61.8px, should be at least 24px by 24px)"
-            },
-            {
-              "id": "target-offset",
-              "data": {
-                "closestOffset": 24,
-                "minOffset": 24
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=18&amp;lang=fa\">راهنمای حرفه‌ای تور · دورهٔ نمایشی</a>",
-          "target": [
-            "article:nth-child(18) > h3 > a"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "target-size",
-              "data": {
-                "minSize": 24,
-                "width": 233.6,
-                "height": 61.8
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Control has sufficient size (233.6px by 61.8px, should be at least 24px by 24px)"
-            },
-            {
-              "id": "target-offset",
-              "data": {
-                "closestOffset": 24,
-                "minOffset": 24
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=16&amp;lang=fa\">صبحی در طبیعت · نمایش محلی</a>",
-          "target": [
-            "article:nth-child(19) > h3 > a"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "target-size",
-              "data": {
-                "minSize": 24,
-                "width": 252.5,
-                "height": 27
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Control has sufficient size (252.5px by 27px, should be at least 24px by 24px)"
-            },
-            {
-              "id": "target-offset",
-              "data": {
-                "closestOffset": 24,
-                "minOffset": 24
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840/?offer_id=14&amp;lang=fa\">Fictional test occurrence</a>",
           "target": [
             "article:nth-child(20) > h3 > a"
           ]

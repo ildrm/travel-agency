@@ -1,0 +1,22 @@
+{
+  "started_at": "2026-11-17T13:10:06.044412+00:00",
+  "scope": "new local database and real ZIP installs",
+  "passed": true,
+  "checks": [
+    "actual theme ZIP installed and rendered safely without Woo/companions",
+    "atlas-core actual ZIP extracted and activated",
+    "atlas-operations actual ZIP extracted and activated",
+    "atlas-gateways actual ZIP extracted and activated",
+    "atlas-inventory actual ZIP extracted and activated",
+    "core6/inventory3/checkins1 schemas, repeatable migrations and registered public catalog route"
+  ],
+  "path": ".runtime/clean-install-129eb91c70",
+  "finished_at": "2026-11-17T13:10:24.812171+00:00",
+  "artifacts_sha256": {
+    "atlas-leisure-0.1.0.zip": "76946c47765ba57c29cf5bab22d99d7efed90317eacdad67630623fdade4910f",
+    "atlas-core-0.1.0.zip": "e10e5b34cff963203d76fdf62f4a697c425ffb606658f2ed783e8af7619765ef",
+    "atlas-gateways-0.1.0.zip": "de079a2b42312ffe9e1c47bf80300c16cc322f4b2afd0886e7c0e91219c93869",
+    "atlas-inventory-0.1.0.zip": "1953d655e19b34c01036107a3cb065e2d887b9b0c3f1cf11491904823698578a",
+    "atlas-operations-0.1.0.zip": "2eaf98cc7dd0820c91781f0d1207aebed5a44628b1445fcba6b1b910f9abe2d5"
+  }
+}

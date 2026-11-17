@@ -1,0 +1,12 @@
+{
+  "recorded_at": "2026-11-17T13:25:10.997362+00:00",
+  "report_files": 7,
+  "missing_local_links": [],
+  "requirements": 31,
+  "unique_requirements": 31,
+  "uncompleted_requirement_families": 31,
+  "runtime_pid_file_absent": true,
+  "project_db_socket_absent": true,
+  "private_generated_password_value_matches": [],
+  "staged_files_checked_for_runtime_passwords": 47
+}
