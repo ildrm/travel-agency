@@ -1,0 +1,57 @@
+# Generated Persian draft; native financial/legal review required.
+msgid ""
+msgstr "Project-Id-Version: atlas-gateways 0.1.0\nLanguage: fa_IR\nContent-Type: text/plain; charset=UTF-8\nPlural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "A valid reservation is required for this order."
+msgstr "این سفارش به رزرو معتبر نیاز دارد."
+
+msgid "Atlas local simulator"
+msgstr "شبیه‌ساز محلی اطلس"
+
+msgid "Booking service is unavailable."
+msgstr "خدمت رزرو در دسترس نیست."
+
+msgid "No funds are transferred."
+msgstr "هیچ وجهی جابه‌جا نمی‌شود."
+
+msgid "No funds are transferred. This method is available only in an explicitly enabled local environment."
+msgstr "هیچ وجهی جابه‌جا نمی‌شود. این روش فقط در محیط محلیِ فعال‌شده در دسترس است."
+
+msgid "Payment verified; booking requires manual review."
+msgstr "پرداخت تأیید شد؛ رزرو به بررسی مسئول مربوط نیاز دارد."
+
+msgid "Simulated payment (local only)"
+msgstr "پرداخت آزمایشی (فقط محیط محلی)"
+
+msgid "Simulated payment is unavailable."
+msgstr "پرداخت آزمایشی در دسترس نیست."
+
+msgid "Simulation could not be verified."
+msgstr "پرداخت آزمایشی تأیید نشد."
+
+msgid "The order amount is invalid."
+msgstr "مبلغ سفارش معتبر نیست."
+
+msgid "The order and reservation do not match."
+msgstr "سفارش و رزرو با یکدیگر مطابقت ندارند."
+
+msgid "The order cannot be paid with this method."
+msgstr "این سفارش با این روش قابل پرداخت نیست."
+
+msgid "The reservation expired or changed. No simulated payment was initiated."
+msgstr "مهلت یا شرایط رزرو تغییر کرده است. هیچ پرداخت آزمایشی آغاز نشد."
+
+msgid "The reservation expired. Please reserve again."
+msgstr "مهلت رزرو پایان یافته است. دوباره رزرو کنید."
+
+msgid "The reservation requires manual review."
+msgstr "رزرو به بررسی مسئول مربوط نیاز دارد."
+
+msgid "This order needs separate payment."
+msgstr "این سفارش به پرداخت جداگانه نیاز دارد."
+
+msgid "This payment method is unavailable."
+msgstr "این روش پرداخت در دسترس نیست."
+
+msgid "Unavailable: provider contract, security verification and merchant approval are required."
+msgstr "در دسترس نیست: قرارداد ارائه‌دهنده، بررسی امنیتی و تأیید پذیرنده لازم است."

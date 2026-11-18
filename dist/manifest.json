@@ -1,0 +1,789 @@
+{
+  "artifacts": [
+    {
+      "bytes": 188849,
+      "file": "atlas-leisure-0.2.0.zip",
+      "sha256": "261fbdc8a94bc5176c56bbb290db3777d326e213a8070e4f7c460f3f69e05b65",
+      "source_files": [
+        {
+          "bytes": 18092,
+          "origin": "repository-license-copy",
+          "path": "atlas-leisure/LICENSE",
+          "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+          "source": "LICENSE"
+        },
+        {
+          "bytes": 2044,
+          "origin": "package-source",
+          "path": "atlas-leisure/README.txt",
+          "sha256": "36a979be924b468aa010c6f57d65be7e83627a6485286eabe0dd2a61180c07bb",
+          "source": "wp-content/themes/atlas-leisure/README.txt"
+        },
+        {
+          "bytes": 241,
+          "origin": "package-source",
+          "path": "atlas-leisure/assets/css/editor.css",
+          "sha256": "3bd2a289a320197d4fe510619a5786bc356c4ec221026a47e1dcf3406b99862f",
+          "source": "wp-content/themes/atlas-leisure/assets/css/editor.css"
+        },
+        {
+          "bytes": 10798,
+          "origin": "package-source",
+          "path": "atlas-leisure/assets/css/main.css",
+          "sha256": "09c45dc4d2b741ad967bc5d551af6beee2aa1fdef496712e8bfa2718566dd3a1",
+          "source": "wp-content/themes/atlas-leisure/assets/css/main.css"
+        },
+        {
+          "bytes": 785,
+          "origin": "package-source",
+          "path": "atlas-leisure/assets/svg/ASSETS.md",
+          "sha256": "dbbcfb4b0487e98e5c6c5c87678217892ecf808162aca3a6cb7fff28e3ac542e",
+          "source": "wp-content/themes/atlas-leisure/assets/svg/ASSETS.md"
+        },
+        {
+          "bytes": 1206,
+          "origin": "package-source",
+          "path": "atlas-leisure/assets/svg/character-daro-concept.svg",
+          "sha256": "ad05e067c33c05803ff044b5b09f8071eae96555d8ac003f0010519a86589715",
+          "source": "wp-content/themes/atlas-leisure/assets/svg/character-daro-concept.svg"
+        },
+        {
+          "bytes": 1152,
+          "origin": "package-source",
+          "path": "atlas-leisure/assets/svg/character-luma-concept.svg",
+          "sha256": "63900d2bf7a1659de179e194f0f7dcbd3d7d03bc746f7fe9dce2011c364ea297",
+          "source": "wp-content/themes/atlas-leisure/assets/svg/character-luma-concept.svg"
+        },
+        {
+          "bytes": 1296,
+          "origin": "package-source",
+          "path": "atlas-leisure/assets/svg/character-nava-concept.svg",
+          "sha256": "32a4e5b0fa6141cdc75c50f08ffb4424375ab1e972735598fd4af0f13d42bff0",
+          "source": "wp-content/themes/atlas-leisure/assets/svg/character-nava-concept.svg"
+        },
+        {
+          "bytes": 1185,
+          "origin": "package-source",
+          "path": "atlas-leisure/assets/svg/character-piko-concept.svg",
+          "sha256": "9db30e2034084c7782a36bbdd83fedaee82a20eb74726ed0e7cf29c5f83af7fb",
+          "source": "wp-content/themes/atlas-leisure/assets/svg/character-piko-concept.svg"
+        },
+        {
+          "bytes": 1327,
+          "origin": "package-source",
+          "path": "atlas-leisure/assets/svg/character-rumiq-concept.svg",
+          "sha256": "546b86806d3ee9d095a27a74de8d6abf1161165f763cd132c103ae2e5c40f902",
+          "source": "wp-content/themes/atlas-leisure/assets/svg/character-rumiq-concept.svg"
+        },
+        {
+          "bytes": 1618,
+          "origin": "package-source",
+          "path": "atlas-leisure/assets/svg/paper-landscape.svg",
+          "sha256": "9a86cab07aebe16c161cfc45ebb5b295c22525ef773aa8eac1b6090d82647c1b",
+          "source": "wp-content/themes/atlas-leisure/assets/svg/paper-landscape.svg"
+        },
+        {
+          "bytes": 22913,
+          "origin": "package-source",
+          "path": "atlas-leisure/functions.php",
+          "sha256": "d002eb06c4f0de03215926bc5f57eb2d551f143cecfde8426d73c43fb303fecf",
+          "source": "wp-content/themes/atlas-leisure/functions.php"
+        },
+        {
+          "bytes": 302,
+          "origin": "package-source",
+          "path": "atlas-leisure/languages/README.txt",
+          "sha256": "6716f12c7d89b0e4050039ad3bb2e373ca52a9e1d5a80969531eb329e7a22d15",
+          "source": "wp-content/themes/atlas-leisure/languages/README.txt"
+        },
+        {
+          "bytes": 645,
+          "origin": "package-source",
+          "path": "atlas-leisure/parts/footer.html",
+          "sha256": "15483344cf768e87547e8e0d19b110bc9b13c3db9822dc4d2608f25ff13cb1a1",
+          "source": "wp-content/themes/atlas-leisure/parts/footer.html"
+        },
+        {
+          "bytes": 687,
+          "origin": "package-source",
+          "path": "atlas-leisure/parts/header.html",
+          "sha256": "36838d985f3f91b8f90c982925ffa14c7b687603a0a708cc4026e67452886370",
+          "source": "wp-content/themes/atlas-leisure/parts/header.html"
+        },
+        {
+          "bytes": 247,
+          "origin": "package-source",
+          "path": "atlas-leisure/patterns/atlas-discovery.php",
+          "sha256": "90c7c6577f78d76f54be541951f128c6e846266c3a5dcb3c145fd61697eb0084",
+          "source": "wp-content/themes/atlas-leisure/patterns/atlas-discovery.php"
+        },
+        {
+          "bytes": 112819,
+          "origin": "package-source",
+          "path": "atlas-leisure/screenshot.png",
+          "sha256": "a8873d368e4be270216d25047e802a3afde51461f50c5020234b2b49aa2547ea",
+          "source": "wp-content/themes/atlas-leisure/screenshot.png"
+        },
+        {
+          "bytes": 389,
+          "origin": "package-source",
+          "path": "atlas-leisure/style.css",
+          "sha256": "7cc35ee466923e9d50bff990f54d5e1c2c9166453fafa35815e4d22c14fa8182",
+          "source": "wp-content/themes/atlas-leisure/style.css"
+        },
+        {
+          "bytes": 426,
+          "origin": "package-source",
+          "path": "atlas-leisure/templates/404.html",
+          "sha256": "2f686c2d6267ffb13f4e726a1f2f9ad7ee33bc1e2a82305169b9f1ca55b8e231",
+          "source": "wp-content/themes/atlas-leisure/templates/404.html"
+        },
+        {
+          "bytes": 784,
+          "origin": "package-source",
+          "path": "atlas-leisure/templates/archive.html",
+          "sha256": "b765fa2c7fcb12bb151191f8f3f1375ae2a6446add5be25124f3694f0c68cef0",
+          "source": "wp-content/themes/atlas-leisure/templates/archive.html"
+        },
+        {
+          "bytes": 332,
+          "origin": "package-source",
+          "path": "atlas-leisure/templates/front-page.html",
+          "sha256": "30d4e5397bbe7c53c09248a9b458ebc9cb1a084002ab0e98ed157d2ab64dee25",
+          "source": "wp-content/themes/atlas-leisure/templates/front-page.html"
+        },
+        {
+          "bytes": 892,
+          "origin": "package-source",
+          "path": "atlas-leisure/templates/index.html",
+          "sha256": "3f2252daafa6f859fd2fb145fc36d68d1cae471b67682bfc1f9401587f6f29ea",
+          "source": "wp-content/themes/atlas-leisure/templates/index.html"
+        },
+        {
+          "bytes": 397,
+          "origin": "package-source",
+          "path": "atlas-leisure/templates/page.html",
+          "sha256": "04b43233c555ac0f0d374d8eb95d09c42976ba356f2943f4164ad27663caac9c",
+          "source": "wp-content/themes/atlas-leisure/templates/page.html"
+        },
+        {
+          "bytes": 798,
+          "origin": "package-source",
+          "path": "atlas-leisure/templates/search.html",
+          "sha256": "3683660e78d640567141470385ab9821ac312d9780d9c5fad69cbe263e2234c0",
+          "source": "wp-content/themes/atlas-leisure/templates/search.html"
+        },
+        {
+          "bytes": 446,
+          "origin": "package-source",
+          "path": "atlas-leisure/templates/singular.html",
+          "sha256": "ff08580c5fb8abdac185958706e34c3671a1d2d91a248da3e09bd98ace280b4c",
+          "source": "wp-content/themes/atlas-leisure/templates/singular.html"
+        },
+        {
+          "bytes": 3164,
+          "origin": "package-source",
+          "path": "atlas-leisure/theme.json",
+          "sha256": "a6aad1df58eee8bace9ad8dc4c1f45738b321ace4d79dd2cc5273d60a0547a68",
+          "source": "wp-content/themes/atlas-leisure/theme.json"
+        }
+      ]
+    },
+    {
+      "bytes": 164579,
+      "file": "atlas-core-0.2.0.zip",
+      "sha256": "6cb6fcfcefbc2ed3345c0ebee0e0b5f2eb20ebcf437e7f9a0adfd409b881888c",
+      "source_files": [
+        {
+          "bytes": 18092,
+          "origin": "repository-license-copy",
+          "path": "atlas-core/LICENSE",
+          "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+          "source": "LICENSE"
+        },
+        {
+          "bytes": 2084,
+          "origin": "package-source",
+          "path": "atlas-core/atlas-core.php",
+          "sha256": "7402fca7bc67f9870a15d716aa132aa4acc666b6427cd7305563cabcd14d0afa",
+          "source": "wp-content/plugins/atlas-core/atlas-core.php"
+        },
+        {
+          "bytes": 3158,
+          "origin": "package-source",
+          "path": "atlas-core/src/Auth.php",
+          "sha256": "45a9e7494ac052e6c9155cdd753e1159bf741b054dc17a03f541cca05e93ba26",
+          "source": "wp-content/plugins/atlas-core/src/Auth.php"
+        },
+        {
+          "bytes": 30592,
+          "origin": "package-source",
+          "path": "atlas-core/src/Booking.php",
+          "sha256": "c504fd5684b275af6ca8db2a39c7ead48ac4c645459c67185aa06c0669d7e6a5",
+          "source": "wp-content/plugins/atlas-core/src/Booking.php"
+        },
+        {
+          "bytes": 23642,
+          "origin": "package-source",
+          "path": "atlas-core/src/Catalog.php",
+          "sha256": "8f97a8c51aef5413c6819afdfcb21c91c934c598e573cf8a069358eadaa490d1",
+          "source": "wp-content/plugins/atlas-core/src/Catalog.php"
+        },
+        {
+          "bytes": 13909,
+          "origin": "package-source",
+          "path": "atlas-core/src/DB.php",
+          "sha256": "4e291b958ce6e0333f033810fd4f41a5d85a33f3507ad63ae0ba480567b0df2c",
+          "source": "wp-content/plugins/atlas-core/src/DB.php"
+        },
+        {
+          "bytes": 4834,
+          "origin": "package-source",
+          "path": "atlas-core/src/Eligibility.php",
+          "sha256": "246b1d51cec7042c4ebc4a229284b03de194a053b42ab90a230e9c22cedb3ac5",
+          "source": "wp-content/plugins/atlas-core/src/Eligibility.php"
+        },
+        {
+          "bytes": 8510,
+          "origin": "package-source",
+          "path": "atlas-core/src/Finance.php",
+          "sha256": "08a0883572ffbac4f396ecf1272e7ad05c533671d2741bc7e74a35471c5b0666",
+          "source": "wp-content/plugins/atlas-core/src/Finance.php"
+        },
+        {
+          "bytes": 350,
+          "origin": "package-source",
+          "path": "atlas-core/src/Money.php",
+          "sha256": "c5355b9c45b812ccd6a43d2e960e2a7212ec2de794da9f0d76fe87433cece1fe",
+          "source": "wp-content/plugins/atlas-core/src/Money.php"
+        },
+        {
+          "bytes": 14880,
+          "origin": "package-source",
+          "path": "atlas-core/src/Offers.php",
+          "sha256": "ddac12185e7b1c038b6f8bd8c796493fc81b7e88dff288998a548bf5dcb31c04",
+          "source": "wp-content/plugins/atlas-core/src/Offers.php"
+        },
+        {
+          "bytes": 3188,
+          "origin": "package-source",
+          "path": "atlas-core/src/Privacy.php",
+          "sha256": "0e2473c0866b50acad66f1412a2a69fd9fa97025edf045de088f4cb8dc5206ba",
+          "source": "wp-content/plugins/atlas-core/src/Privacy.php"
+        },
+        {
+          "bytes": 14517,
+          "origin": "package-source",
+          "path": "atlas-core/src/Records.php",
+          "sha256": "4ab568f1a18098025fd48a0c1b1ec557dfae2f67c7dfe0ef5352efdd7c3ce9c1",
+          "source": "wp-content/plugins/atlas-core/src/Records.php"
+        },
+        {
+          "bytes": 10315,
+          "origin": "package-source",
+          "path": "atlas-core/src/Rest.php",
+          "sha256": "4b9f44a23d7893f048f2d08810bed011b98f557ceda643667d14ac0680fa1e3f",
+          "source": "wp-content/plugins/atlas-core/src/Rest.php"
+        },
+        {
+          "bytes": 14740,
+          "origin": "package-source",
+          "path": "atlas-core/src/Woo.php",
+          "sha256": "9568acb23106271a615f851910aba8000bfd33cda3e3acca9e26c3f1f0522806",
+          "source": "wp-content/plugins/atlas-core/src/Woo.php"
+        }
+      ]
+    },
+    {
+      "bytes": 75569,
+      "file": "atlas-gateways-0.2.0.zip",
+      "sha256": "0ff0da2fe8acc5deba0e3e4f0d6eb551e004c1e952a9bf2e71f1693b1fa8bfa5",
+      "source_files": [
+        {
+          "bytes": 18092,
+          "origin": "repository-license-copy",
+          "path": "atlas-gateways/LICENSE",
+          "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+          "source": "LICENSE"
+        },
+        {
+          "bytes": 824,
+          "origin": "package-source",
+          "path": "atlas-gateways/assets/simulator.js",
+          "sha256": "2dc8adfcbfecc8e3ac3bc45cc2d5f7517aa67ffe35a1cfd5873bcccf89904b50",
+          "source": "wp-content/plugins/atlas-gateways/assets/simulator.js"
+        },
+        {
+          "bytes": 696,
+          "origin": "package-source",
+          "path": "atlas-gateways/assets/zarinpal.js",
+          "sha256": "663ab034cbd768f2531a6d0588850ba0a6a20b3fafe242b811c7aec27c13b231",
+          "source": "wp-content/plugins/atlas-gateways/assets/zarinpal.js"
+        },
+        {
+          "bytes": 3215,
+          "origin": "package-source",
+          "path": "atlas-gateways/atlas-gateways.php",
+          "sha256": "5fe2b89c6476b1489eda71e6c1b90c7ed0c01d5245ee87c212b8b8ecaf0fb1f4",
+          "source": "wp-content/plugins/atlas-gateways/atlas-gateways.php"
+        },
+        {
+          "bytes": 1902,
+          "origin": "package-source",
+          "path": "atlas-gateways/blocks.php",
+          "sha256": "ea6918f36b93b2405af9aeee6120c0f3901c1b8d5c019c46e4a1a9db51633e92",
+          "source": "wp-content/plugins/atlas-gateways/blocks.php"
+        },
+        {
+          "bytes": 6392,
+          "origin": "package-source",
+          "path": "atlas-gateways/gateways.php",
+          "sha256": "3c8033952da093b541c92771a8665451f514390125e0537f829f38d24abd97fd",
+          "source": "wp-content/plugins/atlas-gateways/gateways.php"
+        },
+        {
+          "bytes": 2561,
+          "origin": "package-source",
+          "path": "atlas-gateways/languages/atlas-gateways-fa_IR.mo",
+          "sha256": "3b93e9ed7613f4efa355b99bc578ecb6f970624b2aa963c43b4a8a65c0ccd17b",
+          "source": "wp-content/plugins/atlas-gateways/languages/atlas-gateways-fa_IR.mo"
+        },
+        {
+          "bytes": 2641,
+          "origin": "package-source",
+          "path": "atlas-gateways/languages/atlas-gateways-fa_IR.po",
+          "sha256": "b3eb796b226c035894b75194bed88b795fc91991b3692e98df0fae1f896d8c4f",
+          "source": "wp-content/plugins/atlas-gateways/languages/atlas-gateways-fa_IR.po"
+        },
+        {
+          "bytes": 37946,
+          "origin": "package-source",
+          "path": "atlas-gateways/zarinpal.php",
+          "sha256": "2dff500a26b978358e4929a328c2c03fab1bd81963bdc7ea586c0acb20de3bc6",
+          "source": "wp-content/plugins/atlas-gateways/zarinpal.php"
+        }
+      ]
+    },
+    {
+      "bytes": 84089,
+      "file": "atlas-inventory-0.2.0.zip",
+      "sha256": "a0d60f0a5dd82a1f3ed9ccda22a9ba87d0f67ec6371620150c3d9eb616d84d84",
+      "source_files": [
+        {
+          "bytes": 18092,
+          "origin": "repository-license-copy",
+          "path": "atlas-inventory/LICENSE",
+          "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+          "source": "LICENSE"
+        },
+        {
+          "bytes": 7462,
+          "origin": "package-source",
+          "path": "atlas-inventory/README.md",
+          "sha256": "dd80101eaad4045b86864ee15fdb6b3eb139663788beca6eeb8482fab4228b01",
+          "source": "wp-content/plugins/atlas-inventory/README.md"
+        },
+        {
+          "bytes": 835,
+          "origin": "package-source",
+          "path": "atlas-inventory/atlas-inventory.php",
+          "sha256": "f17fba234e293a52828eff477772bd929ab24506cba9d670c1d815ad5cdee90d",
+          "source": "wp-content/plugins/atlas-inventory/atlas-inventory.php"
+        },
+        {
+          "bytes": 57158,
+          "origin": "package-source",
+          "path": "atlas-inventory/local.php",
+          "sha256": "efa15fa3f494f0a1ce56a01ebe1bf9f98cf5f2f7f589021e89d19c8ae754db0a",
+          "source": "wp-content/plugins/atlas-inventory/local.php"
+        }
+      ]
+    },
+    {
+      "bytes": 1268129,
+      "file": "atlas-operations-0.2.0.zip",
+      "sha256": "b46dd8ad94a3946038f77961bfaacce6923d03c48ba2b5de300908323c023e75",
+      "source_files": [
+        {
+          "bytes": 18092,
+          "origin": "repository-license-copy",
+          "path": "atlas-operations/LICENSE",
+          "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+          "source": "LICENSE"
+        },
+        {
+          "bytes": 88245,
+          "origin": "package-source",
+          "path": "atlas-operations/academy.php",
+          "sha256": "3f772eac0dee869c7679383bb87888f13895e3e56908ee60847910ffc81d4b66",
+          "source": "wp-content/plugins/atlas-operations/academy.php"
+        },
+        {
+          "bytes": 20489,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/academy.js",
+          "sha256": "530e9a4dc55e063abfce61f40e6f4c20ba82e34a004da5814908d4ed8efe7cc1",
+          "source": "wp-content/plugins/atlas-operations/assets/academy.js"
+        },
+        {
+          "bytes": 4592,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/booking-queue.js",
+          "sha256": "396db55c8afc523f31dc4243498b07ba9fcb4471c7ad8f847b053a7a5dfa92c5",
+          "source": "wp-content/plugins/atlas-operations/assets/booking-queue.js"
+        },
+        {
+          "bytes": 6322,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/booking.js",
+          "sha256": "42a1593d4e72d370a4071a9d97df8eeabdf665ab882c061ebec239bc6ff4d807",
+          "source": "wp-content/plugins/atlas-operations/assets/booking.js"
+        },
+        {
+          "bytes": 1343,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/catalog.css",
+          "sha256": "ec93c30b6a7570bd9909c974aa9d997556d61d3d53d26d745694f2e80b75bf65",
+          "source": "wp-content/plugins/atlas-operations/assets/catalog.css"
+        },
+        {
+          "bytes": 968,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/catalog.js",
+          "sha256": "4f5e72f63907625ad952836ab2f12c62fd410676631ca0287857e6d0390166c0",
+          "source": "wp-content/plugins/atlas-operations/assets/catalog.js"
+        },
+        {
+          "bytes": 1161,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/checkin.js",
+          "sha256": "2f9b9def04bb2cfaeaeaba86a283c6875e804c5d0c1d056939b7a212c7f2b551",
+          "source": "wp-content/plugins/atlas-operations/assets/checkin.js"
+        },
+        {
+          "bytes": 3010,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/dispatch.js",
+          "sha256": "f5fd59216b69ee842ce922f7e134e133d4b007d10a1d3ce93df71960b4a96f19",
+          "source": "wp-content/plugins/atlas-operations/assets/dispatch.js"
+        },
+        {
+          "bytes": 13787,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/event-attendees.js",
+          "sha256": "793e579dbf62d72a04bf6a62cbf1f481ff2a36ebf1fa448ccef65eb91d596080",
+          "source": "wp-content/plugins/atlas-operations/assets/event-attendees.js"
+        },
+        {
+          "bytes": 12476,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/events-qr.js",
+          "sha256": "c04620bd91d5f5780fc82de9f22258dc378e5d9cecf738919b5efaed66c7509a",
+          "source": "wp-content/plugins/atlas-operations/assets/events-qr.js"
+        },
+        {
+          "bytes": 2934,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/events.js",
+          "sha256": "92692c387de44ef662437b04617fd85880db8edb20f5074e4af4495063e98c1e",
+          "source": "wp-content/plugins/atlas-operations/assets/events.js"
+        },
+        {
+          "bytes": 5202,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/inventory.js",
+          "sha256": "ef836748d4ed6f0d3e7b04b66eb668d80dece5ed0dac0cbb8cb43b11939270e9",
+          "source": "wp-content/plugins/atlas-operations/assets/inventory.js"
+        },
+        {
+          "bytes": 3181,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/itinerary.js",
+          "sha256": "9e67e416a3cea1dab5746e92995ff7f4d46a818fb0094caa0110527e76b78dda",
+          "source": "wp-content/plugins/atlas-operations/assets/itinerary.js"
+        },
+        {
+          "bytes": 1410,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/materials.js",
+          "sha256": "5971078cf45c21fdcc9d8119e241e123a9977799487d1ab2e4883cf9cefb380d",
+          "source": "wp-content/plugins/atlas-operations/assets/materials.js"
+        },
+        {
+          "bytes": 2906,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/procurement.js",
+          "sha256": "fdddc87f567cf7589b54ab1fb714819be8d3e6a0b573a2ee5957698dad8ea99e",
+          "source": "wp-content/plugins/atlas-operations/assets/procurement.js"
+        },
+        {
+          "bytes": 18098,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/resource-booking.js",
+          "sha256": "251b9d2b981cf1c015363ac388e3f66e9cc04774db39f00ba4ea818e675b3b51",
+          "source": "wp-content/plugins/atlas-operations/assets/resource-booking.js"
+        },
+        {
+          "bytes": 11361,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/third-party/qr-0.7.0/LICENSE",
+          "sha256": "f9946796a8a5bd5981565142fa42e3b0cc36aef6f80e86beaf5905b3c0fef1b5",
+          "source": "wp-content/plugins/atlas-operations/assets/third-party/qr-0.7.0/LICENSE"
+        },
+        {
+          "bytes": 1109,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/third-party/qr-0.7.0/LICENSE-MIT",
+          "sha256": "07a9f887e9215644439b808628b09f8eece932d79130ff563f958f3a1783e684",
+          "source": "wp-content/plugins/atlas-operations/assets/third-party/qr-0.7.0/LICENSE-MIT"
+        },
+        {
+          "bytes": 1500,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/third-party/qr-0.7.0/MANIFEST.json",
+          "sha256": "7b3a985f53d086fdff7af83ace331dcfbea3674315b8d2d6029a9ff162eecbdf",
+          "source": "wp-content/plugins/atlas-operations/assets/third-party/qr-0.7.0/MANIFEST.json"
+        },
+        {
+          "bytes": 1078,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/third-party/qr-0.7.0/NOTICE.md",
+          "sha256": "65c12fea989fa6343e5d35e87f9c7b43d082fda41141d6c6cd3c045a4c0e79fc",
+          "source": "wp-content/plugins/atlas-operations/assets/third-party/qr-0.7.0/NOTICE.md"
+        },
+        {
+          "bytes": 130601,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/third-party/qr-0.7.0/decode.js",
+          "sha256": "00e209820dcb11d624e9a03d6383e580766792b57d1651318f0a29e4e1ff0fe8",
+          "source": "wp-content/plugins/atlas-operations/assets/third-party/qr-0.7.0/decode.js"
+        },
+        {
+          "bytes": 48245,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/third-party/qr-0.7.0/dom.js",
+          "sha256": "7b4092715e904c7357584ac836e319321006e5dd92af418af6adfb5cc02ab520",
+          "source": "wp-content/plugins/atlas-operations/assets/third-party/qr-0.7.0/dom.js"
+        },
+        {
+          "bytes": 38854,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/third-party/qr-0.7.0/index.js",
+          "sha256": "a0de370051f94bd74f218f74401fdf197585e3f9ef0143164f87ea941a3fdd6f",
+          "source": "wp-content/plugins/atlas-operations/assets/third-party/qr-0.7.0/index.js"
+        },
+        {
+          "bytes": 1956,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/third-party/qr-0.7.0/package.json",
+          "sha256": "cb4788786aeba66a19c48e7daddccc56e75109743ea98cfcda02f2fe9a3501b5",
+          "source": "wp-content/plugins/atlas-operations/assets/third-party/qr-0.7.0/package.json"
+        },
+        {
+          "bytes": 7135,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/tours.js",
+          "sha256": "a09e8d4f2808d3b83918562c838190b4d69423182afd394b846ce83878ebd8c9",
+          "source": "wp-content/plugins/atlas-operations/assets/tours.js"
+        },
+        {
+          "bytes": 1431,
+          "origin": "package-source",
+          "path": "atlas-operations/assets/travelers.js",
+          "sha256": "8b1fc5e9032854865a134916b0c54273fee50023b0e6725bb8c2ed42ec6adae1",
+          "source": "wp-content/plugins/atlas-operations/assets/travelers.js"
+        },
+        {
+          "bytes": 1119,
+          "origin": "package-source",
+          "path": "atlas-operations/atlas-operations.php",
+          "sha256": "0e3a4f181e7fddcee4acdf247bb20dff9ff14ea5869424d36de84ef9b1f4ca4d",
+          "source": "wp-content/plugins/atlas-operations/atlas-operations.php"
+        },
+        {
+          "bytes": 3151,
+          "origin": "package-source",
+          "path": "atlas-operations/booking-queue.php",
+          "sha256": "a496414045b1bbff7b14f1412a520035bd6addad04f8aeb485e621f6f7c81262",
+          "source": "wp-content/plugins/atlas-operations/booking-queue.php"
+        },
+        {
+          "bytes": 29227,
+          "origin": "package-source",
+          "path": "atlas-operations/catalog.php",
+          "sha256": "2e65f721367d682d26c7f047c5647057e0b59a2e81d2178efcb0f977cfec86bf",
+          "source": "wp-content/plugins/atlas-operations/catalog.php"
+        },
+        {
+          "bytes": 4523,
+          "origin": "package-source",
+          "path": "atlas-operations/checkins.php",
+          "sha256": "2a3729f15c65ece91bbf5bc282d48102e77a8b4868a40e60fc0ea16df7f6486d",
+          "source": "wp-content/plugins/atlas-operations/checkins.php"
+        },
+        {
+          "bytes": 1152,
+          "origin": "package-source",
+          "path": "atlas-operations/checkout-accessibility.php",
+          "sha256": "3128c4b02c244f85ff7b1f132c219daf65a9be8c31b42c9dc655703110058203",
+          "source": "wp-content/plugins/atlas-operations/checkout-accessibility.php"
+        },
+        {
+          "bytes": 27654,
+          "origin": "package-source",
+          "path": "atlas-operations/contracts.php",
+          "sha256": "35901369c553319cfaa94a08c46a12a3ac4c24009ba8e2be6f8535ba38e5cc35",
+          "source": "wp-content/plugins/atlas-operations/contracts.php"
+        },
+        {
+          "bytes": 47917,
+          "origin": "package-source",
+          "path": "atlas-operations/dispatch.php",
+          "sha256": "7e5970c32c75ab94985454cdb34effe67be5cda9e2b9ea2ed40fd6ee99609914",
+          "source": "wp-content/plugins/atlas-operations/dispatch.php"
+        },
+        {
+          "bytes": 14950,
+          "origin": "package-source",
+          "path": "atlas-operations/editorial.php",
+          "sha256": "ea118636e5989f5cb3e53e542a29e7524600c622744024ae06c3a520e043df7a",
+          "source": "wp-content/plugins/atlas-operations/editorial.php"
+        },
+        {
+          "bytes": 75108,
+          "origin": "package-source",
+          "path": "atlas-operations/events-advanced.php",
+          "sha256": "a17f3c90076b95eb2c670fea2fcc28b292f9f8d4fd5f1b2f6040ac2e8928b889",
+          "source": "wp-content/plugins/atlas-operations/events-advanced.php"
+        },
+        {
+          "bytes": 85964,
+          "origin": "package-source",
+          "path": "atlas-operations/events.php",
+          "sha256": "558e297c3c0cf0785f70552a532b814088721856c369ac673efee034c865621c",
+          "source": "wp-content/plugins/atlas-operations/events.php"
+        },
+        {
+          "bytes": 17959,
+          "origin": "package-source",
+          "path": "atlas-operations/finance-ui.php",
+          "sha256": "6542e1393612df883cf0e728523e62a0e9f6d3afb7b22b3a5beb4cd8dd4c16f0",
+          "source": "wp-content/plugins/atlas-operations/finance-ui.php"
+        },
+        {
+          "bytes": 5009,
+          "origin": "package-source",
+          "path": "atlas-operations/health.php",
+          "sha256": "00745ba543a9348750fe8f320be121ea567dc0eeeba9165f99426a413e9d8c68",
+          "source": "wp-content/plugins/atlas-operations/health.php"
+        },
+        {
+          "bytes": 24843,
+          "origin": "package-source",
+          "path": "atlas-operations/invitations.php",
+          "sha256": "1bb8c28c8dfaa8917485bbab165400f878ca11a1fe902f7cffd57f9b0f89ba09",
+          "source": "wp-content/plugins/atlas-operations/invitations.php"
+        },
+        {
+          "bytes": 20856,
+          "origin": "package-source",
+          "path": "atlas-operations/notifications.php",
+          "sha256": "6dffaa0c22417893ddb0d5579052e336d003454363c6dafeaf5226e7ab358692",
+          "source": "wp-content/plugins/atlas-operations/notifications.php"
+        },
+        {
+          "bytes": 71343,
+          "origin": "package-source",
+          "path": "atlas-operations/operations.php",
+          "sha256": "c6003488df744057c8018eeae67ccef7d698d7b493049f2107ca0243db852f05",
+          "source": "wp-content/plugins/atlas-operations/operations.php"
+        },
+        {
+          "bytes": 7901,
+          "origin": "package-source",
+          "path": "atlas-operations/partner-notices.php",
+          "sha256": "197b9be8d94449ca773edfea98de33edea94d453f5d1adf56a3e9746709a3475",
+          "source": "wp-content/plugins/atlas-operations/partner-notices.php"
+        },
+        {
+          "bytes": 17636,
+          "origin": "package-source",
+          "path": "atlas-operations/partners.php",
+          "sha256": "affe756d8902eeae5fdd3ff73f365e37c0801662dbf2fa3c0529722400134a3b",
+          "source": "wp-content/plugins/atlas-operations/partners.php"
+        },
+        {
+          "bytes": 9027,
+          "origin": "package-source",
+          "path": "atlas-operations/private-file-privacy.php",
+          "sha256": "17f54d59b7f90e68bbf0a2b66593c3b1c1b5c400c5a1ddf1e6547c998d828743",
+          "source": "wp-content/plugins/atlas-operations/private-file-privacy.php"
+        },
+        {
+          "bytes": 33735,
+          "origin": "package-source",
+          "path": "atlas-operations/private-files.php",
+          "sha256": "e82763c215ce92307c37a5e7e2fad9c5cc30295bb698bf44489d4645945c2713",
+          "source": "wp-content/plugins/atlas-operations/private-files.php"
+        },
+        {
+          "bytes": 53454,
+          "origin": "package-source",
+          "path": "atlas-operations/procurement.php",
+          "sha256": "08b047cd4b0630fb5684ae443f6b3c7472b601376930a32de7d4fd28d198e909",
+          "source": "wp-content/plugins/atlas-operations/procurement.php"
+        },
+        {
+          "bytes": 14340,
+          "origin": "package-source",
+          "path": "atlas-operations/reservation-status.php",
+          "sha256": "2b261c03e03e3c47e57db0b06a4a7b5425548ebacfd4e423be4a306ef63316f0",
+          "source": "wp-content/plugins/atlas-operations/reservation-status.php"
+        },
+        {
+          "bytes": 80574,
+          "origin": "package-source",
+          "path": "atlas-operations/resource-booking.php",
+          "sha256": "f44e591d6940da292c004c0c04a3fd649650916cdf90c777d14f1dea3db63d08",
+          "source": "wp-content/plugins/atlas-operations/resource-booking.php"
+        },
+        {
+          "bytes": 7109,
+          "origin": "package-source",
+          "path": "atlas-operations/schemas.php",
+          "sha256": "b61669d8d8660b23c0e95d47cb3cc3f0ec3855b943bd8e060e6963798a7aa29c",
+          "source": "wp-content/plugins/atlas-operations/schemas.php"
+        },
+        {
+          "bytes": 25572,
+          "origin": "package-source",
+          "path": "atlas-operations/support.php",
+          "sha256": "5ada7b75fcfcabcc478410344870cb690367a57c485dff1cbc22c2ef775fbc43",
+          "source": "wp-content/plugins/atlas-operations/support.php"
+        },
+        {
+          "bytes": 121022,
+          "origin": "package-source",
+          "path": "atlas-operations/tours.php",
+          "sha256": "5110fe5196c5e8002327f72f394076ae2fb7c11f8161a97ca13569b0b71b8060",
+          "source": "wp-content/plugins/atlas-operations/tours.php"
+        },
+        {
+          "bytes": 11570,
+          "origin": "package-source",
+          "path": "atlas-operations/workflows.php",
+          "sha256": "99f156861b609c552b8649b9e94f2b0835dc0afb6b4b42bad106fdf9c6cf5110",
+          "source": "wp-content/plugins/atlas-operations/workflows.php"
+        }
+      ]
+    }
+  ],
+  "sbom": {
+    "file": "SBOM.json",
+    "scope": "scoped owned-source/lock inventory, not complete external vendor inventory",
+    "sha256": "3d46d582a15a217aeddc1a31ced3fb46963ada9a1b6bf887c4e5dc5bcf303cdb",
+    "source": "implementation/SBOM.json"
+  },
+  "status": "development_artifacts_not_production_approved",
+  "version": "0.2.0"
+}

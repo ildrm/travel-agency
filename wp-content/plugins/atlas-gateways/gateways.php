@@ -23,10 +23,6 @@ class Atlas_Gateway_SEP extends Atlas_Disabled_Gateway {
 class Atlas_Gateway_Mellat extends Atlas_Disabled_Gateway {
     public function __construct() { $this->setup('atlas_mellat', 'Behpardakht Mellat'); }
 }
-class Atlas_Gateway_ZarinPal extends Atlas_Disabled_Gateway {
-    public function __construct() { $this->setup('atlas_zarinpal', 'ZarinPal'); }
-}
-
 class Atlas_Gateway_Simulator extends WC_Payment_Gateway {
     public function __construct() {
         $this->id = 'atlas_simulator';
@@ -79,12 +75,31 @@ class Atlas_Gateway_Simulator extends WC_Payment_Gateway {
                 wc_add_notice(__('The order and reservation do not match.', 'atlas-gateways'), 'error');
                 return array('result' => 'failure');
             }
+            if ($order->is_paid()) {
+                if (!in_array($booking['status'],array('paid_pending_confirmation','confirmed','fulfilled'),true)) {
+                    wc_add_notice(__('The reservation requires manual review.', 'atlas-gateways'), 'error');
+                    return array('result'=>'failure');
+                }
+                if (function_exists('WC') && WC()->cart) WC()->cart->empty_cart();
+                return array('result'=>'success','redirect'=>$this->get_return_url($order));
+            }
+            $ready=\Atlas\Core\Booking::can_initiate_payment($booking_id,get_current_user_id(),(int)$order->get_id());
+            if (is_wp_error($ready)) {
+                wc_add_notice(__('The reservation expired or changed. No simulated payment was initiated.', 'atlas-gateways'), 'error');
+                return array('result'=>'failure');
+            }
             $proof = \Atlas\Core\VerifiedPayment::from_adapter('local_simulator', 'order-' . $order->get_id(), $amount);
             if (is_wp_error($proof)) { wc_add_notice(__('Simulation could not be verified.', 'atlas-gateways'), 'error'); return array('result'=>'failure'); }
             $result = \Atlas\Core\Booking::verify($booking_id, $proof);
-            if (is_wp_error($result) || $result['status'] !== 'paid_pending_confirmation') {
+            if (is_wp_error($result) || $result['payment_status'] !== 'verified') {
                 wc_add_notice(__('The reservation requires manual review.', 'atlas-gateways'), 'error');
                 return array('result' => 'failure');
+            }
+            // A consumed/released race after valid initiation cannot erase an
+            // independently verified monetary fact or invite a second charge.
+            // Booking confirmation remains separate from Woo's payment status.
+            if ($result['status']==='exception') {
+                $order->add_order_note(__('Payment verified; booking requires manual review.', 'atlas-gateways'));
             }
         }
         if (!$order->is_paid()) $order->payment_complete('atlas-simulated-' . $order->get_id());

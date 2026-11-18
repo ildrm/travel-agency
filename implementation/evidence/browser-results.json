@@ -2,7 +2,7 @@
   "config": {
     "argv": [
       "/opt/homebrew/Cellar/node/26.12.0/bin/node",
-      "/Users/shahinilderemi/Documents/tmp/iranbroker/node_modules/.bin/playwright",
+      "/Users/shahinilderemi/Documents/tmp/iranbroker/node_modules/@playwright/test/cli.js",
       "test",
       "--workers=1"
     ],
@@ -104,6 +104,48 @@
   },
   "suites": [
     {
+      "title": "events-advanced.spec.cjs",
+      "file": "events-advanced.spec.cjs",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "event QR image generation, local file decode and explicitly mocked camera release",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1760,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T07:09:55.312Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "973546aaeb74d1a80021-2ea6bb276b28d2209a14",
+          "file": "events-advanced.spec.cjs",
+          "line": 3,
+          "column": 1
+        }
+      ]
+    },
+    {
       "title": "platform.spec.cjs",
       "file": "platform.spec.cjs",
       "column": 0,
@@ -125,12 +167,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4270,
+                  "duration": 1431,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-17T08:26:30.020Z",
+                  "startTime": "2026-11-18T07:09:59.829Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -140,7 +182,7 @@
           ],
           "id": "2c5b3257cb27d2f45169-a2147cc160dcdc9e0605",
           "file": "platform.spec.cjs",
-          "line": 7,
+          "line": 17,
           "column": 3
         },
         {
@@ -159,12 +201,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1450,
+                  "duration": 1898,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-17T08:26:37.690Z",
+                  "startTime": "2026-11-18T07:10:01.272Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -174,45 +216,11 @@
           ],
           "id": "2c5b3257cb27d2f45169-e27c11f979c75748e6dd",
           "file": "platform.spec.cjs",
-          "line": 24,
+          "line": 52,
           "column": 3
         },
         {
           "title": "public discovery, keyboard, RTL and mobile reflow: fa",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 45000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1364,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-11-17T08:26:39.160Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "2c5b3257cb27d2f45169-4f2c7d539efe1e32c6cc",
-          "file": "platform.spec.cjs",
-          "line": 7,
-          "column": 3
-        },
-        {
-          "title": "axe public discovery: fa",
           "ok": true,
           "tags": [],
           "tests": [
@@ -232,7 +240,7 @@
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-17T08:26:40.533Z",
+                  "startTime": "2026-11-18T07:10:03.182Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -240,14 +248,14 @@
               "status": "expected"
             }
           ],
-          "id": "2c5b3257cb27d2f45169-be124795509688d171f3",
+          "id": "2c5b3257cb27d2f45169-4f2c7d539efe1e32c6cc",
           "file": "platform.spec.cjs",
-          "line": 24,
+          "line": 17,
           "column": 3
         },
         {
-          "title": "authentication, customer account and scoped partner portal",
-          "ok": false,
+          "title": "axe public discovery: fa",
+          "ok": true,
           "tags": [],
           "tests": [
             {
@@ -260,45 +268,57 @@
                 {
                   "workerIndex": 0,
                   "parallelIndex": 0,
-                  "status": "timedOut",
-                  "duration": 45301,
-                  "error": {
-                    "message": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m",
-                    "stack": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m"
-                  },
-                  "errors": [
-                    {
-                      "message": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m"
-                    },
-                    {
-                      "location": {
-                        "file": "/Users/shahinilderemi/Documents/tmp/iranbroker/tests/browser/platform.spec.cjs",
-                        "column": 14,
-                        "line": 37
-                      },
-                      "message": "Error: page.waitForURL: Test timeout of 45000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n  35 |   await page.locator('#user_pass').fill(credentials.admin_password);\n  36 |   await page.locator('#wp-submit').click();\n> 37 |   await page.waitForURL(/wp-admin/);\n     |              ^\n  38 |   await page.goto('/?atlas_area=account&lang=fa', { waitUntil: 'networkidle' });\n  39 |   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');\n  40 |   await expect(page.locator('body')).not.toContainText('[atlas_account]');\n    at /Users/shahinilderemi/Documents/tmp/iranbroker/tests/browser/platform.spec.cjs:37:14"
-                    }
-                  ],
+                  "status": "passed",
+                  "duration": 1499,
+                  "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-17T08:26:41.922Z",
+                  "startTime": "2026-11-18T07:10:04.572Z",
                   "annotations": [],
-                  "attachments": [
-                    {
-                      "name": "error-context",
-                      "contentType": "text/markdown",
-                      "path": "/Users/shahinilderemi/Documents/tmp/iranbroker/test-results/platform-authentication-cu-e0560-t-and-scoped-partner-portal/error-context.md"
-                    }
-                  ]
+                  "attachments": []
                 }
               ],
-              "status": "unexpected"
+              "status": "expected"
+            }
+          ],
+          "id": "2c5b3257cb27d2f45169-be124795509688d171f3",
+          "file": "platform.spec.cjs",
+          "line": 52,
+          "column": 3
+        },
+        {
+          "title": "authentication, customer account and scoped partner portal",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1978,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T07:10:06.077Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
             }
           ],
           "id": "2c5b3257cb27d2f45169-a758e7956e716621a9b6",
           "file": "platform.spec.cjs",
-          "line": 31,
+          "line": 59,
           "column": 1
         },
         {
@@ -314,15 +334,15 @@
               "projectName": "",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 289,
+                  "duration": 156,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-17T08:27:27.987Z",
+                  "startTime": "2026-11-18T07:10:08.065Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -332,7 +352,219 @@
           ],
           "id": "2c5b3257cb27d2f45169-164616205df001ec8324",
           "file": "platform.spec.cjs",
-          "line": 47,
+          "line": 79,
+          "column": 1
+        },
+        {
+          "title": "catalog filters narrow results and keep the Farsi locale",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 522,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T07:10:08.228Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5b3257cb27d2f45169-0128f0fed359f198fa4b",
+          "file": "platform.spec.cjs",
+          "line": 88,
+          "column": 1
+        },
+        {
+          "title": "reviewed guides link reciprocal published translations and canonical URLs",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 359,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T07:10:08.756Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5b3257cb27d2f45169-c47a21a34615aa122eb6",
+          "file": "platform.spec.cjs",
+          "line": 101,
+          "column": 1
+        },
+        {
+          "title": "physical product checkout calculates native shipping and keeps offline money pending",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2625,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T07:10:09.122Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5b3257cb27d2f45169-02b50976c81370637701",
+          "file": "platform.spec.cjs",
+          "line": 128,
+          "column": 1
+        },
+        {
+          "title": "customer reserve -> Woo Blocks simulated payment -> agency confirmation: en",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13147,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T07:10:11.756Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5b3257cb27d2f45169-0b1252b453d7389d864e",
+          "file": "platform.spec.cjs",
+          "line": 169,
+          "column": 3
+        },
+        {
+          "title": "customer reserve -> Woo Blocks simulated payment -> agency confirmation: fa",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7649,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T07:10:24.910Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5b3257cb27d2f45169-93da0d995fc461922f4c",
+          "file": "platform.spec.cjs",
+          "line": 169,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "resource.spec.cjs",
+      "file": "resource.spec.cjs",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "dated stay -> exact Checkout Blocks simulation -> supplier acceptance -> agency confirmation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6149,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T07:10:32.593Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7def9d7a1793f11f5867-780f26ae353269c55929",
+          "file": "resource.spec.cjs",
+          "line": 30,
           "column": 1
         }
       ]
@@ -340,11 +572,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-11-17T08:26:28.932Z",
-    "duration": 59367.078,
-    "expected": 5,
+    "startTime": "2026-11-18T07:09:55.027Z",
+    "duration": 43859.919,
+    "expected": 13,
     "skipped": 0,
-    "unexpected": 1,
+    "unexpected": 0,
     "flaky": 0
   }
 }

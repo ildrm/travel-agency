@@ -1,0 +1,27 @@
+{
+  "started_at": "2026-11-18T07:10:40.103880+00:00",
+  "passed": true,
+  "scope": "two sequential deterministic package generations; install checked separately",
+  "first_sha256": {
+    "atlas-leisure-0.2.0.zip": "261fbdc8a94bc5176c56bbb290db3777d326e213a8070e4f7c460f3f69e05b65",
+    "atlas-core-0.2.0.zip": "6cb6fcfcefbc2ed3345c0ebee0e0b5f2eb20ebcf437e7f9a0adfd409b881888c",
+    "atlas-gateways-0.2.0.zip": "0ff0da2fe8acc5deba0e3e4f0d6eb551e004c1e952a9bf2e71f1693b1fa8bfa5",
+    "atlas-inventory-0.2.0.zip": "a0d60f0a5dd82a1f3ed9ccda22a9ba87d0f67ec6371620150c3d9eb616d84d84",
+    "atlas-operations-0.2.0.zip": "b46dd8ad94a3946038f77961bfaacce6923d03c48ba2b5de300908323c023e75",
+    "SBOM.json": "3d46d582a15a217aeddc1a31ced3fb46963ada9a1b6bf887c4e5dc5bcf303cdb",
+    "manifest.json": "80711bcb1402d37cf095431f948b7e7f704fe3ad1ef05e70555801f1bb4a9702",
+    "SHA256SUMS": "80af79e2597f16d51d630ef7813f16f0667a3bff1bcd83db0d356bbe5f10026b"
+  },
+  "second_sha256": {
+    "atlas-leisure-0.2.0.zip": "261fbdc8a94bc5176c56bbb290db3777d326e213a8070e4f7c460f3f69e05b65",
+    "atlas-core-0.2.0.zip": "6cb6fcfcefbc2ed3345c0ebee0e0b5f2eb20ebcf437e7f9a0adfd409b881888c",
+    "atlas-gateways-0.2.0.zip": "0ff0da2fe8acc5deba0e3e4f0d6eb551e004c1e952a9bf2e71f1693b1fa8bfa5",
+    "atlas-inventory-0.2.0.zip": "a0d60f0a5dd82a1f3ed9ccda22a9ba87d0f67ec6371620150c3d9eb616d84d84",
+    "atlas-operations-0.2.0.zip": "b46dd8ad94a3946038f77961bfaacce6923d03c48ba2b5de300908323c023e75",
+    "SBOM.json": "3d46d582a15a217aeddc1a31ced3fb46963ada9a1b6bf887c4e5dc5bcf303cdb",
+    "manifest.json": "80711bcb1402d37cf095431f948b7e7f704fe3ad1ef05e70555801f1bb4a9702",
+    "SHA256SUMS": "80af79e2597f16d51d630ef7813f16f0667a3bff1bcd83db0d356bbe5f10026b"
+  },
+  "files_compared": 8,
+  "finished_at": "2026-11-18T07:10:40.263785+00:00"
+}

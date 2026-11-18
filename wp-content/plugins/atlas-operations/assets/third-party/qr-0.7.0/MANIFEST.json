@@ -1,0 +1,47 @@
+{
+  "name": "qr",
+  "version": "0.7.0",
+  "upstream": "https://github.com/paulmillr/qr",
+  "release": "https://github.com/paulmillr/qr/releases/tag/0.7.0",
+  "release_date": "2026-08-31",
+  "license": "(MIT OR Apache-2.0)",
+  "selected_license": "MIT",
+  "metadata_url": "https://registry.npmjs.org/qr/0.7.0",
+  "tarball_url": "https://registry.npmjs.org/qr/-/qr-0.7.0.tgz",
+  "tarball_integrity": "sha512-/VrrACmOAwZVipuRITwfEwOL5oAMEHH5PTmBWaGtlTom2Thxaa+rhmna4zU9PRN2uLw2wdccbkHOLGZb1Q9SdA==",
+  "git_head": "be475cca488635b8a71e158ac6190a5c78a201a8",
+  "retrieved": "2026-11-17",
+  "runtime_dependencies": [],
+  "files": [
+    {
+      "file": "index.js",
+      "bytes": 38854,
+      "sha256": "a0de370051f94bd74f218f74401fdf197585e3f9ef0143164f87ea941a3fdd6f"
+    },
+    {
+      "file": "decode.js",
+      "bytes": 130601,
+      "sha256": "00e209820dcb11d624e9a03d6383e580766792b57d1651318f0a29e4e1ff0fe8"
+    },
+    {
+      "file": "dom.js",
+      "bytes": 48245,
+      "sha256": "7b4092715e904c7357584ac836e319321006e5dd92af418af6adfb5cc02ab520"
+    },
+    {
+      "file": "LICENSE",
+      "bytes": 11361,
+      "sha256": "f9946796a8a5bd5981565142fa42e3b0cc36aef6f80e86beaf5905b3c0fef1b5"
+    },
+    {
+      "file": "LICENSE-MIT",
+      "bytes": 1109,
+      "sha256": "07a9f887e9215644439b808628b09f8eece932d79130ff563f958f3a1783e684"
+    },
+    {
+      "file": "package.json",
+      "bytes": 1956,
+      "sha256": "cb4788786aeba66a19c48e7daddccc56e75109743ea98cfcda02f2fe9a3501b5"
+    }
+  ]
+}

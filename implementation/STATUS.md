@@ -1,26 +1,11 @@
-# Implementation status
+# Atlas Leisure implementation status
 
-Baseline: 2026-11-17. Overall **IN_PROGRESS**; full documented framework not complete. No production deployment or external approval.
+**0.2.0 · VERIFIED_LOCAL · 18 November 2026**
 
-Completed intake: 56 files under docs, 49 primary specifications, zero unreadable. Full-text team intake and 31 baseline FR/NFR mappings, 811 section/ID evidence rows exist. Original documentation preserved.
+The release contains the Atlas Leisure block theme and four WooCommerce companion plugins. The frozen build passed 165 static checks, 24 integration suites and 13 headless browser tests. All five ZIPs matched across two builds and passed installation from the archives. The isolated restore matched 102 tables and 2,727 rows by count and logical checksum. [Release evidence](evidence/development-release.json) · [Installable artifacts](../dist/manifest.json)
 
-Local runtime installed from official sources: WordPress 7.1.4, WooCommerce 11.3.0, PHP 8.5.8, MariaDB 13.0.2. Socket-only DB with 32 MB buffer and loopback-only PHP; no system services or visible browser touched. Existing WP-CLI vendor emits PHP 8.5 deprecation warnings, retained in logs.
+The English and Persian storefronts support discovery, service reservations, Checkout Blocks and private printable vouchers. The local implementation includes dated stays and rentals, manual transfer dispatch, tours, events, Academy groups, partner contracts, procurement, in-account notices and encrypted document review. Native WooCommerce manages physical shipping and offline checkout. Air, rail and bus use a private inquiry workflow until contracted ticket issuance is available. [Whole-project review](PROJECT-REVIEW.md)
 
-| Area | Status | Current evidence / gap |
-|---|---|---|
-| Core schema, roles/org ACL, offers | IMPLEMENTED | First integration checks pass; schema4 migration/new coverage pending rerun |
-| Booking/time/payment | IN_PROGRESS | First run 16 passed/1 race-worker bootstrap failure; fix written, rerun pending |
-| Theme/ENFA | IMPLEMENTED | Actual files and SVG sources; first browser found routing/a11y defects, fixes written and pending rerun |
-| Woo bridge / checkout / HPOS | IN_PROGRESS | Real Woo installed, bridge and local simulator code; full browser/Store API purchase proof pending |
-| Tours/events/Academy | IN_PROGRESS | Typed records, approval/itinerary and attendance/eligibility workflows; detailed coverage incomplete |
-| Local stays/vehicle inventory | IMPLEMENTED | New staff-only transactional plugin; integration tests unrun |
-| Passenger/transfer connectors | BLOCKED_EXTERNAL | Safe request paths; no live inventory/issuance/provider access |
-| Procurement/partner/support/finance | IN_PROGRESS | Scoped forms/workflows and tests written; incomplete advanced coverage |
-| SEP/Saman | BLOCKED_EXTERNAL | Disabled Woo boundary, no official merchant contract/credentials/sandbox proof |
-| Mellat | BLOCKED_EXTERNAL | Disabled Woo boundary, no official merchant contract/credentials/sandbox proof |
-| ZarinPal | BLOCKED_EXTERNAL | Disabled Woo boundary, no official merchant contract/credentials/sandbox proof |
-| Crypto | BLOCKED_EXTERNAL | Forced OFF; no wallet/address/activation path |
-| Security/a11y/performance/recovery | IN_PROGRESS | Source checks and first browser reports; independent/human/production-like evidence pending |
-| Packaging/CI/operating evidence | IN_PROGRESS | Packaging/test scripts exist; clean-install archives and restore evidence pending |
+The documentation intake covers 56 files and 49 specifications. The original `docs/` tree is unchanged. The traceability table preserves all 31 requirement families and the associated 811 evidence references. Broad acceptance still includes the code and verification boundaries in the feature matrix. [Inventory](00-docs-inventory.md) · [Traceability](01-requirements-traceability.csv) · [Feature gaps](FEATURE-GAPS.md)
 
-Read TEST-EVIDENCE.md / RELEASE-READINESS.md when present for final executed results; this checkpoint will be updated after integration. No work continues after a final response unless another turn starts.
+Core schema 7, local inventory schema 3 and the companion tables passed the disposable installation. The prepared ZarinPal adapter passed fictional HTTP fixtures. SEP and Mellat await merchant specifications and credentials. Production also requires approved supplier, legal, privacy, accessibility, native-language and operations evidence. [Readiness](RELEASE-READINESS.md) · [External dependencies](EXTERNAL-DEPENDENCIES.md)

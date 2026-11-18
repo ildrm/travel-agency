@@ -1,0 +1,10 @@
+{
+  "started_at": "2026-11-18T07:09:53.420954+00:00",
+  "finished_at": "2026-11-18T07:10:38.963907+00:00",
+  "headless": true,
+  "workers": 1,
+  "source_sha256": "d022d55075978b95aa3f02d69d158067f8f049fd58b0519750398868c7138a1c",
+  "source_unchanged_during_run": true,
+  "exit_code": 0,
+  "production_or_live_provider_test": false
+}

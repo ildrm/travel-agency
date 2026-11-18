@@ -1,0 +1,21 @@
+# Security and financial integrity
+
+Reviewed 18 November 2026 against the Atlas code, local evidence and DOC-23, DOC-24, DOC-27, DOC-37 and DOC-39. Scope includes authorization, booking and payment integrity, file access and recovery. This is a bounded code and fixture review. The independent security and privacy acceptance remains open. [Executed test evidence](TEST-EVIDENCE.md) · [Release gate decisions](04-release-gates.md)
+
+| Boundary | Verified control |
+| --- | --- |
+| Organization and object access | Active membership and organization, operation-specific role ceiling, owner checks and privacy-safe response projections. Scoped invitation acceptance and revocation preserve the separation between organization and agency privileges. |
+| Booking and capacity | Canonical lock order for holds, inventory transactions, exact service price snapshots, half-open deadlines, and rollback when allocation or audit fails. Dated cancellation releases only the approved eligible resource and replays its outcome safely. |
+| WooCommerce purchase | A reciprocal link binds a dedicated virtual service product to its offer. History and conflict guards prevent repurposing an ordinary WooCommerce product or reassigning a service binding. Service carts reject mixed purchases and unsupported methods before dispatch. |
+| Verified money | Receipt, booking confirmation, eligibility and refund remain separate. Replayed references preserve one monetary fact. Late and excess receipts preserve the ledger and open a private exception review. A canceled booking cannot return a stale confirmation from an old request key. |
+| Supplier and payment boundaries | The local simulator is restricted to authenticated owners in the explicit demo. ZarinPal V4 has hashed callback state, order-bound attempts, independent amount/currency verification, unknown-outcome reconciliation and a no-redirect HTTP transport. Verification used fictional HTTP responses. SEP and Mellat remain unavailable awaiting merchant-issued contracts. Digital assets stay off. |
+| Private files and exports | Purpose policy, retention, external key and storage, encrypted quarantine, byte-bound scanner evidence, scoped download and legal hold. Procurement binds artwork to the exact scanned revision. WordPress portability checks request identity, nonce and ownership. Erasure review records a request and respects retained bytes and holds. |
+| Event and tour data | Restricted event answers require a current reviewed policy and explicit consent, and stay separate from the booking snapshot. QR references are signed and occurrence-scoped. Tour manifests are protected and admission depends on confirmed booking, readiness and actual operation phase. |
+| Notifications and audit | In-account delivery resolves recipients from committed object relationships. Ticket, procurement, student and document details remain scoped. Worker retries are bounded, and the agency sees aggregate health without identifiers. Audit byte limits preserve valid Persian text. |
+| Dependency and recovery evidence | Public npm advisory checks cover the locked development tools and bundled QR package. Restore verification compares the isolated database by row counts and logical checksums. |
+
+The observed stack is WordPress 7.1.4, WooCommerce 11.3.0, PHP 8.5.8 and MariaDB 13.0.2. The Core and Gateway compatibility declarations cover the observed HPOS and Checkout Blocks behavior. Framework compatibility across other versions and extensions requires its own adoption testing. [Runtime lock](../deploy/runtime.lock.json)
+
+The 11.3.0 signed-in checkout missing email-description reference was repaired and checked in English and Persian. Assistive technology and native-language acceptance remain separate. [Accessibility report](ACCESSIBILITY-REPORT.md)
+
+Deployment with real personal data or money requires approved agency provisioning and MFA, abuse controls, scoped and privacy-safe denial telemetry, secret rotation and recovery, actual scanner validation, complete retention and backup propagation policy, a production-like restore and external reconciliation exercise, and independent vulnerability and incident reviews. Traveler declarations and fictional verification remain distinct from real identity evidence. [External dependencies](EXTERNAL-DEPENDENCIES.md) · [Feature gaps](FEATURE-GAPS.md)

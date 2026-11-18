@@ -31,6 +31,8 @@ final class Atlas_Event_Checkins {
         try {
             $booking=$wpdb->get_row($wpdb->prepare('SELECT id,offer_id,status,quantity FROM '.DB::table('bookings').' WHERE id=%s FOR UPDATE',$body['booking_id']));
             if (!$booking || (int)$booking->offer_id!==$offer_id || $booking->status!=='confirmed' || $body['attendee_index']>(int)$booking->quantity) { $wpdb->query('ROLLBACK'); return new WP_Error('atlas_invalid_checkin',__('A confirmed booking and valid attendee number are required.','atlas-operations'),array('status'=>409)); }
+            $allowed=apply_filters('atlas_operations_validate_checkin',true,$booking,$offer_id,$body);
+            if ($allowed!==true) { $wpdb->query('ROLLBACK'); return is_wp_error($allowed)?$allowed:new WP_Error('atlas_checkin_window',__('Check-in is not available.','atlas-operations'),array('status'=>409)); }
             $table=self::table();
             $inserted=$wpdb->query($wpdb->prepare("INSERT IGNORE INTO $table (booking_id,attendee_index,offer_id,checked_by,checked_at) VALUES (%s,%d,%d,%d,%s)",$body['booking_id'],$body['attendee_index'],$offer_id,get_current_user_id(),DB::now()));
             if ($inserted!==1) { $wpdb->query('ROLLBACK'); return new WP_Error('atlas_already_checked_in',__('This attendee is already checked in.','atlas-operations'),array('status'=>409)); }

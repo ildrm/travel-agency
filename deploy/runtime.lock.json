@@ -4,7 +4,18 @@
   "retrieved": "2026-11-17",
   "source_wordpress": "https://wordpress.org/",
   "source_woocommerce": "https://wordpress.org/plugins/woocommerce/",
-  "php_test_host": "8.5.8",
-  "database_test_host": "MariaDB 13.0.2",
-  "status": "downloaded_not_yet_compatibility_verified"
+  "status": "verified_local_supported_paths",
+  "observed_runtime": {
+    "php": "8.5.8",
+    "database": "13.0.2-MariaDB"
+  },
+  "verified_environment": {
+    "php": "8.5.8",
+    "database": "13.0.2-MariaDB"
+  },
+  "verification_evidence": [
+    "implementation/evidence/integration-results.json",
+    "implementation/evidence/browser-build.json",
+    "implementation/TEST-EVIDENCE.md"
+  ]
 }

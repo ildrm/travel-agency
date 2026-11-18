@@ -26,6 +26,19 @@ final class Eligibility {
         return true;
     }
     /** Participant data is self-declared, never a claim of identity verification. */
+    public static function evaluate(array $policy,array $fields): true|\WP_Error {
+        $valid=self::policy($policy); if (is_wp_error($valid)) return $valid;
+        $dob=$fields['birth_date']??'';
+        if (!isset($fields['name']) || !is_string($fields['name']) || trim($fields['name'])==='') return new \WP_Error('atlas_invalid_participant','Traveler name is required.', ['status'=>422]);
+        if (!is_string($dob) || !self::date($dob)) return new \WP_Error('atlas_invalid_participant','Traveler birth date is invalid.', ['status'=>422]);
+        if (!$policy) return true;
+        if ($dob>$policy['age_on']) return new \WP_Error('atlas_ineligible','Birth date is after the eligibility date.', ['status'=>422]);
+        $age=(new \DateTimeImmutable($dob,new \DateTimeZone('UTC')))->diff(new \DateTimeImmutable($policy['age_on'],new \DateTimeZone('UTC')))->y;
+        if ((isset($policy['min_age']) && $age<$policy['min_age']) || (isset($policy['max_age']) && $age>$policy['max_age'])) return new \WP_Error('atlas_ineligible','Traveler does not meet the age policy.', ['status'=>422]);
+        if ($age<($policy['guardian_below']??18) && (empty(trim((string)($fields['guardian_name']??''))) || ($fields['guardian_attested']??false)!==true)) return new \WP_Error('atlas_guardian_required','A guardian name and self-attestation are required.', ['status'=>422]);
+        return true;
+    }
+    /** Ownership remains here; evaluate() only evaluates already-authorized field data. */
     public static function validate(array $offer,int $userId,int $qty,array $refs): true|\WP_Error {
         $policy=$offer['eligibility'] ?? []; if (!is_array($policy)) { return new \WP_Error('atlas_ineligible','Eligibility policy invalid.', ['status'=>422]); }
         $valid=self::policy($policy); if (is_wp_error($valid)) { return $valid; }
@@ -36,14 +49,7 @@ final class Eligibility {
         foreach ($refs as $id) {
             $person=Records::get('traveler',$id,$userId);
             if (is_wp_error($person) || $person['org_id']!==0 || $person['owner_id']!==$userId) { return new \WP_Error('atlas_invalid_participant','Traveler unavailable.', ['status'=>404]); }
-            $f=$person['fields']; $dob=$f['birth_date'] ?? '';
-            if (!isset($f['name']) || !is_string($f['name']) || trim($f['name'])==='') { return new \WP_Error('atlas_invalid_participant','Traveler name is required.', ['status'=>422]); }
-            if (!is_string($dob) || !self::date($dob)) { return new \WP_Error('atlas_invalid_participant','Traveler birth date is invalid.', ['status'=>422]); }
-            if (!$policy) { continue; }
-            if ($dob>$policy['age_on']) { return new \WP_Error('atlas_ineligible','Birth date is after the eligibility date.', ['status'=>422]); }
-            $age=(new \DateTimeImmutable($dob,new \DateTimeZone('UTC')))->diff(new \DateTimeImmutable($policy['age_on'],new \DateTimeZone('UTC')))->y;
-            if ((isset($policy['min_age']) && $age<$policy['min_age']) || (isset($policy['max_age']) && $age>$policy['max_age'])) { return new \WP_Error('atlas_ineligible','Traveler does not meet the age policy.', ['status'=>422]); }
-            if ($age<($policy['guardian_below'] ?? 18) && (empty(trim((string)($f['guardian_name'] ?? ''))) || ($f['guardian_attested'] ?? false)!==true)) { return new \WP_Error('atlas_guardian_required','A guardian name and self-attestation are required.', ['status'=>422]); }
+            $eligible=self::evaluate($policy,$person['fields']); if (is_wp_error($eligible)) return $eligible;
         }
         return true;
     }

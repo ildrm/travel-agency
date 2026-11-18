@@ -1,0 +1,12 @@
+{
+  "recorded_at_utc": "2026-11-18T07:17:37.300610+00:00",
+  "release": "0.2.0",
+  "source_commit": "dbc0049",
+  "frozen_release_evidence_passed": true,
+  "docs_unchanged": true,
+  "browser_mode": "headless single worker",
+  "runtime_stop_exit_code": 0,
+  "loopback_port_8840_closed": true,
+  "production_deployment": false,
+  "external_financial_transactions": false
+}

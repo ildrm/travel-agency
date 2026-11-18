@@ -32,4 +32,13 @@ if (atlas_gateways_demo_allowed()) {
         wp_delete_user($user); wp_set_current_user(0);
     }
 }
+$switched=switch_to_locale('fa_IR');
+try {
+    $check($switched || get_locale()==='fa_IR','Persian language pack must be installed for the release-critical gateway copy test.');
+    $check(__('Simulated payment (local only)','atlas-gateways')==='پرداخت آزمایشی (فقط محیط محلی)','Gateway gettext title must load the actual Persian catalog.');
+    if (atlas_gateways_demo_allowed()) {
+        $localized=new Atlas_Gateway_Simulator();
+        $check($localized->title==='پرداخت آزمایشی (فقط محیط محلی)','Simulator must expose its Persian title through WooCommerce.');
+    }
+} finally { if ($switched) restore_previous_locale(); }
 WP_CLI::log('Gateway disabled and local gate checks passed; no external requests were made.');

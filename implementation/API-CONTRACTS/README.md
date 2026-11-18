@@ -1,6 +1,6 @@
 # Implemented API contract evidence
 
-Specification: docs/DOC-26. Source: atlas-core/src/Rest.php, atlas-operations and atlas-inventory. All `/agency/v1` and `/atlas-inventory/v1` routes are internal implementation interfaces, not provider APIs. Exact currently registered routes are exported after final migration into `registered-routes.json` when the runtime is stable.
+Specification: docs/DOC-26. Source: atlas-core/src/Rest.php, atlas-operations and atlas-inventory. All `/agency/v1` and `/atlas-inventory/v1` routes are internal implementation interfaces, not provider APIs. [registered-routes.json](registered-routes.json) exports 46 actual route/method entries after migration. Argument names are only registered WordPress schemas; some endpoints additionally validate JSON inside their callback. This metadata is not a complete OpenAPI contract or evidence every proposed DOC-26 route exists.
 
 Browser mutations require WordPress authenticated cookies plus `X-WP-Nonce` for `wp_rest` and an idempotency key for retry-safe create/payment/booking operations. WordPress cookie auth without a valid nonce yields anonymous identity; service permissions still verify owner/org/capability. Public catalog is a filtered published projection. There is no route that accepts a user-supplied verified-payment flag. Anonymous private resources are denied; anonymous RFQ intake remains unavailable until abuse/idempotency controls exist.
 
@@ -9,3 +9,7 @@ Hold: `POST /agency/v1/holds`, JSON `offer_id` (integer), `offer_version` (integ
 Travelers: authenticated owner-only create/list; self-declared birth-date and guardian evidence does not represent verified identity or legal eligibility. Existing bookings/materials have a separate access policy from open enrollment. Errors must remain actionable and private; inspect actual test evidence rather than assuming every proposed DOC-26 endpoint is implemented.
 
 External PSP callback schemas are deliberately not invented. Three disabled provider boundaries await current merchant documentation and actual contracts. Local simulation is available only under exact local environment plus explicit demo constant. Public inventory/supplier issuance/crypto/payment activation cannot be unlocked by caller-controlled JSON or frontend flags.
+
+Booking status: owner-authorized `GET /agency/v1/bookings/{uuid}` returns independent persisted `payment_status` (`unverified` or `verified`) and service `status`, with `Cache-Control: private, no-store`. Monetary verification does not imply agency confirmation or supplier issuance; provider references, participants and snapshot fields are excluded. `GET /agency/v1/booking-queue` and `POST /agency/v1/bookings/{uuid}/confirm` are agency-only, bounded/reasoned/idempotent operational interfaces. Customer and partner capabilities alone cannot authorize confirmation.
+
+Finance interfaces expose scoped operational exceptions/ledger and manual refund request/approval. There is no public route to submit trusted payment/refund proof or execute a bank transfer. Internal proof factories must only be called after real adapter verification when such an adapter is implemented and approved.
