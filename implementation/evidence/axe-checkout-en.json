@@ -13,7 +13,7 @@
     "orientationAngle": 0,
     "orientationType": "landscape-primary"
   },
-  "timestamp": "2026-11-17T12:59:25.771Z",
+  "timestamp": "2026-11-18T07:10:14.087Z",
   "url": "http://127.0.0.1:8840/checkout-2/?lang=en",
   "toolOptions": {
     "runOnly": {
@@ -2993,7 +2993,7 @@
     },
     {
       "id": "aria-valid-attr-value",
-      "impact": "critical",
+      "impact": null,
       "tags": [
         "cat.aria",
         "wcag2a",
@@ -3069,6 +3069,38 @@
           "html": "<form aria-label=\"Checkout\" class=\"wc-block-components-form wc-block-checkout__form\">",
           "target": [
             "form"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-valid-attr-value",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute values are valid"
+            },
+            {
+              "id": "aria-errormessage",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-errormessage exists and references elements visible to screen readers that use a supported aria-errormessage technique"
+            },
+            {
+              "id": "aria-level",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-level values are valid"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<input type=\"email\" id=\"email\" autocapitalize=\"none\" autocomplete=\"email\" aria-label=\"Email address\" aria-describedby=\"wc-guest-checkout-notice\" required=\"\" aria-invalid=\"false\" title=\"\" name=\"contact_email\" value=\"customer@example.test\" style=\"\">",
+          "target": [
+            "#email"
           ]
         },
         {
@@ -4348,6 +4380,31 @@
                 "fgColor": "#132638",
                 "bgColor": "#ffffff",
                 "contrastRatio": 15.41,
+                "fontSize": "12.0pt (16px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 15.41"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<p id=\"wc-guest-checkout-notice\" class=\"atlas-checkout-contact-help\">Check the email address you want to use for this order.</p>",
+          "target": [
+            "#wc-guest-checkout-notice"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#132638",
+                "bgColor": "#ffffff",
+                "contrastRatio": 15.41,
                 "fontSize": "15.0pt (20px)",
                 "fontWeight": "normal",
                 "expectedContrastRatio": "4.5:1"
@@ -5442,6 +5499,24 @@
       "help": "IDs used in ARIA and labels must be unique",
       "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/duplicate-id-aria?application=playwright",
       "nodes": [
+        {
+          "any": [
+            {
+              "id": "duplicate-id-aria",
+              "data": "wc-guest-checkout-notice",
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "Document has no elements referenced with ARIA or labels that share the same id attribute"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<p id=\"wc-guest-checkout-notice\" class=\"atlas-checkout-contact-help\">Check the email address you want to use for this order.</p>",
+          "target": [
+            "#wc-guest-checkout-notice"
+          ]
+        },
         {
           "any": [
             {
@@ -12472,47 +12547,6 @@
       ]
     }
   ],
-  "incomplete": [
-    {
-      "id": "aria-valid-attr-value",
-      "impact": "critical",
-      "tags": [
-        "cat.aria",
-        "wcag2a",
-        "wcag412",
-        "EN-301-549",
-        "EN-9.4.1.2",
-        "RGAAv4",
-        "RGAA-7.1.1"
-      ],
-      "description": "Ensure all ARIA attributes have valid values",
-      "help": "ARIA attributes must conform to valid values",
-      "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/aria-valid-attr-value?application=playwright",
-      "nodes": [
-        {
-          "any": [],
-          "all": [
-            {
-              "id": "aria-valid-attr-value",
-              "data": {
-                "messageKey": "noId",
-                "needsReview": "aria-describedby=\"wc-guest-checkout-notice\""
-              },
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "ARIA attribute element ID does not exist on the page: aria-describedby=\"wc-guest-checkout-notice\""
-            }
-          ],
-          "none": [],
-          "impact": "critical",
-          "html": "<input type=\"email\" id=\"email\" autocapitalize=\"none\" autocomplete=\"email\" aria-label=\"Email address\" aria-describedby=\"wc-guest-checkout-notice\" required=\"\" aria-invalid=\"false\" title=\"\" name=\"contact_email\" value=\"customer@example.test\" style=\"\">",
-          "target": [
-            "#email"
-          ],
-          "failureSummary": "Fix all of the following:\n  ARIA attribute element ID does not exist on the page: aria-describedby=\"wc-guest-checkout-notice\""
-        }
-      ]
-    }
-  ],
+  "incomplete": [],
   "violations": []
 }

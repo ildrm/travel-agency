@@ -1,16 +1,16 @@
 {
-  "started_at": "2026-11-17T13:03:11.195255+00:00",
+  "started_at": "2026-11-18T07:11:01.827260+00:00",
   "source": "atlas_local",
-  "restore_target": "atlas_restore_ff34981e084e",
+  "restore_target": "atlas_restore_1a491901fe88",
   "scope": "isolated local restore; no production/provider reconciliation performed",
   "passed": true,
-  "table_count": 69,
-  "row_count": 1736,
+  "table_count": 102,
+  "row_count": 2727,
   "source_unchanged_during_rehearsal": true,
   "restored_counts_match": true,
   "restored_logical_checksums_match": true,
-  "dump_sha256": "b48e815a9feb1d19a131507111b11a7c138c3e4526082fe76e8091b258be0992",
-  "dump_bytes": 536962,
-  "finished_at": "2026-11-17T13:03:13.855001+00:00",
-  "elapsed_seconds": 2.659789
+  "dump_sha256": "71289e047ae0b805630b2118283f44cc56ca09ba882169a63e792ea06dc2899e",
+  "dump_bytes": 737543,
+  "finished_at": "2026-11-18T07:11:05.120552+00:00",
+  "elapsed_seconds": 3.293333
 }

@@ -104,6 +104,48 @@
   },
   "suites": [
     {
+      "title": "events-advanced.spec.cjs",
+      "file": "events-advanced.spec.cjs",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "event QR image generation, local file decode and explicitly mocked camera release",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1760,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T07:09:55.312Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "973546aaeb74d1a80021-2ea6bb276b28d2209a14",
+          "file": "events-advanced.spec.cjs",
+          "line": 3,
+          "column": 1
+        }
+      ]
+    },
+    {
       "title": "platform.spec.cjs",
       "file": "platform.spec.cjs",
       "column": 0,
@@ -125,12 +167,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1680,
+                  "duration": 1431,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-17T12:59:13.580Z",
+                  "startTime": "2026-11-18T07:09:59.829Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -159,12 +201,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1172,
+                  "duration": 1898,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-17T12:59:17.317Z",
+                  "startTime": "2026-11-18T07:10:01.272Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -193,12 +235,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1111,
+                  "duration": 1383,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-17T12:59:18.497Z",
+                  "startTime": "2026-11-18T07:10:03.182Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -227,12 +269,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1486,
+                  "duration": 1499,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-17T12:59:19.614Z",
+                  "startTime": "2026-11-18T07:10:04.572Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -261,12 +303,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2105,
+                  "duration": 1978,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-17T12:59:21.112Z",
+                  "startTime": "2026-11-18T07:10:06.077Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -295,12 +337,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 180,
+                  "duration": 156,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-17T12:59:23.229Z",
+                  "startTime": "2026-11-18T07:10:08.065Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -311,6 +353,108 @@
           "id": "2c5b3257cb27d2f45169-164616205df001ec8324",
           "file": "platform.spec.cjs",
           "line": 79,
+          "column": 1
+        },
+        {
+          "title": "catalog filters narrow results and keep the Farsi locale",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 522,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T07:10:08.228Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5b3257cb27d2f45169-0128f0fed359f198fa4b",
+          "file": "platform.spec.cjs",
+          "line": 88,
+          "column": 1
+        },
+        {
+          "title": "reviewed guides link reciprocal published translations and canonical URLs",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 359,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T07:10:08.756Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5b3257cb27d2f45169-c47a21a34615aa122eb6",
+          "file": "platform.spec.cjs",
+          "line": 101,
+          "column": 1
+        },
+        {
+          "title": "physical product checkout calculates native shipping and keeps offline money pending",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2625,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T07:10:09.122Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5b3257cb27d2f45169-02b50976c81370637701",
+          "file": "platform.spec.cjs",
+          "line": 128,
           "column": 1
         },
         {
@@ -329,12 +473,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4257,
+                  "duration": 13147,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-17T12:59:23.420Z",
+                  "startTime": "2026-11-18T07:10:11.756Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -344,7 +488,7 @@
           ],
           "id": "2c5b3257cb27d2f45169-0b1252b453d7389d864e",
           "file": "platform.spec.cjs",
-          "line": 101,
+          "line": 169,
           "column": 3
         },
         {
@@ -363,12 +507,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4549,
+                  "duration": 7649,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-17T12:59:27.690Z",
+                  "startTime": "2026-11-18T07:10:24.910Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -378,17 +522,59 @@
           ],
           "id": "2c5b3257cb27d2f45169-93da0d995fc461922f4c",
           "file": "platform.spec.cjs",
-          "line": 101,
+          "line": 169,
           "column": 3
+        }
+      ]
+    },
+    {
+      "title": "resource.spec.cjs",
+      "file": "resource.spec.cjs",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "dated stay -> exact Checkout Blocks simulation -> supplier acceptance -> agency confirmation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6149,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T07:10:32.593Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7def9d7a1793f11f5867-780f26ae353269c55929",
+          "file": "resource.spec.cjs",
+          "line": 30,
+          "column": 1
         }
       ]
     }
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-11-17T12:59:13.260Z",
-    "duration": 19111.367,
-    "expected": 8,
+    "startTime": "2026-11-18T07:09:55.027Z",
+    "duration": 43859.919,
+    "expected": 13,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

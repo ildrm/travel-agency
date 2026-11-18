@@ -67,11 +67,15 @@ For a reviewed deployment, a real server scheduler must invoke `wp atlas run_due
 WP_CLI_CACHE_DIR="$PWD/.runtime/cache" wp --path="$PWD/.runtime/wordpress" atlas run_due
 ```
 
-This processes bounded due holds and available outbox work. Without an `atlas_core_deliver_outbox` consumer it delivers no events. A consumer must return actual success; failed attempts back off and eventually remain failed for review. Stale processing claims can be retried. Review pending/failed outbox items and payment/booking exceptions with an assigned owner. Dispatch must not initiate duplicate financial action or be presented as email/SMS delivery without channel evidence.
+The worker processes bounded due holds and available outbox work. The agency workspace shows the last completed worker run, lag, due and failed queue counts, bookings awaiting review and primary inventory over capacity. `GET /agency/v1/operations-health` requires agency authority and a fresh REST nonce. Use these signals with the agreed production scheduler and alert thresholds.
+
+In-account delivery requires an approved template for the recipient's language and event. Review the notification queue when an event exhausts its retries. A verified payment exception opens a private support case even when the notice template is unavailable. Review money and capacity in their own queues. External email and SMS delivery require their own configured and verified provider channels.
+
+For a reviewed upload workflow, keep encrypted bytes and keys in separate controlled stores and verify the scanner before granting download access. [Private-document contract](API-CONTRACTS/PRIVATE-DOCUMENTS.md)
 
 ## Verification and installable archives
 
-Run these only when verification is needed, sequentially and at low priority. This documentation update executes none of them.
+Run verification sequentially at low priority.
 
 ```sh
 nice -n 19 python3 tests/static.py

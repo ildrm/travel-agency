@@ -1,0 +1,40 @@
+{
+  "fixture_run": "20261118070953-bxtwxp",
+  "scope": "one fictional local headless desktop stay journey; no live supplier/payment or broader browser claim",
+  "environment": {
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+    "width": 1440,
+    "height": 1000
+  },
+  "language": "en",
+  "check_in": "2026-11-25",
+  "check_out": "2026-11-28",
+  "timezone": "Asia/Tehran",
+  "nights": 3,
+  "quantity": 1,
+  "guests_per_unit": 2,
+  "expected_amount_irr": 24100000,
+  "observed_cart_amount_irr": 24100000,
+  "booking_id": "73338dd0-39b0-4bfa-9b1a-bba782e4bcb9",
+  "order_id": 89,
+  "stages": [
+    {
+      "stage": "dated_hold",
+      "amount_irr": 24100000
+    },
+    {
+      "stage": "local_simulation_verified",
+      "status": "paid_pending_confirmation",
+      "amount_irr": 24100000
+    },
+    {
+      "stage": "supplier_accepted",
+      "status": "paid_pending_confirmation"
+    },
+    {
+      "stage": "agency_confirmed",
+      "status": "confirmed"
+    }
+  ],
+  "browser_errors": []
+}

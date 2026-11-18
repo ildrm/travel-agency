@@ -1,5 +1,15 @@
 # Implementation changelog
 
+## 0.2.0 · 18 November 2026
+
+- Added guided discovery, source-reviewed EN/FA editorial content, reusable tours with material-change consent, event recurrence and attendee forms, QR operations and multi-learner Academy enrollment.
+- Connected dated stays and fleet inventory to Woo checkout and reviewed cancellation. Added manual transfer dispatch, private ticket inquiries and native merchandise shipping and refund verification.
+- Added scoped partner invitations and contracts, procurement and clean artwork revisions, encrypted private files, owner portability and reviewed retention. Added notifications, automatic paid exception cases and worker health.
+- Prepared the default-off ZarinPal V4 adapter, with fictional request, verification and reconciliation evidence. Added reciprocal service products, historical-order protection, printable EN/FA vouchers and the signed-in checkout email-description repair.
+- Verified the frozen build across 165 static checks, 24 integration suites, 13 single-worker headless browser tests, five reproducible ZIPs, a fresh archive install and an isolated database restore. [Release evidence](evidence/development-release.json)
+
+## Prior implementation checkpoint
+
 ## 0.1.0 development — 2026-11-17
 
 - Preserved the 49 source specifications; recursively inventoried 56 docs files with exact hashes and generated 31 baseline requirement mappings plus 811 evidence rows.
