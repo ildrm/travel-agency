@@ -37,10 +37,13 @@ def wp(*args, check=True):
 created=False
 try:
     manifest=json.loads((ROOT/'dist/manifest.json').read_text())
+    release=json.loads((ROOT/'package.json').read_text())['version']
+    if manifest.get('version')!=release:
+        raise RuntimeError('Build the current release before the clean-install check.')
     artifacts={a['file']:a for a in manifest['artifacts']}
     required=['atlas-leisure','atlas-core','atlas-operations','atlas-gateways','atlas-inventory']
     for name in required:
-        filename=name+'-0.1.0.zip'
+        filename=f'{name}-{release}.zip'
         artifact=artifacts[filename]
         if hashlib.sha256((ROOT/'dist'/filename).read_bytes()).hexdigest()!=artifact['sha256']:
             raise RuntimeError('Artifact checksum mismatch: '+filename)
@@ -62,14 +65,14 @@ try:
     wp('core','install','--url=http://127.0.0.1:8841','--title=Isolated ZIP installation check',
        '--admin_user=install_check','--admin_password='+secrets.token_urlsafe(28),
        '--admin_email=install@example.test','--skip-email')
-    wp('theme','install',ROOT/'dist/atlas-leisure-0.1.0.zip','--activate')
+    wp('theme','install',ROOT/'dist'/f'atlas-leisure-{release}.zip','--activate')
     wp('eval',"if (class_exists('WooCommerce') || !function_exists('atlas_theme_home') || strpos(atlas_theme_home(),'[atlas_')!==false) { WP_CLI::error('Theme-only fallback failed.'); } WP_CLI::success('Theme works without companions or Woo.');")
     REPORT['checks'].append('actual theme ZIP installed and rendered safely without Woo/companions')
     # Third-party Woo source stays external/read-only; owned packages below are extracted from real ZIPs.
     (TARGET/'wp-content/plugins/woocommerce').symlink_to(RUNTIME/'wordpress/wp-content/plugins/woocommerce',target_is_directory=True)
     wp('plugin','activate','woocommerce')
     for name in required[1:]:
-        wp('plugin','install',ROOT/'dist'/(name+'-0.1.0.zip'),'--activate')
+        wp('plugin','install',ROOT/'dist'/f'{name}-{release}.zip','--activate')
         if name=='atlas-core':wp('atlas','migrate')
         if (TARGET/'wp-content/plugins'/name).is_symlink(): raise RuntimeError('Owned package is a symlink')
         REPORT['checks'].append(name+' actual ZIP extracted and activated')
@@ -77,20 +80,22 @@ try:
     # Use a literal PHP file for final schema/API assertions to avoid shell escaping.
     smoke=TARGET/'atlas-smoke.php'
     smoke.write_text(r'''<?php
-foreach ([\Atlas\Core\DB::class, 'Atlas_Operations', \Atlas\Inventory\Local::class] as $class) {
+foreach ([\Atlas\Core\DB::class, 'Atlas_Operations', \Atlas\Inventory\Local::class, 'Atlas_Editorial', 'Atlas_Private_Files', 'Atlas_ZarinPal', 'Atlas_Resource_Booking', 'Atlas_Academy', 'Atlas_Procurement', 'Atlas_Events_Advanced', 'Atlas_Tours'] as $class) {
     if (!class_exists($class)) { WP_CLI::error('Required package class missing: '.$class); }
 }
 if (is_wp_error(\Atlas\Core\DB::ready())) { WP_CLI::error('Schema unavailable'); }
-foreach (['atlas_core_schema'=>'6','atlas_core_schema_validated'=>'6','atlas_local_inventory_schema'=>'3','atlas_operations_checkins_schema'=>'1'] as $key=>$version) {
+foreach (['atlas_core_schema'=>'7','atlas_core_schema_validated'=>'7','atlas_local_inventory_schema'=>'3','atlas_operations_checkins_schema'=>'1'] as $key=>$version) {
     if (get_option($key)!==$version) { WP_CLI::error('Missing or unexpected installed schema: '.$key); }
 }
 if (is_wp_error(\Atlas\Inventory\Local::migrate())) { WP_CLI::error('Inventory migration is not repeatable'); }
 $r=rest_do_request(new WP_REST_Request('GET','/agency/v1/catalog'));
 if ($r->get_status()!==200) { WP_CLI::error('Catalog route unavailable'); }
+$private=rest_do_request(new WP_REST_Request('GET','/agency/v1/private-files'));
+if ($private->get_status()!==403 || Atlas_ZarinPal::ready()) { WP_CLI::error('Private or payment routes are enabled without configuration.'); }
 WP_CLI::success('Clean schema and catalog route verified');
 ''')
     wp('eval-file',smoke)
-    REPORT['checks'].append('core6/inventory3/checkins1 schemas, repeatable migrations and registered public catalog route')
+    REPORT['checks'].append('core7/inventory3/checkins1 schemas, repeatable migrations and registered public catalog route')
     REPORT['passed']=True
 except Exception as error:
     REPORT['error']=str(error)

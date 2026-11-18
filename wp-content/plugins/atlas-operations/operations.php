@@ -31,10 +31,12 @@ final class Atlas_Operations {
         add_filter('atlas_core_validate_cohort_publication', array('Atlas_Operation_Workflows','validate_cohort_publication'),10,3);
         add_filter('atlas_core_validate_tour_hold', array('Atlas_Operation_Workflows','validate_tour_hold'),10,3);
         add_filter('atlas_core_validate_cohort_hold', array('Atlas_Operation_Workflows','validate_cohort_hold'),10,3);
+        add_filter('atlas_core_record_update_guard',array(__CLASS__,'dispatch_record_guard'),10,3);
         add_shortcode('atlas_catalog', array(__CLASS__, 'catalog'));
         add_shortcode('atlas_offer', array(__CLASS__, 'offer'));
         add_shortcode('atlas_portal', array(__CLASS__, 'portal'));
         add_shortcode('atlas_account', array(__CLASS__, 'account'));
+        do_action('atlas_operations_ready');
     }
     public static function routes() {
         foreach (array('stay-requests'=>'stay_request','ticket-requests'=>'ticket_request','transfer-requests'=>'transfer_request','rental-requests'=>'rental_request','support-cases'=>'support_case','rfqs'=>'rfq') as $route=>$type) {
@@ -53,8 +55,15 @@ final class Atlas_Operations {
         ));
     }
     public static function logged_in() { return is_user_logged_in(); }
+    /** Records holds the request row lock here, matching dispatch's assignment lock order. */
+    public static function dispatch_record_guard($guard,$type,$id) {
+        if ($guard===true && $type==='transfer_request' && class_exists('Atlas_Dispatch') && Atlas_Dispatch::has_live_request($id,true)) return new WP_Error('atlas_dispatch_managed',self::t('Use the dispatch workspace while this request has an active assignment.','تا زمانی که درخواست دارای تخصیص فعال است از فضای اعزام استفاده کنید.'),array('status'=>409));
+        return $guard;
+    }
+    private static function protected_procurement($type) { return class_exists('Atlas_Procurement') && in_array($type,array('rfq','supplier_quote','production'),true); }
     private static function authorize_type($type) {
         $schemas = atlas_operation_schemas();
+        if (class_exists('Atlas_Academy') && Atlas_Academy::enabled() && in_array($type,array('attendance','assessment','certificate'),true)) return new WP_Error('atlas_academy_managed',self::t('Use the academy learning workspace.','از فضای آموزش برای این عملیات استفاده کنید.'),array('status'=>409));
         if ($type==='event_checkin') return new WP_Error('atlas_checkin_unavailable', __('Check-in is unavailable until duplicate protection is configured.', 'atlas-operations'),array('status'=>503));
         if (in_array($type,self::DEMO_ONLY,true) && !(function_exists('wp_get_environment_type') && wp_get_environment_type()==='local' && defined('ATLAS_DEMO_MODE') && ATLAS_DEMO_MODE===true)) return new WP_Error('atlas_feature_unavailable', __('This feature is not enabled.', 'atlas-operations'),array('status'=>503));
         if (!isset($schemas[$type])) { return new WP_Error('atlas_unknown_type', __('Unknown operation.', 'atlas-operations'), array('status'=>404)); }
@@ -103,6 +112,8 @@ final class Atlas_Operations {
             } else {
                 if (!is_string($value) || strlen($value) > ($definition['max'] ?? 10000)) return new WP_Error('atlas_invalid_field', __('Invalid text.', 'atlas-operations'), array('status'=>422));
                 $value = sanitize_text_field($value);
+                if ($kind==='timezone' && !in_array($value,timezone_identifiers_list(),true)) return new WP_Error('atlas_invalid_timezone',__('Enter a valid IANA time zone.','atlas-operations'),array('status'=>422));
+                if (isset($definition['enum']) && !in_array($value,$definition['enum'],true)) return new WP_Error('atlas_invalid_field',__('Invalid choice.','atlas-operations'),array('status'=>422));
                 if ($kind==='datetime') {
                     $parsed=DateTimeImmutable::createFromFormat('!Y-m-d\TH:i:s\Z',$value,new DateTimeZone('UTC'));
                     if (!$parsed || $parsed->format('Y-m-d\TH:i:s\Z')!==$value) return new WP_Error('atlas_invalid_datetime', __('Enter a valid UTC instant such as 2027-06-20T09:00:00Z.', 'atlas-operations'),array('status'=>422));
@@ -117,6 +128,9 @@ final class Atlas_Operations {
         }
         if (isset($out['category']) && in_array($type,array('vehicle','rental_request'),true) && !in_array($out['category'],array('bicycle','motorcycle','car','van'),true)) return new WP_Error('atlas_invalid_category', __('Invalid vehicle category.', 'atlas-operations'),array('status'=>422));
         if (isset($out['vehicle_class']) && $type === 'transfer_request' && !in_array($out['vehicle_class'],array('car','van','accessible'),true)) return new WP_Error('atlas_invalid_class', __('Invalid vehicle class.', 'atlas-operations'),array('status'=>422));
+        if ($type==='ticket_request') {
+            if (($out['passengers']??0)>50 || ($out['baggage']??0)>100 || (isset($out['origin'],$out['destination']) && strcasecmp($out['origin'],$out['destination'])===0) || (isset($out['origin_zone'])!==isset($out['destination_zone']))) return new WP_Error('atlas_invalid_ticket_request',self::t('Provide different locations, both time zones if known, and bounded passenger and baggage counts.','مبدأ و مقصد متفاوت، هر دو منطقه زمانی در صورت اطلاع و تعداد معتبر مسافر و بار را وارد کنید.'),array('status'=>422));
+        }
         if ($type==='partner_application' && isset($out['partner_types'])) {
             if (!array_is_list($out['partner_types']) || count($out['partner_types'])<1) return new WP_Error('atlas_invalid_partner',__('Select at least one partner type.','atlas-operations'),array('status'=>422));
             foreach ($out['partner_types'] as $partner_type) if (!is_string($partner_type) || !in_array($partner_type,array('guide','accommodation','manufacturer','transport','rental','instructor','venue','catering','other'),true)) return new WP_Error('atlas_invalid_partner',__('Unknown partner type.','atlas-operations'),array('status'=>422));
@@ -128,6 +142,7 @@ final class Atlas_Operations {
         return $out;
     }
     public static function enroll($request) {
+        if (class_exists('Atlas_Academy') && Atlas_Academy::enabled()) return Atlas_Academy::enroll($request);
         global $wpdb;
         $body=$request->get_json_params(); $id=(string)$request['id']; $user=get_current_user_id();
         if (!$user || !is_user_logged_in()) return new WP_Error('atlas_forbidden',__('Sign in required.','atlas-operations'),array('status'=>403));
@@ -167,6 +182,7 @@ final class Atlas_Operations {
         } catch (Throwable $error) { $wpdb->query('ROLLBACK'); return new WP_Error('atlas_enrollment_failed',__('Enrollment could not be recorded.','atlas-operations'),array('status'=>503)); }
     }
     public static function course_materials($request) {
+        if (class_exists('Atlas_Academy') && Atlas_Academy::enabled()) return Atlas_Academy::materials($request);
         global $wpdb;
         $user=get_current_user_id(); $cohort_id=(string)$request['id'];
         $enrollments=Records::query('enrollment',array('limit'=>100),$user); $authorized=false;
@@ -223,6 +239,7 @@ final class Atlas_Operations {
     public static function rest_get($request) { $ok=self::authorize_type($request['type']); if (is_wp_error($ok)) return $ok; return Records::get($request['type'],$request['id'],get_current_user_id()); }
     public static function rest_create($request,$forced_type=null) {
         $type=$forced_type ?: $request['type']; $ok=self::authorize_type($type); if (is_wp_error($ok)) return $ok;
+        if (self::protected_procurement($type)) return new WP_Error('atlas_procurement_managed',self::t('Use the procurement workspace.','از فضای تدارکات استفاده کنید.'),array('status'=>409));
         if ($type==='enrollment') return new WP_Error('atlas_forbidden',__('Use the cohort enrollment workflow.','atlas-operations'),array('status'=>403));
         $data=self::validate($type,$request->get_json_params()); if (is_wp_error($data)) return $data;
         $links=self::check_links($type,$data,(int)($data['org_id']??0)); if (is_wp_error($links)) return $links;
@@ -233,11 +250,15 @@ final class Atlas_Operations {
     }
     public static function rest_update($request) {
         $type=$request['type']; $ok=self::authorize_type($type); if (is_wp_error($ok)) return $ok;
+        if (self::protected_procurement($type)) return new WP_Error('atlas_procurement_managed',self::t('Use the procurement workspace.','از فضای تدارکات استفاده کنید.'),array('status'=>409));
         if ($type==='enrollment') return new WP_Error('atlas_forbidden',__('Enrollment is managed by the cohort workflow.','atlas-operations'),array('status'=>403));
         if ($type==='support_case') return new WP_Error('atlas_forbidden',__('Use the support reply or triage workflow.','atlas-operations'),array('status'=>403));
         $body=$request->get_json_params(); if (!is_array($body) || !isset($body['version'],$body['changes']) || !is_int($body['version']) || !is_array($body['changes'])) return new WP_Error('atlas_invalid_input', __('Version and changes are required.', 'atlas-operations'),array('status'=>422));
         $record=Records::get($type,$request['id'],get_current_user_id()); if (is_wp_error($record)) return $record;
         $changes=self::validate($type,$body['changes'],true); if (is_wp_error($changes)) return $changes;
+        if ($type==='cohort' && class_exists('Atlas_Academy')) {
+            $guard=Atlas_Academy::guard_cohort_changes($request['id'],$changes); if (is_wp_error($guard)) return $guard;
+        }
         $for_bid=!Auth::agency() || $record['state']==='draft' || ($changes['state']??'')==='submitted';
         $links=self::check_links($type,array_merge($record['fields'],$changes),(int)$record['org_id'],$for_bid); if (is_wp_error($links)) return $links;
         $editable=array('state');
@@ -261,12 +282,13 @@ final class Atlas_Operations {
         $offer=Offers::get($id,true); if (is_wp_error($offer) || !$offer) return '<p>'.esc_html(self::t('Offer unavailable.','پیشنهاد در دسترس نیست.')).'</p>';
         $fa=self::language()==='fa'; $title=$fa && !empty($offer['title_fa'])?$offer['title_fa']:$offer['title_en']; $desc=$fa && !empty($offer['description_fa'])?$offer['description_fa']:$offer['description_en'];
         $price=$offer['mode']==='request_only' ? self::t('Request a quote; availability unconfirmed.','درخواست قیمت؛ موجودی تأیید نشده است.') : number_format_i18n((int)$offer['amount_irr']).' IRR'; $html='<article><h1>'.esc_html($title).'</h1><p>'.esc_html($desc).'</p><p>'.esc_html($price).'</p>';
+        if (class_exists('Atlas_Catalog_UI')) $html.=Atlas_Catalog_UI::details($offer);
         if ($offer['mode']==='request_only') { $request_url=add_query_arg(array('atlas_area'=>'account','lang'=>self::language()),home_url('/')); $html.='<p>'.esc_html(self::t('Request only; availability is not confirmed.','فقط درخواست؛ موجودی تأیید نشده است.')).'</p><p><a href="'.esc_url($request_url).'">'.esc_html(self::t('Open request forms','باز کردن فرم‌های درخواست')).'</a></p>'; }
         elseif (!is_user_logged_in()) $html.='<p><a href="'.esc_url(add_query_arg(array('atlas_area'=>'account','lang'=>self::language(),'atlas_return'=>self::offer_url($id)),home_url('/'))).'">'.esc_html(self::t('Sign in or register to reserve.','برای رزرو وارد شوید یا حساب بسازید.')).'</a></p>';
         elseif (empty($offer['product_id']) || !function_exists('wc_get_checkout_url')) $html.='<p>'.esc_html(self::t('Reservation is temporarily unavailable.','رزرو موقتاً در دسترس نیست.')).'</p>';
-        elseif ($offer['kind']==='cohort' && !Atlas_Operation_Workflows::cohort_for_offer($id,(int)$offer['org_id'])) $html.='<p>'.esc_html(self::t('Enrollment is temporarily unavailable.','ثبت‌نام موقتاً در دسترس نیست.')).'</p>';
+        elseif ($offer['kind']==='cohort' && !(class_exists('Atlas_Academy') && Atlas_Academy::enabled() ? Atlas_Academy::cohort_for_offer($id,(int)$offer['org_id']) : Atlas_Operation_Workflows::cohort_for_offer($id,(int)$offer['org_id']))) $html.='<p>'.esc_html(self::t('Enrollment is temporarily unavailable.','ثبت‌نام موقتاً در دسترس نیست.')).'</p>';
         else {
-            wp_enqueue_script('atlas-booking', plugins_url('assets/booking.js', __FILE__), array(), '0.1.0', true);
+            wp_enqueue_script('atlas-booking', plugins_url('assets/booking.js', __FILE__), array(), ATLAS_CORE_VERSION, true);
             wp_localize_script('atlas-booking','atlasBooking',array(
                 'holdUrl'=>esc_url_raw(rest_url('agency/v1/holds')), 'cartUrl'=>esc_url_raw(rest_url('wc/store/v1/cart/add-item')),
                 'travelersUrl'=>esc_url_raw(rest_url('agency/v1/travelers')), 'cohortsUrl'=>esc_url_raw(rest_url('agency/v1/cohorts/')), 'learnerId'=>get_current_user_id(), 'restNonce'=>wp_create_nonce('wp_rest'), 'storeNonce'=>wp_create_nonce('wc_store_api'), 'checkoutUrl'=>esc_url_raw(add_query_arg('lang',self::language(),wc_get_checkout_url())),
@@ -276,17 +298,20 @@ final class Atlas_Operations {
                 'loadingTravelers'=>self::t('Loading travelers…','در حال دریافت مسافران…'), 'selectTravelers'=>self::t('Select one traveler per place.','برای هر نفر یک مسافر انتخاب کنید.'),
                 'addTravelers'=>self::t('Add travelers in your account first.','ابتدا مسافران را در حساب خود اضافه کنید.'), 'travelersUnavailable'=>self::t('Traveler details are unavailable.','اطلاعات مسافران در دسترس نیست.')
             ));
-            $needs=!empty($offer['requires_travelers']); $cohort=$offer['kind']==='cohort' ? Atlas_Operation_Workflows::cohort_for_offer($id,(int)$offer['org_id']) : '';
-            $html.='<form data-atlas-booking data-cohort="'.esc_attr($cohort).'" data-offer="'.esc_attr($id).'" data-version="'.esc_attr($offer['version']).'" data-product="'.esc_attr($offer['product_id']).'" data-needs-travelers="'.($needs?'1':'0').'"><label>'.esc_html(self::t('Places','تعداد نفرات')).'<input name="quantity" type="number" min="1" max="'.($offer['kind']==='cohort'?'1':'50').'" value="1" required></label>';
+            $academy=$offer['kind']==='cohort' && class_exists('Atlas_Academy') && Atlas_Academy::enabled();
+            $needs=!empty($offer['requires_travelers']) && !$academy; $cohort=$offer['kind']==='cohort' ? ($academy?Atlas_Academy::cohort_for_offer($id,(int)$offer['org_id']):Atlas_Operation_Workflows::cohort_for_offer($id,(int)$offer['org_id'])) : '';
+            $html.='<form data-atlas-booking data-cohort="'.esc_attr($cohort).'" data-offer="'.esc_attr($id).'" data-version="'.esc_attr($offer['version']).'" data-product="'.esc_attr($offer['product_id']).'" data-needs-travelers="'.($needs?'1':'0').'"><label>'.esc_html(self::t('Places','تعداد نفرات')).'<input name="quantity" type="number" min="1" max="'.($offer['kind']==='cohort' && !$academy?'1':'50').'" value="1" required></label>';
             if ($needs) $html.='<fieldset><legend>'.esc_html(self::t('Travelers','مسافران')).'</legend><div data-atlas-traveler-options></div><a href="'.esc_url(add_query_arg(array('atlas_area'=>'account','lang'=>self::language()),home_url('/'))).'">'.esc_html(self::t('Manage travelers','مدیریت مسافران')).'</a></fieldset>';
-            $html.='<button type="submit">'.esc_html(self::t('Reserve','رزرو')).'</button><p role="status" aria-live="polite"></p><a target="_blank" rel="noopener noreferrer" href="'.esc_url(add_query_arg('lang',self::language(),wc_get_cart_url())).'">'.esc_html(self::t('Open cart in a new tab','سبد را در برگه جدید باز کنید')).'</a></form>';
+            $html.=apply_filters('atlas_operations_booking_fields','',$offer);
+            $html.='<button type="submit" data-atlas-reserve>'.esc_html(self::t('Reserve','رزرو')).'</button><p role="status" aria-live="polite" data-atlas-reserve-status></p><a target="_blank" rel="noopener noreferrer" href="'.esc_url(add_query_arg('lang',self::language(),wc_get_cart_url())).'">'.esc_html(self::t('Open cart in a new tab','سبد را در برگه جدید باز کنید')).'</a></form>';
         }
-        return $html.'</article>';
+        return apply_filters('atlas_operations_offer',$html,$offer).'</article>';
     }
     public static function form_save() {
         if (!is_user_logged_in()) wp_die(esc_html__('Sign in required.','atlas-operations'),'',array('response'=>403));
         check_admin_referer('atlas_operation_save'); $type=isset($_POST['record_type'])?sanitize_key(wp_unslash($_POST['record_type'])):'';
         $ok=self::authorize_type($type); if (is_wp_error($ok)) wp_die(esc_html($ok->get_error_message()),'',array('response'=>403));
+        if (self::protected_procurement($type)) wp_die(esc_html(self::t('Use the procurement workspace.','از فضای تدارکات استفاده کنید.')),'',array('response'=>409));
         if ($type==='enrollment') wp_die(esc_html__('Enrollment is managed by the cohort workflow.','atlas-operations'),'',array('response'=>403));
         $raw=isset($_POST['fields']) && is_array($_POST['fields'])?wp_unslash($_POST['fields']):array();
         foreach ($raw as $key=>$value) if (isset(atlas_operation_schemas()[$type]['fields'][$key]['type']) && atlas_operation_schemas()[$type]['fields'][$key]['type']==='array' && is_string($value)) { $decoded=json_decode($value,true); $raw[$key]=is_array($decoded)?$decoded:$value; }
@@ -371,6 +396,7 @@ final class Atlas_Operations {
         $target=isset($_POST['target'])?sanitize_key(wp_unslash($_POST['target'])):'';
         $version=isset($_POST['version'])?absint($_POST['version']):0;
         $ok=self::authorize_type($type); if (is_wp_error($ok)) wp_die(esc_html($ok->get_error_message()),'',array('response'=>403));
+        if (self::protected_procurement($type)) wp_die(esc_html(self::t('Use the procurement workspace.','از فضای تدارکات استفاده کنید.')),'',array('response'=>409));
         if ($type==='enrollment') wp_die(esc_html__('Enrollment is managed by the cohort workflow.','atlas-operations'),'',array('response'=>403));
         if ($type==='support_case') wp_die(esc_html__('Use the support reply or triage workflow.','atlas-operations'),'',array('response'=>403));
         $record=Records::get($type,$id,get_current_user_id()); if (is_wp_error($record)) wp_die(esc_html($record->get_error_message()),'',array('response'=>404));
@@ -416,14 +442,24 @@ final class Atlas_Operations {
         }
         foreach ($schemas as $type=>$schema) {
             if ($customer && !in_array($type,self::CUSTOMER,true)) continue;
-            if (!$customer && in_array($type,self::CUSTOMER,true)) continue;
+            if (!$customer && in_array($type,self::CUSTOMER,true) && !($type==='ticket_request' && Auth::agency())) continue;
             if (is_wp_error(self::authorize_type($type))) continue;
             $names=array('stay_request'=>array('Stay request','درخواست اقامت'),'ticket_request'=>array('Passenger ticket request','درخواست بلیت مسافر'),'transfer_request'=>array('Transfer request','درخواست ترانسفر'),'rental_request'=>array('Vehicle rental request','درخواست اجاره خودرو'),'support_case'=>array('Support case','درخواست پشتیبانی'),'enrollment'=>array('My enrollments','ثبت‌نام‌های من'),'partner_application'=>array('Apply as a partner','درخواست همکاری'));
             $label=isset($names[$type]) ? self::t($names[$type][0],$names[$type][1]) : ucwords(str_replace('_',' ',$type)); $html.='<details><summary>'.esc_html($label).'</summary>';
-            $records=Records::query($type,array('limit'=>25),get_current_user_id());
+            if ($type==='ticket_request') $html.='<p>'.esc_html(self::t('Ask about a flight, train or bus. Availability must be confirmed by the agency. Submit service needs without identity or medical documents.','درباره پرواز، قطار یا اتوبوس درخواست بفرستید. موجودی باید توسط آژانس تأیید شود. نیازهای سفر را بدون اسناد هویتی یا پزشکی وارد کنید.')).'</p>';
+            $cases=null;
+            if ($type==='support_case') {
+                $page=isset($_GET['support_cases_page']) && is_scalar($_GET['support_cases_page'])?max(1,absint($_GET['support_cases_page'])):1;
+                $cases=Atlas_Support_Workflow::cases($page);
+                $records=is_wp_error($cases)?$cases:$cases['items'];
+            } else $records=Records::query($type,array('limit'=>25),get_current_user_id());
             if (is_wp_error($records)) $html.='<p>'.esc_html($records->get_error_message()).'</p>';
             elseif (!$records) $html.='<p>'.esc_html(self::t('No records yet.','هنوز موردی وجود ندارد.')).'</p>';
-            else { $html.='<ul>'; foreach ($records as $r) { $f=$r['fields']; $name=$f['title_en']??$f['title']??$f['subject']??$f['name_en']??$r['id']; $html.='<li>'.esc_html($name).' — '.esc_html($r['state']).' <code>'.esc_html($r['id']).'</code>';
+            else { $html.='<ul>'; foreach ($records as $r) { $f=$r['fields']; $name=$f['title_en']??$f['title']??$f['subject']??$f['name_en']??$r['id'];
+                    $state=$r['state'];
+                    if ($type==='ticket_request') { $name=($f['origin']??'').' → '.($f['destination']??'').' · '.($f['travel_date']??''); $labels=array('draft'=>self::t('Draft','پیش‌نویس'),'submitted'=>self::t('Awaiting review','در انتظار بررسی'),'approved'=>self::t('Reviewed inquiry','درخواست بررسی‌شده'),'rejected'=>self::t('Unavailable','در دسترس نیست'),'closed'=>self::t('Closed','بسته')); $state=$labels[$state]??$state; }
+                    $html.='<li>'.esc_html($name).' — '.esc_html($state).' <code>'.esc_html($r['id']).'</code>';
+                    if ($type==='ticket_request' && !$customer && Auth::agency()) $html.='<p>'.esc_html(($f['transport_mode']??'').' · '.($f['passengers']??'').' · '.($f['contact']??'').' · '.($f['accessibility']??'')).'</p>';
                     $actions=in_array($type,array('enrollment','support_case'),true)?array():($r['state']==='draft'?array('submitted'):($r['state']==='submitted' && Auth::agency() && $type!=='partner_application'?array('approved','rejected'):($r['state']==='approved' && Auth::agency() && $type!=='partner_application'?array('closed'):array())));
                     foreach ($actions as $target) { $html.='<form method="post" action="'.esc_url(admin_url('admin-post.php')).'">'.wp_nonce_field('atlas_operation_transition','_wpnonce',true,false).'<input type="hidden" name="action" value="atlas_operation_transition"><input type="hidden" name="record_type" value="'.esc_attr($type).'"><input type="hidden" name="record_id" value="'.esc_attr($r['id']).'"><input type="hidden" name="version" value="'.esc_attr($r['version']).'"><input type="hidden" name="target" value="'.esc_attr($target).'"><button type="submit">'.esc_html($target==='submitted'?self::t('Submit','ارسال'):($target==='approved'?self::t('Approve','تأیید'):($target==='closed'?self::t('Close','بستن'):self::t('Reject','رد')))).'</button></form>'; }
                     if ($type==='enrollment' && !empty($f['cohort_id'])) $html.='<button type="button" data-atlas-materials="'.esc_attr($f['cohort_id']).'">'.esc_html(self::t('View course materials','مشاهده محتوای دوره')).'</button><div data-materials-output aria-live="polite"></div>';
@@ -434,22 +470,25 @@ final class Atlas_Operations {
                         $html.='<button>'.esc_html(self::t('Save evidence','ذخیره شواهد')).'</button></form>';
                     }
                     $html.='</li>'; } $html.='</ul>'; }
-            if ($type==='enrollment') { $html.='</details>'; continue; }
+            if (is_array($cases)) $html.=Atlas_Support_Workflow::case_links($cases,'support_cases_page');
+            if ($type==='enrollment' || (!$customer && $type==='ticket_request') || self::protected_procurement($type)) { $html.='</details>'; continue; }
             $html.='<form method="post" '.($type==='tour_version'?'data-atlas-tour-builder':'').' action="'.esc_url(admin_url('admin-post.php')).'"><input type="hidden" name="action" value="atlas_operation_save"><input type="hidden" name="record_type" value="'.esc_attr($type).'"><input type="hidden" name="idempotency_key" value="'.esc_attr(wp_generate_uuid4()).'">'.wp_nonce_field('atlas_operation_save','_wpnonce',true,false);
             if (!in_array($type,self::CUSTOMER,true)) $html.='<label>'.esc_html(self::t('Organization ID (leave blank for agency)','شناسه سازمان (برای آژانس خالی بگذارید)')).'<input type="number" min="0" name="fields[org_id]"></label>';
             foreach ($schema['fields'] as $name=>$field) {
                 if ($name==='state') continue; $id='atlas-'.esc_attr($type.'-'.$name); $field_names=array('pickup'=>array('Pickup','مبدأ'),'dropoff'=>array('Drop-off','مقصد'),'pickup_at'=>array('Pickup time (UTC, ISO 8601)','زمان مبدأ (UTC، ISO 8601)'),'dropoff_at'=>array('Drop-off time (UTC, ISO 8601)','زمان مقصد (UTC، ISO 8601)'),'pickup_zone'=>array('Pickup IANA time zone','منطقه زمانی مبدأ (IANA)'),'dropoff_zone'=>array('Drop-off IANA time zone','منطقه زمانی مقصد (IANA)'),'passengers'=>array('Passengers','تعداد مسافران'),'luggage'=>array('Bags','تعداد بار'),'vehicle_class'=>array('Vehicle class: car, van or accessible','نوع خودرو: car، van یا accessible'),'contact'=>array('Contact','راه تماس'),'subject'=>array('Subject','موضوع'),'message'=>array('Message','پیام'),'category'=>array('Category','دسته‌بندی'),'guests'=>array('Guests','تعداد مهمانان'),'check_in'=>array('Check-in date (YYYY-MM-DD)','تاریخ ورود (YYYY-MM-DD)'),'check_out'=>array('Check-out date (YYYY-MM-DD)','تاریخ خروج (YYYY-MM-DD)'));
                 if ($type==='support_case' && !in_array($name,array('category','subject','message','booking_id'),true)) continue;
                 if ($type==='partner_application' && !in_array($name,array('organization_name','contact','partner_types','markets'),true)) continue;
+                if ($type==='ticket_request') $field_names+=array('origin'=>array('Departure location','مبدأ'),'destination'=>array('Arrival location','مقصد'),'travel_date'=>array('Local travel date','تاریخ محلی سفر'),'transport_mode'=>array('Mode','شیوه سفر'),'origin_zone'=>array('Departure time zone (IANA)','منطقه زمانی مبدأ (IANA)'),'destination_zone'=>array('Arrival time zone (IANA)','منطقه زمانی مقصد (IANA)'),'fare_class'=>array('Fare preference','ترجیح کلاس سفر'),'baggage'=>array('Bags','تعداد بار'),'accessibility'=>array('Practical accessibility needs','نیازهای عملی دسترس‌پذیری'));
                 $label=isset($field_names[$name])?self::t($field_names[$name][0],$field_names[$name][1]):ucwords(str_replace('_',' ',$name)); $required=!empty($field['required'])?' required':'';
                 $html.='<label for="'.$id.'">'.esc_html($label).'</label>';
-                if ($field['type']==='array') $html.='<textarea id="'.$id.'" name="fields['.esc_attr($name).']" '.($type==='tour_version' && in_array($name,array('stops','legs','days'),true)?'data-atlas-structure="'.esc_attr($name).'"':'').' placeholder="[]"></textarea>';
+                if ($type==='ticket_request' && isset($field['enum'])) { $choices=array('flight'=>self::t('Flight','پرواز'),'rail'=>self::t('Rail','قطار'),'bus'=>self::t('Bus','اتوبوس'),'standard'=>self::t('Standard','معمولی'),'premium'=>self::t('Premium','ویژه'),'flexible'=>self::t('Flexible','انعطاف‌پذیر'),'any'=>self::t('Any','همه')); $html.='<select id="'.$id.'" name="fields['.esc_attr($name).']"><option value="">—</option>'; foreach($field['enum'] as $value) $html.='<option value="'.esc_attr($value).'">'.esc_html($choices[$value]).'</option>'; $html.='</select>'; }
+                elseif ($field['type']==='array') $html.='<textarea id="'.$id.'" name="fields['.esc_attr($name).']" '.($type==='tour_version' && in_array($name,array('stops','legs','days'),true)?'data-atlas-structure="'.esc_attr($name).'"':'').' placeholder="[]"></textarea>';
                 elseif ($field['type']==='bool') $html.='<select id="'.$id.'" name="fields['.esc_attr($name).']"><option value="">—</option><option value="1">Yes / بله</option><option value="0">No / خیر</option></select>';
                 else $html.='<input id="'.$id.'" name="fields['.esc_attr($name).']" type="'.($field['type']==='int'?'number':'text').'"'.$required.'>';
             }
             $html.='<button type="submit">'.esc_html(self::t('Save draft','ذخیره پیش‌نویس')).'</button></form></details>';
         }
-        return $html.'</section>';
+        return apply_filters('atlas_operations_dashboard',$html,$customer).'</section>';
     }
     public static function portal() { return self::dashboard(false); }
     public static function account() { return self::dashboard(true); }

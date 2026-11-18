@@ -4,6 +4,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /** Explicit locale override; invalid values never change site locale. */
 function atlas_theme_requested_language() {
+    $content_language = apply_filters( 'atlas_editorial_language', null );
+    if ( in_array( $content_language, array( 'en', 'fa' ), true ) ) { return $content_language; }
     if ( isset( $_GET['lang'] ) && is_string( $_GET['lang'] ) ) {
         $lang = sanitize_key( wp_unslash( $_GET['lang'] ) );
         if ( in_array( $lang, array( 'en', 'fa' ), true ) ) { return $lang; }
@@ -13,7 +15,10 @@ function atlas_theme_requested_language() {
 }
 /** Make WP/Woo gettext use the selected locale for public requests. */
 function atlas_theme_locale( $locale ) {
-    if ( is_admin() || ! isset( $_GET['lang'] ) || ! is_string( $_GET['lang'] ) ) { return $locale; }
+    if ( is_admin() ) { return $locale; }
+    $content_language = apply_filters( 'atlas_editorial_language', null );
+    if ( in_array( $content_language, array( 'en', 'fa' ), true ) ) { return 'fa' === $content_language ? 'fa_IR' : 'en_US'; }
+    if ( ! isset( $_GET['lang'] ) || ! is_string( $_GET['lang'] ) ) { return $locale; }
     $lang = sanitize_key( wp_unslash( $_GET['lang'] ) );
     return 'fa' === $lang ? 'fa_IR' : ( 'en' === $lang ? 'en_US' : $locale );
 }
@@ -62,7 +67,12 @@ function atlas_theme_companion( $name, $attributes = array() ) {
 function atlas_theme_language_switch() {
     $base = remove_query_arg( array( 'lang' ) );
     $current = atlas_theme_requested_language();
-    return '<nav class="atlas-language" aria-label="' . esc_attr( atlas_theme_text( 'Language', 'زبان' ) ) . '"><a lang="en" hreflang="en"' . ( 'en' === $current ? ' aria-current="true"' : '' ) . ' href="' . esc_url( add_query_arg( 'lang', 'en', $base ) ) . '">EN</a><span aria-hidden="true">/</span><a lang="fa" hreflang="fa"' . ( 'fa' === $current ? ' aria-current="true"' : '' ) . ' href="' . esc_url( add_query_arg( 'lang', 'fa', $base ) ) . '">فارسی</a></nav>';
+    $urls = apply_filters( 'atlas_editorial_language_urls', array( 'en' => add_query_arg( 'lang', 'en', $base ), 'fa' => add_query_arg( 'lang', 'fa', $base ) ) );
+    $links = array();
+    foreach ( array( 'en' => 'EN', 'fa' => 'فارسی' ) as $language => $label ) {
+        if ( isset( $urls[ $language ] ) ) { $links[] = '<a lang="' . $language . '" hreflang="' . $language . '"' . ( $language === $current ? ' aria-current="true"' : '' ) . ' href="' . esc_url( $urls[ $language ] ) . '">' . $label . '</a>'; }
+    }
+    return '<nav class="atlas-language" aria-label="' . esc_attr( atlas_theme_text( 'Language', 'زبان' ) ) . '">' . implode( '<span aria-hidden="true">/</span>', $links ) . '</nav>';
 }
 add_shortcode( 'atlas_theme_language', 'atlas_theme_language_switch' );
 function atlas_theme_utility_links() {

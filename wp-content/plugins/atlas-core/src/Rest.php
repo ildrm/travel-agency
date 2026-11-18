@@ -4,12 +4,18 @@ if (!defined('ABSPATH')) { exit; }
 final class Rest {
     public static function register(): void { add_action('rest_api_init',[self::class,'routes']); }
     public static function routes(): void {
-        register_rest_route('agency/v1','/catalog',['methods'=>'GET','permission_callback'=>'__return_true','callback'=>static function(\WP_REST_Request $r) { return rest_ensure_response(Offers::listing(['kind'=>sanitize_key((string)$r->get_param('kind')),'page'=>(int)($r->get_param('page') ?: 1)])); }]);
+        register_rest_route('agency/v1','/catalog',['methods'=>'GET','permission_callback'=>'__return_true','callback'=>static function(\WP_REST_Request $r) { return self::catalog($r,true); }]);
+        register_rest_route('agency/v1','/catalog/search',['methods'=>'GET','permission_callback'=>'__return_true','callback'=>static function(\WP_REST_Request $r) { return self::catalog($r,false); }]);
+        register_rest_route('agency/v1','/catalog/compare',['methods'=>'GET','permission_callback'=>'__return_true','callback'=>static function(\WP_REST_Request $r) {
+            $locale=$r->get_param('locale')??'en';if (!is_string($locale)) return new \WP_Error('atlas_invalid_catalog','Invalid locale.',['status'=>422]);
+            $result=Catalog::compare($r->get_param('ids'),$locale);if (is_wp_error($result)) return $result;$response=new \WP_REST_Response($result);$response->header('Cache-Control','no-store');return $response;
+        }]);
         register_rest_route('agency/v1','/holds',['methods'=>'POST','permission_callback'=>static function() { return is_user_logged_in() ? true : new \WP_Error('atlas_auth_required',__('Sign in to reserve.','atlas-core'),['status'=>401]); },'callback'=>static function(\WP_REST_Request $r) {
             $data=$r->get_json_params(); if (!is_array($data)) { return new \WP_Error('atlas_invalid_request','JSON object required.',['status'=>400]); }
             foreach (['offer_id','offer_version','quantity'] as $k) { if (!isset($data[$k]) || !is_int($data[$k])) { return new \WP_Error('atlas_invalid_request','Offer, version and quantity must be integers.',['status'=>422]); } }
             $refs=$data['participant_refs'] ?? []; if (!is_array($refs)) { return new \WP_Error('atlas_invalid_participant','Participant references must be a list.', ['status'=>422]); }
-            $result=Booking::hold($data['offer_id'],$data['offer_version'],$data['quantity'],get_current_user_id(),(string)$r->get_header('Idempotency-Key'),$refs);
+            $options=$data['options'] ?? []; if (!is_array($options) || ($options && array_is_list($options))) { return new \WP_Error('atlas_invalid_options','Booking options must be an object.',['status'=>422]); }
+            $result=Booking::hold($data['offer_id'],$data['offer_version'],$data['quantity'],get_current_user_id(),(string)$r->get_header('Idempotency-Key'),$refs,$options);
             return is_wp_error($result) ? $result : new \WP_REST_Response($result,201);
         }]);
         register_rest_route('agency/v1','/travelers',[
@@ -42,6 +48,10 @@ final class Rest {
             }
         ]);
     }
+    private static function catalog(\WP_REST_Request $request,bool $legacy): \WP_REST_Response|\WP_Error {
+        $result=Catalog::search($request->get_query_params());if (is_wp_error($result)) return $result;
+        $response=new \WP_REST_Response($legacy?$result['items']:$result);$response->header('X-WP-Total',(string)$result['total']);$response->header('X-WP-TotalPages',(string)$result['total_pages']);$response->header('Cache-Control','no-store');return $response;
+    }
 }
 final class CLI {
     public function migrate(): void { $r=DB::migrate(); if (is_wp_error($r)) { \WP_CLI::error($r->get_error_message()); } \WP_CLI::success('Atlas schema is current.'); }
@@ -50,9 +60,17 @@ final class CLI {
         $r=Booking::expire((string)$args[0]); if (is_wp_error($r)) { \WP_CLI::error($r->get_error_message()); }
         \WP_CLI::success('Hold state: '.$r['state']);
     }
-    public function run_due(): void { $n=Jobs::expire_due(); $sent=Jobs::dispatch_outbox(); \WP_CLI::success('Processed '.$n.' due holds and '.$sent.' events.'); }
+    public function run_due(): void { $result=Jobs::run(); \WP_CLI::success('Processed '.$result['due_holds'].' due holds and '.$result['delivered_events'].' events.'); }
 }
 final class Jobs {
+    public static function run(): array {
+        $started=DB::now();
+        $holds=self::expire_due();
+        $events=self::dispatch_outbox();
+        $heartbeat=['started_at'=>$started,'finished_at'=>DB::now(),'due_holds'=>$holds,'delivered_events'=>$events];
+        update_option('atlas_core_worker_heartbeat',$heartbeat,false);
+        return $heartbeat;
+    }
     public static function dispatch_outbox(): int {
         global $wpdb;
         if (!has_filter('atlas_core_deliver_outbox')) { return 0; }
@@ -62,15 +80,17 @@ final class Jobs {
         $ids=$wpdb->get_col($wpdb->prepare("SELECT id FROM $table WHERE status=%s AND (available_at IS NULL OR available_at<=%s) ORDER BY created_at LIMIT 25",'pending',$now));
         $delivered=0;
         foreach ($ids as $id) {
-            $claimed=$wpdb->query($wpdb->prepare("UPDATE $table SET status=%s,claimed_at=%s,attempts=attempts+1 WHERE id=%s AND status=%s",'processing',DB::now(),$id,'pending'));
+            $claimTime=DB::now();
+            $claimed=$wpdb->query($wpdb->prepare("UPDATE $table SET status=%s,claimed_at=%s,attempts=attempts+1 WHERE id=%s AND status=%s AND (available_at IS NULL OR available_at<=%s)",'processing',$claimTime,$id,'pending',$claimTime));
             if ($claimed!==1) { continue; }
             $event=$wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id=%s",$id),ARRAY_A);
             try { $ok=apply_filters('atlas_core_deliver_outbox',null,$event)===true; } catch (\Throwable $e) { $ok=false; }
-            if ($ok) { $wpdb->update($table,['status'=>'delivered','claimed_at'=>null],['id'=>$id,'status'=>'processing']); $delivered++; }
+            $claim=['id'=>$id,'status'=>'processing','claimed_at'=>$claimTime,'attempts'=>(int)$event['attempts']];
+            if ($ok) { if ($wpdb->update($table,['status'=>'delivered','claimed_at'=>null],$claim)===1) $delivered++; }
             else {
                 $attempt=(int)$event['attempts']; $status=$attempt>=5 ? 'failed' : 'pending';
                 $next=(new \DateTimeImmutable(DB::now(),new \DateTimeZone('UTC')))->modify('+'.min(3600,30*(2**min($attempt,7))).' seconds')->format('Y-m-d H:i:s.u');
-                $wpdb->update($table,['status'=>$status,'claimed_at'=>null,'available_at'=>$next],['id'=>$id,'status'=>'processing']);
+                $wpdb->update($table,['status'=>$status,'claimed_at'=>null,'available_at'=>$next],$claim);
             }
         }
         return $delivered;

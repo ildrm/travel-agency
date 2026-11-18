@@ -23,10 +23,6 @@ class Atlas_Gateway_SEP extends Atlas_Disabled_Gateway {
 class Atlas_Gateway_Mellat extends Atlas_Disabled_Gateway {
     public function __construct() { $this->setup('atlas_mellat', 'Behpardakht Mellat'); }
 }
-class Atlas_Gateway_ZarinPal extends Atlas_Disabled_Gateway {
-    public function __construct() { $this->setup('atlas_zarinpal', 'ZarinPal'); }
-}
-
 class Atlas_Gateway_Simulator extends WC_Payment_Gateway {
     public function __construct() {
         $this->id = 'atlas_simulator';

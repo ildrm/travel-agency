@@ -27,6 +27,17 @@ final class Atlas_Partner_Workflow {
         $caps=get_user_meta($user_id,$user->cap_key,true);
         return is_array($caps) && !empty($caps['atlas_manage_records']) && !empty($caps['atlas_manage_offers']);
     }
+    /** A persisted active membership is mandatory before account ceilings are set. */
+    public static function activate_member_ceiling($user_id,$org_id,array $capabilities) {
+        if (!Auth::actor((int)$user_id) || !Auth::member((int)$org_id,(int)$user_id) || !$capabilities || array_diff($capabilities,array('atlas_manage_records','atlas_manage_offers'))) return false;
+        // Mutate the current WP_User instance too: a separate get_userdata object
+        // would persist caps while current_user_can kept its old request-local map.
+        $user=wp_get_current_user(); if ((int)$user->ID!==(int)$user_id) return false;
+        foreach ($capabilities as $capability) $user->add_cap($capability);
+        $caps=get_user_meta($user_id,$user->cap_key,true);
+        foreach ($capabilities as $capability) if (empty($caps[$capability])) return false;
+        return true;
+    }
     public static function review($request) {
         global $wpdb;
         if (!Auth::agency()) return self::error('atlas_forbidden','Agency access required.',403);

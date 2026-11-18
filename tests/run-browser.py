@@ -20,8 +20,14 @@ if response.headers.get('X-Atlas-Local-Runtime')!=hashlib.sha256(str(ROOT).encod
     sys.exit('Refusing browser tests: port 8840 is not the owned Atlas runtime.')
 before=fingerprint()
 started=datetime.now(timezone.utc).isoformat()
+env=dict(os.environ,WP_CLI_CACHE_DIR=str(ROOT/'.runtime/cache'))
+env.pop('ATLAS_TEST_DB',None)
+with (ROOT/'implementation/evidence/resource-browser-seed.log').open('w') as log:
+    prepare=subprocess.run(['nice','-n','19','wp','--path='+str(ROOT/'.runtime/wordpress'),'eval-file',str(ROOT/'deploy/seed-resource-browser.php')],cwd=ROOT,env=env,stdout=log,stderr=subprocess.STDOUT)
+if prepare.returncode:
+    sys.exit('Could not prepare the fictional dated-stay browser fixture. See implementation/evidence/resource-browser-seed.log.')
 command=['nice','-n','19','node',str(ROOT/'node_modules/@playwright/test/cli.js'),'test','--workers=1',*sys.argv[1:]]
-result=subprocess.run(command,cwd=ROOT,env=os.environ)
+result=subprocess.run(command,cwd=ROOT,env=env)
 after=fingerprint()
 report={'started_at':started,'finished_at':datetime.now(timezone.utc).isoformat(),
         'headless':True,'workers':1,'source_sha256':before,'source_unchanged_during_run':before==after,

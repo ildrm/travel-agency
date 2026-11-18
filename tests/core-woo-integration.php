@@ -19,9 +19,21 @@ if (is_wp_error($user)) { WP_CLI::error('Could not create local fictional custom
 $service=new WC_Product_Simple(); $service->set_name('Fictional event '.$suffix); $service->set_status('publish'); $service->set_virtual(true); $service->set_regular_price('1000000'); $serviceId=$service->save();
 $physical=new WC_Product_Simple(); $physical->set_name('Fictional souvenir '.$suffix); $physical->set_status('publish'); $physical->set_virtual(false); $physical->set_regular_price('250000'); $physicalId=$physical->save();
 $check($serviceId>0 && $physicalId>0 && wc_get_product($serviceId) instanceof WC_Product,'Woo product create/read via CRUD');
-$offer=Offers::save(0,['kind'=>'event','org_id'=>0,'title_en'=>'Fictional Store API event','title_fa'=>'','description_en'=>'','description_fa'=>'','registration_open_at'=>'2027-06-01T05:30:00.000000Z','registration_close_at'=>'2027-06-15T14:30:00.000000Z','timezone'=>'Asia/Tehran','capacity'=>3,'amount_irr'=>1000000,'mode'=>'local','status'=>'published','product_id'=>$serviceId],$admin);
+$offerFields=['kind'=>'event','org_id'=>0,'title_en'=>'Fictional Store API event','title_fa'=>'','description_en'=>'','description_fa'=>'','registration_open_at'=>'2027-06-01T05:30:00.000000Z','registration_close_at'=>'2027-06-15T14:30:00.000000Z','timezone'=>'Asia/Tehran','capacity'=>3,'amount_irr'=>1000000,'mode'=>'local','status'=>'published','product_id'=>$serviceId];
+$offer=Offers::save(0,$offerFields,$admin);
 if (is_wp_error($offer)) { WP_CLI::error('Could not create local offer: '.$offer->get_error_message()); }
-update_post_meta($serviceId,'_atlas_offer_id',$offer);
+$check((int)get_post_meta($serviceId,'_atlas_offer_id',true)===$offer,'normal offer save records the reciprocal Woo service product without fixture metadata');
+$duplicate=Offers::save(0,array_replace($offerFields,array('title_en'=>'Fictional duplicate service link')),$admin);
+$check(is_wp_error($duplicate) && $duplicate->get_error_code()==='atlas_product_in_use' && (int)get_post_meta($serviceId,'_atlas_offer_id',true)===$offer,'another offer cannot overwrite a product binding');
+$invalid=Offers::save(0,array_replace($offerFields,array('product_id'=>$physicalId)),$admin);
+$check(is_wp_error($invalid) && $invalid->get_error_code()==='atlas_invalid_service_product' && !get_post_meta($physicalId,'_atlas_offer_id',true),'physical merchandise cannot be silently converted into a service product');
+$historicalProduct=new WC_Product_Simple();
+$historicalProduct->set_name('Fictional downloadable merchandise '.$suffix); $historicalProduct->set_virtual(true); $historicalProduct->set_regular_price('250000'); $historicalId=$historicalProduct->save();
+$historicalOrder=wc_create_order(array('customer_id'=>$user));
+$historicalOrder->add_product($historicalProduct,1); $historicalOrder->set_payment_method('bacs'); $historicalOrder->save();
+$retroactive=Offers::save(0,array_replace($offerFields,array('product_id'=>$historicalId)),$admin);
+$check(is_wp_error($retroactive) && $retroactive->get_error_code()==='atlas_product_history' && !get_post_meta($historicalId,'_atlas_offer_id',true),'a historical ordinary Woo virtual order prevents retroactive service product binding');
+$historicalOrder->delete(true); $historicalProduct->delete(true);
 wp_set_current_user($user); DB::set_test_now('2027-06-01T06:00:00.000000Z');
 if (!WC()->session) { WC()->initialize_session(); } WC()->initialize_cart(); WC()->cart->empty_cart();
 $api=static function(string $method,string $route,array $payload=[]): WP_REST_Response {
@@ -180,6 +192,12 @@ $physicalAdd=$api('POST','/wc/store/v1/cart/add-item',['id'=>$physicalId,'quanti
 $check($classicPhysical===true && $physicalAdd->get_status()>=200 && $physicalAdd->get_status()<300 && WC()->cart->get_cart_contents_count()===1,'classic and Store API physical merchandise remain eligible without reservation tokens');
 $available=WC()->payment_gateways()->get_available_payment_gateways();
 $check(isset($available['bacs']),'physical merchandise cart retains enabled native bank transfer');
+$beforeNativeRefund=(int)$wpdb->get_var('SELECT COUNT(*) FROM '.DB::table('ledger'));
+$physicalOrder->set_payment_method('bacs'); $physicalOrder->set_status('on-hold'); $physicalOrder->save();
+$nativeRefund=wc_create_refund(array('order_id'=>$physicalOrder->get_id(),'amount'=>250000,'reason'=>'Fictional manual bookkeeping refund','refund_payment'=>false,'restock_items'=>false));
+$reloaded=wc_get_order($physicalOrder->get_id());
+$afterNativeRefund=(int)$wpdb->get_var('SELECT COUNT(*) FROM '.DB::table('ledger'));
+$check($nativeRefund instanceof WC_Order_Refund && (int)$nativeRefund->get_amount()===250000 && $reloaded->get_status()==='refunded' && !$reloaded->get_meta('_atlas_booking_id') && $beforeNativeRefund===$afterNativeRefund,'native physical manual refund changes the Woo order without a provider transaction or Atlas service ledger entry');
 WC()->cart->empty_cart(); $bacs->enabled=$previousBacsEnabled;
 DB::set_test_now(null);
 echo "Atlas Woo checks: $passed passed, $failed failed\n";

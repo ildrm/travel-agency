@@ -6,7 +6,7 @@ final class Privacy {
         add_filter('wp_privacy_personal_data_exporters',static function(array $exporters): array { $exporters['atlas-bookings']=['exporter_friendly_name'=>__('Atlas bookings','atlas-core'),'callback'=>[self::class,'export']]; return $exporters; });
         add_filter('wp_privacy_personal_data_erasers',static function(array $erasers): array { $erasers['atlas-bookings']=['eraser_friendly_name'=>__('Atlas bookings','atlas-core'),'callback'=>[self::class,'erase']]; return $erasers; });
         add_filter('cron_schedules',static function(array $s): array { $s['atlas_minute']=['interval'=>60,'display'=>__('Every minute','atlas-core')]; return $s; });
-        add_action('atlas_core_expire_holds',static function (): void { Jobs::expire_due(); Jobs::dispatch_outbox(); });
+        add_action('atlas_core_expire_holds',[Jobs::class,'run']);
         if (!wp_next_scheduled('atlas_core_expire_holds')) { wp_schedule_event(time()+60,'atlas_minute','atlas_core_expire_holds'); }
     }
     public static function export(string $email,int $page=1): array {

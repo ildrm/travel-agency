@@ -3,7 +3,7 @@ namespace Atlas\Core;
 if (!defined('ABSPATH')) { exit; }
 
 final class DB {
-    private const SCHEMA = '6';
+    private const SCHEMA = '7';
     private const TABLES = ['organizations', 'memberships', 'records', 'inventory', 'holds', 'bookings', 'payments', 'refunds', 'ledger', 'idempotency', 'audit', 'outbox'];
 
     public static function table(string $name): string {
@@ -37,7 +37,7 @@ final class DB {
               'memberships' => "org_id bigint(20) unsigned NOT NULL, user_id bigint(20) unsigned NOT NULL, role varchar(64) NOT NULL, status varchar(24) NOT NULL, updated_at datetime(6) NOT NULL, PRIMARY KEY  (org_id,user_id), KEY user_status (user_id,status)",
               'records' => "id char(36) NOT NULL, type varchar(64) NOT NULL, org_id bigint(20) unsigned NOT NULL DEFAULT 0, owner_id bigint(20) unsigned NOT NULL, state varchar(64) NOT NULL DEFAULT 'draft', payload longtext NOT NULL, version bigint(20) unsigned NOT NULL DEFAULT 1, created_at datetime(6) NOT NULL, updated_at datetime(6) NOT NULL, PRIMARY KEY  (id), KEY scoped (type,org_id,owner_id), KEY record_state (type,state)",
               'inventory' => "offer_id bigint(20) unsigned NOT NULL, capacity bigint(20) unsigned NOT NULL, allocated bigint(20) unsigned NOT NULL DEFAULT 0, version bigint(20) unsigned NOT NULL DEFAULT 1, kind varchar(32) NOT NULL, status varchar(24) NOT NULL, offer_snapshot longtext NOT NULL, PRIMARY KEY  (offer_id), KEY public_kind (status,kind)",
-              'holds' => "id char(36) NOT NULL, booking_id char(36) NOT NULL, offer_id bigint(20) unsigned NOT NULL, user_id bigint(20) unsigned NOT NULL, quantity bigint(20) unsigned NOT NULL, accepted_at datetime(6) NOT NULL, expires_at datetime(6) NOT NULL, state varchar(24) NOT NULL, PRIMARY KEY  (id), UNIQUE KEY booking_id (booking_id), KEY expiry (state,expires_at), KEY user_id (user_id)",
+              'holds' => "id char(36) NOT NULL, booking_id char(36) NOT NULL, offer_id bigint(20) unsigned NOT NULL, user_id bigint(20) unsigned NOT NULL, quantity bigint(20) unsigned NOT NULL, primary_quantity bigint(20) unsigned NULL, accepted_at datetime(6) NOT NULL, expires_at datetime(6) NOT NULL, state varchar(24) NOT NULL, PRIMARY KEY  (id), UNIQUE KEY booking_id (booking_id), KEY expiry (state,expires_at), KEY user_id (user_id)",
               'bookings' => "id char(36) NOT NULL, hold_id char(36) NOT NULL, offer_id bigint(20) unsigned NOT NULL, user_id bigint(20) unsigned NOT NULL, status varchar(40) NOT NULL, quantity bigint(20) unsigned NOT NULL, amount_irr bigint(20) unsigned NOT NULL, offer_version bigint(20) unsigned NOT NULL, snapshot longtext NOT NULL, participants longtext NOT NULL, order_id bigint(20) unsigned NOT NULL DEFAULT 0, created_at datetime(6) NOT NULL, updated_at datetime(6) NOT NULL, PRIMARY KEY  (id), UNIQUE KEY hold_id (hold_id), KEY user_status (user_id,status)",
               'payments' => "id char(36) NOT NULL, booking_id char(36) NOT NULL, provider varchar(64) NOT NULL, provider_ref varchar(190) NOT NULL, amount_irr bigint(20) unsigned NOT NULL, currency char(3) NOT NULL, status varchar(24) NOT NULL, exception_code varchar(64) NOT NULL DEFAULT '', verified_at datetime(6) NOT NULL, paid_at datetime(6) NULL, PRIMARY KEY  (id), UNIQUE KEY provider_reference (provider,provider_ref), KEY booking_id (booking_id), KEY exception_code (exception_code)",
               'refunds' => "id char(36) NOT NULL, payment_id char(36) NOT NULL, booking_id char(36) NOT NULL, amount_irr bigint(20) unsigned NOT NULL, status varchar(24) NOT NULL, requested_by bigint(20) unsigned NOT NULL, reason varchar(190) NOT NULL, provider varchar(64) NOT NULL, provider_ref varchar(190) NULL, created_at datetime(6) NOT NULL, updated_at datetime(6) NOT NULL, PRIMARY KEY  (id), UNIQUE KEY provider_ref (provider,provider_ref), KEY payment_status (payment_id,status)",
@@ -128,10 +128,15 @@ final class DB {
     public static function audit(int $actor, int $org, string $action, string $id, string $result, string $reason = ''): bool {
         global $wpdb;
         if (self::$testAuditFailure) { return false; }
+        $reason=wp_check_invalid_utf8($reason,true);
+        $reason=substr($reason,0,190);
+        // A byte limit can land inside a Farsi character. Remove only the
+        // incomplete final codepoint so the audit remains valid UTF-8.
+        if ($reason!=='' && preg_match('//u',$reason)!==1) $reason=preg_replace('/[\xC0-\xFF][\x80-\xBF]*$/D','',$reason)??'';
         // WordPress treats its own taxonomy object_id as an integer by default.
         // Our object IDs may be UUIDs; inherited field formats would corrupt the
         // audit reference while still reporting a successful database insert.
-        return false !== $wpdb->insert(self::table('audit'), ['actor_id'=>$actor, 'org_id'=>$org, 'action'=>$action, 'object_id'=>$id, 'result'=>$result, 'reason'=>substr($reason,0,190), 'created_at'=>self::now()], ['%d','%d','%s','%s','%s','%s','%s']);
+        return false !== $wpdb->insert(self::table('audit'), ['actor_id'=>$actor, 'org_id'=>$org, 'action'=>$action, 'object_id'=>$id, 'result'=>$result, 'reason'=>$reason, 'created_at'=>self::now()], ['%d','%d','%s','%s','%s','%s','%s']);
     }
     public static function emit(string $type, string $id): bool {
         global $wpdb;

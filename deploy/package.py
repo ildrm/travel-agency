@@ -92,6 +92,27 @@ def build_sbom(packages):
             components.append({'type': 'file', 'name': file['path'], 'bom-ref': 'file:' + package['group'] + '/' + file['path'],
                                'hashes': [{'alg': 'SHA-256', 'content': digest(file['data'])}],
                                'properties': props(source_path=file['source'], origin=file['origin'])})
+        contents = {file['path']: file['data'] for file in package['files']}
+        for path, data in contents.items():
+            if not path.endswith('/MANIFEST.json') or '/assets/third-party/' not in path:
+                continue
+            pinned = json.loads(data)
+            folder = path.rsplit('/', 1)[0]
+            listed = {folder + '/' + item['file'] for item in pinned['files']}
+            shipped = {item for item in contents if item.startswith(folder + '/') and item not in {path, folder + '/NOTICE.md'}}
+            if listed != shipped:
+                raise ValueError('Bundled library files differ from the manifest: ' + path)
+            for file in pinned['files']:
+                payload = contents[folder + '/' + file['file']]
+                if len(payload) != file['bytes'] or digest(payload) != file['sha256']:
+                    raise ValueError('Bundled library integrity check failed: ' + file['file'])
+            name, version = pinned['name'], pinned['version']
+            components.append({'type': 'library', 'name': name, 'version': version,
+                               'bom-ref': 'bundled:' + folder, 'purl': 'pkg:npm/' + quote(name, safe='/') + '@' + quote(version, safe=''),
+                               'licenses': license_ids(pinned['selected_license']),
+                               'externalReferences': [{'type': 'vcs', 'url': pinned['upstream']}, {'type': 'distribution', 'url': pinned['tarball_url']}],
+                               'properties': props(delivery='bundled in ' + package['name'] + ' ZIP', manifest=path, revision=pinned['git_head'],
+                                                   upstream_license=pinned['license'], integrity=pinned['tarball_integrity'], bundled_file_hashes='checked against embedded manifest')})
     for package_path, item in sorted(read_json('package-lock.json').get('packages', {}).items()):
         if not package_path or 'node_modules/' not in package_path:
             continue
@@ -148,7 +169,7 @@ def build_sbom(packages):
             'serialNumber': 'urn:uuid:' + str(uuid.uuid5(uuid.NAMESPACE_URL, 'atlas-source-inventory:' + fingerprint)),
             'metadata': {'component': root_component, 'properties': props(status='development_artifacts_not_production_approved',
                 purpose='scoped source/lock inventory, not certified SBOM or vulnerability/rights assessment', source_fingerprint_sha256=fingerprint,
-                coverage='all package-lock entries, composer lock packages, owned source files and injected LICENSE',
+                coverage='all package-lock entries, composer lock packages, bundled library manifests, product sources and injected LICENSE',
                 exclusions='full WP/Woo vendor dependency trees, browser binaries, OS/Homebrew packages, external services and complete dependency relationship graph not inventoried',
                 vulnerability_status='not scanned by this generator; see separate executed audit evidence',
                 license_status='known SPDX identifiers are declarations only, not legal/asset-rights clearance',

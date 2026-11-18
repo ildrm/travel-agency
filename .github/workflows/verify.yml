@@ -26,12 +26,21 @@ jobs:
       - run: WP_CLI_CACHE_DIR="$PWD/.runtime/cache" wp --path="$PWD/.runtime/wordpress" eval-file deploy/seed.php
       - run: python3 tests/static.py
       - run: python3 tests/run-integration.py
+      - name: Prepare the headless browser
+        run: node node_modules/@playwright/test/cli.js install --with-deps chromium
+      - name: Run the loopback browser journeys
+        run: |
+          python3 deploy/local.py start
+          export ATLAS_CHROME="$(node -p "require('@playwright/test').chromium.executablePath()")"
+          python3 tests/run-browser.py
       - name: Build and compare installable artifacts
         run: python3 deploy/verify-packages.py
       - name: Install actual archives in a disposable database
         run: python3 deploy/clean-install-check.py
       - name: Rehearse restore into a disposable database
         run: python3 deploy/recovery-check.py
+      - name: Verify local release evidence matches the available archives
+        run: python3 tests/verify-release-evidence.py
       - name: Stop isolated runtime
         if: always()
         run: python3 deploy/local.py stop
@@ -41,4 +50,7 @@ jobs:
           name: atlas-test-and-package-evidence
           path: |
             implementation/evidence/*results.json
+            implementation/evidence/browser-build.json
+            implementation/evidence/development-release.json
+            implementation/evidence/package-reproducibility.json
             dist/

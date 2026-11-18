@@ -85,6 +85,34 @@ test('public APIs reject forced crypto and unauthenticated private access', asyn
   expect(crypto.status()).toBeGreaterThanOrEqual(400);
 });
 
+test('catalog filters narrow results and keep the Farsi locale', async ({ page }) => {
+  await page.goto('/?lang=fa');
+  const filter = page.locator('form[data-catalog-filter]');
+  await expect(filter).toBeVisible();
+  await filter.locator('[name="cat_kind"]').selectOption('event');
+  await filter.locator('button[type="submit"], button:not([type])').first().click();
+  await expect(page).toHaveURL(/cat_kind=event/);
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+  await expect(page.locator('[data-atlas-catalog]')).toContainText('صبحی در طبیعت');
+  await expect(page.locator('[data-atlas-catalog]')).not.toContainText('فرصتی برای آرامش');
+});
+
+test('reviewed guides link reciprocal published translations and canonical URLs', async ({ page }) => {
+  const { guides } = JSON.parse(fs.readFileSync(path.join(root, '.runtime/browser-fixtures.json')));
+  expect(Boolean(guides?.en && guides?.fa)).toBe(true);
+  await page.goto(guides.en);
+  await expect(page.getByRole('heading', { name: 'Paper atlas field notes' })).toBeVisible();
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', guides.en);
+  await expect(page.locator('link[rel="alternate"][hreflang="fa"]')).toHaveAttribute('href', guides.fa);
+  await page.locator('header .atlas-language a[lang="fa"]').click();
+  await expect(page).toHaveURL(guides.fa);
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+  await expect(page.getByRole('heading', { name: 'یادداشت‌های اطلس کاغذی' })).toBeVisible();
+  await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveAttribute('href', guides.en);
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /راهنمای نمونه/);
+});
+
 async function chooseAddressOption(page, selector, value, label) {
   const field = page.locator(selector);
   await expect(field).toBeVisible();
@@ -96,6 +124,46 @@ async function chooseAddressOption(page, selector, value, label) {
     await page.getByRole('option', { name: label, exact: true }).click();
   }
 }
+
+test('physical product checkout calculates native shipping and keeps offline money pending', async ({ page }) => {
+  const credentials = JSON.parse(fs.readFileSync(path.join(root, '.runtime/credentials.json')));
+  const fixtures = JSON.parse(fs.readFileSync(path.join(root, '.runtime/browser-fixtures.json')));
+  expect(Boolean(fixtures.merch_product && fixtures.merch_shipping_zone)).toBe(true);
+  await signIn(page, credentials, 'customer', '?atlas_area=account&lang=en');
+  await page.goto('/?offer_id=' + fixtures.event + '&lang=en');
+  const nonces = await page.evaluate(() => ({ Nonce: window.atlasBooking.storeNonce, 'X-WP-Nonce': window.atlasBooking.restNonce }));
+  expect((await page.request.delete('/wp-json/wc/store/v1/cart/items', { headers: nonces })).status()).toBe(200);
+  const product = await page.request.post('/wp-json/wc/store/v1/cart/add-item', { headers: nonces, data: { id: fixtures.merch_product, quantity: 1 } });
+  expect(product.ok()).toBe(true);
+  await page.goto('/checkout/?lang=en');
+  const edit = page.getByRole('button', { name: /Edit shipping address/ });
+  if (await edit.isVisible()) await edit.click();
+  await page.locator('#email').fill('customer@example.test');
+  await chooseAddressOption(page, '#shipping-country', 'IR', 'Iran');
+  await page.locator('#shipping-first_name').fill('Fictional');
+  await page.locator('#shipping-last_name').fill('Customer');
+  await page.locator('#shipping-address_1').fill('1 Fictional Road');
+  await page.locator('#shipping-city').fill('Tehran');
+  await chooseAddressOption(page, '#shipping-state', 'THR', 'تهران');
+  await page.locator('#shipping-postcode').fill('1111111111');
+  const phone = page.locator('#shipping-phone');
+  if (await phone.isVisible()) await phone.fill('+12025550123');
+  await expect(page.getByText('Fictional flat-rate delivery', { exact: true }).first()).toBeVisible();
+  // The fictional demo also supports simulation. This journey chooses Woo's native offline path.
+  const method = page.locator('input[value="bacs"]');
+  await expect(method).toBeAttached();
+  if (!(await method.isChecked())) await page.locator('label[for="' + await method.getAttribute('id') + '"]').click();
+  for (const input of await page.locator('.wc-block-checkout__terms input[type="checkbox"]').all()) await input.check();
+  const response = page.waitForResponse(r => r.url().includes('/wc/store/v1/checkout') && r.request().method() === 'POST');
+  await page.locator('.wc-block-components-checkout-place-order-button').click();
+  const result = await response;
+  const order = await result.json();
+  expect(result.ok(), order.message || 'Physical checkout must succeed').toBe(true);
+  expect(order.status).toBe('on-hold');
+  await page.waitForURL(url => url.pathname.includes('order-received'));
+  await expect(page.getByText(/Paper trail journal/).first()).toBeVisible();
+  await expect(page.locator('[data-atlas-confirmation-status]')).toHaveCount(0);
+});
 
 for (const lang of ['en', 'fa']) {
   test(`customer reserve -> Woo Blocks simulated payment -> agency confirmation: ${lang}`, async ({ page, browser }) => {
@@ -143,6 +211,8 @@ for (const lang of ['en', 'fa']) {
     const terms = page.locator('.wc-block-checkout__terms input[type="checkbox"]');
     for (const input of await terms.all()) await input.check();
     await page.screenshot({ path: `implementation/evidence/checkout-${lang}.png`, fullPage: true, animations: 'disabled' });
+    await expect(page.locator('#wc-guest-checkout-notice')).toHaveCount(1);
+    await expect(page.locator('#email')).toHaveAttribute('aria-describedby', /wc-guest-checkout-notice/);
     const checkoutAxe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze();
     fs.writeFileSync(path.join(root, `implementation/evidence/axe-checkout-${lang}.json`), JSON.stringify(checkoutAxe, null, 2));
     expect(checkoutAxe.violations.filter(v => ['critical', 'serious'].includes(v.impact)),
@@ -155,6 +225,7 @@ for (const lang of ['en', 'fa']) {
     await page.waitForURL(url => url.pathname.includes('order-received'));
     await expect(page.locator('html')).toHaveAttribute('lang', lang);
     await expect(page.locator('[data-atlas-confirmation-status="paid_pending_confirmation"]').first()).toBeVisible();
+    await expect(page.locator('[data-atlas-voucher]')).toHaveCount(0);
     const state = await page.request.get('/wp-json/agency/v1/bookings/' + booking.booking_id,
       { headers: { 'X-WP-Nonce': restNonce } });
     expect(state.status()).toBe(200);
@@ -189,6 +260,15 @@ for (const lang of ['en', 'fa']) {
         { headers: { 'X-WP-Nonce': restNonce } });
       expect((await confirmed.json()).status).toBe('confirmed');
       await staff.screenshot({ path: `implementation/evidence/agency-confirm-${lang}.png`, fullPage: true, animations: 'disabled' });
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      const voucher = page.locator('[data-atlas-confirmation-status="confirmed"] [data-atlas-voucher]').first();
+      await expect(voucher).toBeVisible();
+      const denied = await staff.request.get(await voucher.getAttribute('href'));
+      expect(denied.status()).toBe(404);
+      const printed = await page.request.get(await voucher.getAttribute('href'));
+      expect(printed.status()).toBe(200);
+      expect(printed.headers()['cache-control']).toContain('no-store');
+      expect(await printed.text()).toContain(lang === 'fa' ? 'واچر خدمت' : 'Service voucher');
       expect(errors).toEqual([]);
     } finally {
       await staffContext.close();

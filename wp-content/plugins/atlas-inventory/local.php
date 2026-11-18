@@ -51,7 +51,7 @@ final class Local {
         } catch (\Throwable $e) { return self::failure('atlas_schema_failed','Local inventory migration failed.',503); }
         finally { $wpdb->get_var($wpdb->prepare('SELECT RELEASE_LOCK(%s)',$lock)); }
     }
-    public static function available(): bool { return wp_get_environment_type()==='local' && defined('ATLAS_DEMO_MODE') && ATLAS_DEMO_MODE===true; }
+    public static function available(): bool { return (defined('ATLAS_RESOURCE_BOOKING_ENABLED') && ATLAS_RESOURCE_BOOKING_ENABLED===true) || (wp_get_environment_type()==='local' && defined('ATLAS_DEMO_MODE') && ATLAS_DEMO_MODE===true); }
     private static function ready(): true|WP_Error {
         if (!self::available()) return self::failure('atlas_disabled','Local inventory is disabled in this environment.',403);
         if (!class_exists(DB::class) || !class_exists(Records::class) || get_option('atlas_local_inventory_schema')!==self::VERSION) { return self::failure('atlas_dependency','Local inventory is unavailable until core and schema are ready.',503); }
@@ -370,6 +370,10 @@ final class Local {
         try {
             $a=self::allocation($allocation); if (is_wp_error($a)) { $wpdb->query('ROLLBACK'); return $a; }
             $now=(new \DateTimeImmutable(DB::now(),new \DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z');
+            if ($a->linked_type==='booking') {
+                $booking=$wpdb->get_row($wpdb->prepare('SELECT status FROM '.DB::table('bookings').' WHERE id=%s',$a->linked_id));
+                if (!$booking || $booking->status!=='confirmed') { $wpdb->query('ROLLBACK'); return self::failure('atlas_invalid_state','A booking-linked rental requires verified payment and manual confirmation before pickup.'); }
+            }
             if ($a->kind!=='rental' || $a->state!=='allocated' || !empty($a->picked_up_at) || $now<$a->start_at || $now>=$a->end_at) { $wpdb->query('ROLLBACK'); return self::failure('atlas_invalid_state','Rental is not eligible for pickup.'); }
             $eligible=self::eligibility_at_pickup($a);
             if (is_wp_error($eligible)) { $wpdb->query('ROLLBACK'); return $eligible; }
@@ -407,6 +411,7 @@ final class Local {
         global $wpdb; if ($wpdb->query('START TRANSACTION')===false) return self::failure('atlas_storage','Could not start an inventory transaction.',503);
         try {
             $a=self::allocation($allocation); if (is_wp_error($a)) { $wpdb->query('ROLLBACK'); return $a; }
+            if (in_array($a->linked_type,['booking','dispatch'],true)) { $wpdb->query('ROLLBACK'); return self::failure('atlas_invalid_state','Release linked capacity through its booking or dispatch workflow.'); }
             if (!in_array($a->state,['allocated','blocked_conflict'],true)) { $wpdb->query('ROLLBACK'); return self::failure('atlas_invalid_state','Only an unstarted allocation may be released.'); }
             if ($a->kind==='stay') {
                 $start=self::date($a->start_at); $end=self::date($a->end_at);
@@ -425,6 +430,7 @@ final class Local {
         if ($wpdb->query('START TRANSACTION')===false) return self::failure('atlas_storage','Could not start an inventory transaction.',503);
         try {
             $a=self::allocation($allocation); if (is_wp_error($a)) { $wpdb->query('ROLLBACK'); return $a; }
+            if ($a->linked_type==='dispatch') { $wpdb->query('ROLLBACK'); return self::failure('atlas_invalid_state','Resolve dispatch disputes through the dispatch review workflow.'); }
             if ($a->state!=='disputed') { $wpdb->query('ROLLBACK'); return self::failure('atlas_invalid_state','Allocation is not disputed.'); }
             self::query_ok($wpdb->update(self::table('allocations'),['state'=>'returned','updated_at'=>DB::now()],['id'=>$allocation]));
             self::audit((int)$a->resource->org_id,'local.rental.dispute.resolve',$allocation,sanitize_text_field($reason));

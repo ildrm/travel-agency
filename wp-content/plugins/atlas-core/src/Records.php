@@ -120,6 +120,8 @@ final class Records {
             $values=self::valid($type,$changes,true); if (is_wp_error($values)) { $wpdb->query('ROLLBACK'); return $values; }
             if ((int)$row->version !== $expectedVersion) { $wpdb->query('ROLLBACK'); return new \WP_Error('atlas_conflict','Record changed.', ['status'=>409]); }
             $current=json_decode($row->payload,true) ?: []; $next=array_merge($current,$values);
+            $guard=apply_filters('atlas_core_record_update_guard',true,$type,$id,$values,$actorId);
+            if ($guard!==true) { $wpdb->query('ROLLBACK'); return is_wp_error($guard)?$guard:new \WP_Error('atlas_record_locked','This record must be changed through its assigned workflow.', ['status'=>409]); }
             if (isset($values['state']) && $values['state'] !== $row->state) {
                 $allowed=self::$types[$type]['transitions']['state'][$row->state] ?? [];
                 if (!in_array($values['state'],$allowed,true)) { $wpdb->query('ROLLBACK'); return new \WP_Error('atlas_invalid_transition','Transition not permitted.', ['status'=>409]); }

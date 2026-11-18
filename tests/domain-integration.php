@@ -241,28 +241,30 @@ try {
     wp_set_current_user($admin);$revoke=$member_payload;$revoke['expected_updated_at']=$add_member->get_data()['updated_at'];$revoke['status']='revoked';$revoke['reason']='Fictional access termination.';$rev_key='revoke_'.wp_generate_uuid4();$keys[]=$rev_key;
     $check($call('POST','/agency/v1/organizations/'.$new_org.'/members',$revoke,$rev_key)->get_status()===200,'Agency can revoke membership with the current revision.');
     wp_set_current_user($users[0]);$check(!Atlas\Core\Auth::can('atlas_manage_records',$new_org,null,'read'),'Revocation immediately removes viewer access.');
-    // Three invited suppliers submit confidential bids; closed deadlines/expired quotes fail closed.
-    $third_user=wp_insert_user(array('user_login'=>'atlas-maker-'.wp_generate_password(12,false),'user_pass'=>wp_generate_password(30),'role'=>'subscriber'));$check(!is_wp_error($third_user),'Third supplier fixture should exist.');$users[]=$third_user;
-    $maker=get_userdata($third_user);$maker->add_cap('atlas_manage_records');
-    $wpdb->insert(Atlas\Core\DB::table('organizations'),array('name'=>'Fictional third manufacturer','status'=>'active','created_at'=>Atlas\Core\DB::now()));$third_org=(int)$wpdb->insert_id;$orgs[]=$third_org;
-    $wpdb->insert(Atlas\Core\DB::table('memberships'),array('org_id'=>$third_org,'user_id'=>$third_user,'role'=>'contributor','status'=>'active','updated_at'=>Atlas\Core\DB::now()));
-    wp_set_current_user($admin);$rfq_key='rfq_'.wp_generate_uuid4();$keys[]=$rfq_key;
-    $rfq=$call('POST','/agency/v1/rfqs',array('title'=>'Fictional 500 conference gifts','requirements'=>'Fictional art v3 and sample inspection.','quantity'=>500,'deadline'=>gmdate('Y-m-d\TH:i:s\Z',time()+3600),'recipients'=>array($org,$new_org,$third_org)),$rfq_key);
-    $check($rfq->get_status()===200,'Agency should create RFQ with explicit recipients and deadline.');$rf=$rfq->get_data();$records[]=$rf['id'];
-    $check($call('PATCH','/agency/v1/operations/rfq/'.$rf['id'],array('version'=>1,'changes'=>array('state'=>'submitted')))->get_status()===200,'Complete RFQ should open for bids.');
-    $bids=array();foreach (array(array($users[0],$org,310000000),array($users[1],$new_org,325000000),array($third_user,$third_org,320000000)) as $supplier) {
-        wp_set_current_user($supplier[0]);$bid_key='bid_'.wp_generate_uuid4();$keys[]=$bid_key;
-        $bid=$call('POST','/agency/v1/operations/supplier_quote',array('org_id'=>$supplier[1],'rfq_id'=>$rf['id'],'amount_irr'=>$supplier[2],'expiry'=>gmdate('Y-m-d\TH:i:s\Z',time()+7200),'terms'=>'Fictional sample and shipping terms.'),$bid_key);
-        $check($bid->get_status()===200,'Invited supplier should save private bid.');$b=$bid->get_data();$records[]=$b['id'];$bids[]=$b;
-        $check($call('PATCH','/agency/v1/operations/supplier_quote/'.$b['id'],array('version'=>1,'changes'=>array('state'=>'submitted')))->get_status()===200,'Timely bid should submit.');
-    }
-    wp_set_current_user($users[0]);$check($call('GET','/agency/v1/operations/supplier_quote/'.$bids[1]['id'])->get_status()===404,'Manufacturer must not read competing bid.');
-    $expired_key='expired_'.wp_generate_uuid4();$keys[]=$expired_key;
-    $expired=$call('POST','/agency/v1/operations/supplier_quote',array('org_id'=>$org,'rfq_id'=>$rf['id'],'amount_irr'=>1,'expiry'=>'2020-01-01T00:00:00Z'),$expired_key);$check($expired->get_status()===422,'Expired quote must not be accepted.');
-    Atlas\Core\DB::set_test_now(gmdate('Y-m-d\TH:i:s\Z',time()+3601));$late_key='latebid_'.wp_generate_uuid4();$keys[]=$late_key;
-    $late_bid=$call('POST','/agency/v1/operations/supplier_quote',array('org_id'=>$org,'rfq_id'=>$rf['id'],'amount_irr'=>1,'expiry'=>gmdate('Y-m-d\TH:i:s\Z',time()+7200)),$late_key);$check($late_bid->get_status()===422,'Closed RFQ deadline must prevent a fresh bid.');
-    wp_set_current_user($admin);$award=$call('PATCH','/agency/v1/operations/supplier_quote/'.$bids[0]['id'],array('version'=>2,'changes'=>array('state'=>'approved')));$check($award->get_status()===200,'Agency may award a still-valid submitted quote after bid deadline.');
-    Atlas\Core\DB::set_test_now(gmdate('Y-m-d\TH:i:s\Z',time()+7201));$expired_award=$call('PATCH','/agency/v1/operations/supplier_quote/'.$bids[1]['id'],array('version'=>2,'changes'=>array('state'=>'approved')));$check($expired_award->get_status()===422,'Expired quote cannot create a fresh award.');Atlas\Core\DB::set_test_now(null);
+    // Generic records may show existing procurement history. New commercial
+    // mutations must use the separately tested scoped procurement workflow.
+    wp_set_current_user($admin);
+    $old_rfq=Atlas\Core\Records::create('rfq',array('title'=>'Fictional historical RFQ','requirements'=>'Historical procurement fixture.','quantity'=>500,'deadline'=>gmdate('Y-m-d\TH:i:s\Z',time()+3600),'recipients'=>array($org)),$admin);
+    $check(!is_wp_error($old_rfq),'Historical RFQ fixture exists.');$records[]=$old_rfq['id'];
+    $check($call('GET','/agency/v1/operations/rfq/'.$old_rfq['id'])->get_status()===200,'Agency retains access to historical procurement records.');
+    $create=$call('POST','/agency/v1/rfqs',array('title'=>'Generic bypass attempt'),'legacy-rfq-'.wp_generate_uuid4());
+    $check($create->get_status()===409 && $create->get_data()['code']==='atlas_procurement_managed','Direct RFQ shortcut cannot bypass dedicated workflow.');
+    $edit=$call('PATCH','/agency/v1/operations/rfq/'.$old_rfq['id'],array('version'=>1,'changes'=>array('state'=>'submitted')));
+    $check($edit->get_status()===409 && $edit->get_data()['code']==='atlas_procurement_managed','Historical RFQ is read-only through generic routes.');
+    wp_set_current_user($users[0]);
+    $foreign=$call('GET','/agency/v1/operations/rfq/'.$old_rfq['id']);
+    $check(in_array($foreign->get_status(),array(403,404),true) && !str_contains(wp_json_encode($foreign->get_data()),'Fictional historical RFQ'),'Historical agency procurement is not disclosed to another organization.');
+    wp_set_current_user($users[1]);
+    $inquiry=array('origin'=>'Fictional origin','destination'=>'Fictional destination','travel_date'=>'2030-05-01','passengers'=>2,'contact'=>'fixture@example.test','transport_mode'=>'rail','origin_zone'=>'Asia/Tehran','destination_zone'=>'Europe/Istanbul','fare_class'=>'flexible','baggage'=>2,'accessibility'=>'Step-free boarding requested');
+    $inquiry_key='ticket-'.wp_generate_uuid4();$keys[]=$inquiry_key;
+    $ticket=$call('POST','/agency/v1/ticket-requests',$inquiry,$inquiry_key);$inquiry_data=$ticket->get_data();
+    $check($ticket->get_status()===200 && $inquiry_data['state']==='draft' && $inquiry_data['fields']['transport_mode']==='rail' && !isset($inquiry_data['fields']['ticket_id']),'Passenger inquiry stores local service preferences without an issued ticket.');$records[]=$inquiry_data['id'];
+    $check($call('POST','/agency/v1/ticket-requests',array_replace($inquiry,array('transport_mode'=>'invented')), 'ticket-invalid-'.wp_generate_uuid4())->get_status()===422,'Passenger inquiry does not accept an unknown transport mode.');
+    $check($call('POST','/agency/v1/ticket-requests',array_replace($inquiry,array('destination_zone'=>'Unknown/Zone')), 'ticket-invalid-'.wp_generate_uuid4())->get_status()===422,'Passenger inquiry does not normalize an invalid time zone.');
+    wp_set_current_user($users[0]);
+    $check($call('GET','/agency/v1/operations/ticket_request/'.$inquiry_data['id'])->get_status()===404,'A different customer cannot see the passenger inquiry.');
+    wp_set_current_user($admin);
+    $check(str_contains(Atlas_Operations::portal(),'Fictional origin'),'Agency can review the submitted inquiry details in the operations portal.');
     wp_set_current_user(0);$guest_account=Atlas_Operations::account();$check(str_contains($guest_account,'woocommerce-login-nonce') && str_contains($guest_account,'name="password"'),'Guest account uses native Woo login, not a custom password handler.');
     $_REQUEST['atlas_return']='https://not-the-local-site.example.invalid/?offer_id='.$event;
     $safe_redirect=Atlas_Operations::auth_redirect('https://not-the-local-site.example.invalid/');

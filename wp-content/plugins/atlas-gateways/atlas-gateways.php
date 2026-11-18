@@ -1,15 +1,14 @@
 <?php
 /**
  * Plugin Name: Atlas Gateways
- * Description: Disabled provider boundaries and a local-only simulated payment method.
- * Version: 0.1.0
+ * Description: Prepared ZarinPal V4, disabled provider boundaries and local-only simulation.
+ * Version: 0.2.0
  * WC tested up to: 11.3.0
  * Text Domain: atlas-gateways
  * Requires Plugins: woocommerce, atlas-core
  */
 if (!defined('ABSPATH')) { exit; }
-// Compatibility concerns this plugin's available local simulator. Domestic PSP
-// boundaries remain unavailable until their separate provider gates are met.
+// Tested framework/local transport compatibility; live PSP acceptance is separate.
 add_action('before_woocommerce_init', static function (): void {
     if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class)) {
         \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
@@ -29,7 +28,18 @@ function atlas_gateways_demo_allowed() {
 
 add_action('plugins_loaded', function () {
     if (!class_exists('WC_Payment_Gateway')) { return; }
+    require_once __DIR__ . '/zarinpal.php';
     require_once __DIR__ . '/gateways.php';
+    add_action('init', array('Atlas_ZarinPal','install'),5);
+    add_action('rest_api_init', array('Atlas_ZarinPal','routes'));
+    add_action('woocommerce_api_atlas_zarinpal',array('Atlas_ZarinPal','callback_http'));
+    add_action('admin_menu',array('Atlas_ZarinPal','admin_menu'));
+    add_action('admin_post_atlas_zarinpal_reconcile',array('Atlas_ZarinPal','admin_reconcile'));
+    add_filter('atlas_core_verified_service_gateway',static function($allowed,$method) { return $method==='atlas_zarinpal'?Atlas_ZarinPal::ready():$allowed; },10,2);
+    add_filter('woocommerce_available_payment_gateways',array('Atlas_ZarinPal','guarded_gateways'),PHP_INT_MAX);
+    add_action('woocommerce_before_pay_action',array('Atlas_ZarinPal','guard_order_pay'),1);
+    add_action('woocommerce_checkout_order_processed',array('Atlas_ZarinPal','guard_classic_order'),0,3);
+    add_action('woocommerce_rest_checkout_process_payment_with_context',array('Atlas_ZarinPal','guard_store_payment'),-1,1);
     add_filter('woocommerce_payment_gateways', function ($gateways) {
         $gateways[] = 'Atlas_Gateway_SEP';
         $gateways[] = 'Atlas_Gateway_Mellat';
@@ -44,5 +54,6 @@ add_action('woocommerce_blocks_loaded', function () {
     require_once __DIR__ . '/blocks.php';
     add_action('woocommerce_blocks_payment_method_type_registration', function ($registry) {
         if (atlas_gateways_demo_allowed()) { $registry->register(new Atlas_Simulator_Blocks()); }
+        $registry->register(new Atlas_ZarinPal_Blocks());
     });
 });

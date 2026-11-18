@@ -75,6 +75,22 @@ if (empty($fixtures['merch_product'])) {
     $product->set_stock_quantity(10);
     $fixtures['merch_product'] = $product->save();
 }
+if (empty($fixtures['merch_shipping_zone'])) {
+    // This configuration lives only in the explicit fictional demonstration.
+    $zone = new WC_Shipping_Zone();
+    $zone->set_zone_name('Fictional local demo delivery');
+    $zone->set_zone_order(0);
+    $zone->add_location('IR','country');
+    $zone_id = $zone->save();
+    $method_id = $zone->add_shipping_method('flat_rate');
+    if (!$zone_id || !$method_id) { WP_CLI::error('Could not prepare the local physical shipping fixture.'); }
+    update_option('woocommerce_flat_rate_'.$method_id.'_settings',['title'=>'Fictional flat-rate delivery','tax_status'=>'none','cost'=>'100000']);
+    $offline = get_option('woocommerce_bacs_settings',[]);
+    if (empty($offline['enabled']) || $offline['enabled']!=='yes') {
+        update_option('woocommerce_bacs_settings',array_replace($offline,['enabled'=>'yes','title'=>'Fictional offline payment','description'=>'Local demonstration order. Do not send funds.','instructions'=>'Local demonstration only. Do not send funds.']));
+    }
+    $fixtures['merch_shipping_zone'] = $zone_id;
+}
 // Use Woo's public installer/filter to obtain its actual nested block templates.
 // A self-closing checkout comment has no inner blocks and renders an empty form.
 $wooPages = [];
@@ -109,6 +125,24 @@ foreach (['cart','checkout'] as $pageKind) {
     update_option('woocommerce_' . $pageKind . '_page_id', $fixtures['page_' . $pageKind]);
 }
 if (!empty($fixtures['page_my-experiences'])) { update_option('woocommerce_myaccount_page_id', $fixtures['page_my-experiences']); }
+if (class_exists('Atlas_Editorial') && empty($fixtures['guides'])) {
+    $guides=[];
+    foreach (['en'=>['Paper atlas field notes','Fictional local guide to reading a printed itinerary.'], 'fa'=>['یادداشت‌های اطلس کاغذی','راهنمای نمونه برای خواندن برنامه چاپی سفر.']] as $lang=>[$title,$copy]) {
+        $guide=wp_insert_post(['post_type'=>'atlas_guide','post_status'=>'draft','post_name'=>'atlas-field-notes-'.$lang,'post_title'=>$title,'post_content'=>'<!-- wp:paragraph --><p>'.esc_html($copy).'</p><!-- /wp:paragraph -->','post_excerpt'=>$copy],true);
+        if (is_wp_error($guide) || !$guide) { WP_CLI::error('Could not prepare fictional guide fixture.'); }
+        $guides[$lang]=$guide;
+    }
+    foreach ($guides as $lang=>$guide) {
+        $_POST['atlas_guide_nonce']=wp_create_nonce('atlas_guide_details_'.$guide);
+        $_POST['atlas_guide']=['language'=>$lang,'alternate'=>$guides[$lang==='en'?'fa':'en'],'source_reference'=>'local-fictional-editorial-source','verified_at'=>gmdate('Y-m-d')];
+        Atlas_Editorial::save_details($guide);
+        unset($_POST['atlas_guide_nonce'],$_POST['atlas_guide']);
+        $result=Atlas_Editorial::review($guide,Atlas_Editorial::fingerprint(get_post($guide)),'local-fixture-review-001','publish');
+        if (is_wp_error($result)) { WP_CLI::error('Could not publish fictional guide fixture: '.$result->get_error_message()); }
+    }
+    flush_rewrite_rules(false);
+    $fixtures['guides']=array_map(static function($id){return Atlas_Editorial::url(get_post($id));},$guides);
+}
 update_option('atlas_demo_fixtures', $fixtures, false);
 file_put_contents(dirname(__DIR__) . '/.runtime/browser-fixtures.json', wp_json_encode($fixtures));
 WP_CLI::success('Seeded fictional local fixtures; real supplier/payment capabilities remain disabled.');

@@ -11,6 +11,7 @@ final class Woo {
         add_action('woocommerce_check_cart_items',[self::class,'classic_cart_validation']);
         add_action('woocommerce_store_api_cart_errors',[self::class,'store_cart_validation'],10,2);
         add_action('woocommerce_checkout_process',[self::class,'checkout_auth']);
+        add_action('woocommerce_before_calculate_totals',[self::class,'quote_prices'],20,1);
         add_action('woocommerce_checkout_create_order_line_item',[self::class,'line_item'],10,4);
         add_action('woocommerce_checkout_order_processed',[self::class,'classic_order'],10,3);
         add_action('woocommerce_store_api_checkout_order_processed',[self::class,'store_order'],10,1);
@@ -39,8 +40,9 @@ final class Woo {
     private static function service_gateway_allowed(string $method): bool {
         // No live provider has a reviewed domain-verification bridge yet. Merely
         // enabling a Woo gateway must never authorize it to collect service money.
-        return $method==='atlas_simulator' && wp_get_environment_type()==='local'
+        $allowed=$method==='atlas_simulator' && wp_get_environment_type()==='local'
             && defined('ATLAS_DEMO_MODE') && ATLAS_DEMO_MODE===true;
+        return apply_filters('atlas_core_verified_service_gateway',$allowed,$method)===true;
     }
     public static function available_gateways(array $gateways): array {
         global $wp;
@@ -103,6 +105,19 @@ final class Woo {
     private static function integer_amount(string $amount): ?int {
         if (!preg_match('/^([0-9]+)(?:\.0+)?$/',$amount,$m) || strlen($m[1])>18 || (float)$m[1]>PHP_INT_MAX) { return null; }
         return (int)$m[1];
+    }
+    /** Use only the owned, persisted booking quote; caller prices are ignored. */
+    public static function quote_prices($cart): void {
+        if (!is_user_logged_in()) return;
+        foreach ($cart->get_cart() as $item) {
+            $id=$item['atlas_booking_id'] ?? null;
+            if (!is_string($id) || !self::offer_id((int)($item['product_id'] ?? 0))) continue;
+            $booking=Booking::get($id,get_current_user_id());
+            if (is_wp_error($booking) || $booking['user_id']!==get_current_user_id() || $booking['quantity']<1 || $booking['amount_irr']%$booking['quantity']!==0) continue;
+            $offer=Offers::get($booking['offer_id'],true);
+            if (is_wp_error($offer) || (int)$offer['product_id']!==(int)$item['product_id']) continue;
+            $item['data']->set_price((string)intdiv($booking['amount_irr'],$booking['quantity']));
+        }
     }
     private static function cart_error($cart): ?string {
         global $wpdb;

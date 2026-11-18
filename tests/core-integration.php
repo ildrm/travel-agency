@@ -160,7 +160,7 @@ foreach (['tour','cohort'] as $kind) {
     wp_set_current_user($user); DB::set_test_now('2027-06-01T06:00:00.000000Z');
     $unreviewed=Booking::hold($legacy,1,1,$user,'review-'.$kind.'-'.$nonce);
     $check(is_wp_error($unreviewed) && $unreviewed->get_error_code()==='atlas_'.$kind.'_review_required',$kind.' unreviewed legacy hold denied');
-    if ($kind==='cohort') { $group=Booking::hold($legacy,1,2,$user,'cohort-group-'.$nonce); $check(is_wp_error($group) && $group->get_error_code()==='atlas_group_enrollment_unavailable','cohort group admission fails closed until implemented'); }
+    if ($kind==='cohort') { $group=Booking::hold($legacy,1,2,$user,'cohort-group-'.$nonce); $check(is_wp_error($group) && $group->get_error_code()==='atlas_cohort_review_required','group enrollment cannot bypass review of the cohort'); }
 }
 // Two isolated PHP workers exercise separate real database connections. Called only by the parent-scheduled test.
 $raceOffer=$make();

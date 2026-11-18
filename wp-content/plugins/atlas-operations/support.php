@@ -6,6 +6,7 @@ use Atlas\Core\Records;
 
 /** Owner-scoped conversations; internal notes never use a customer-visible projection. */
 final class Atlas_Support_Workflow {
+    private static $payment_cases_ready=false;
     public static function table() { global $wpdb; return $wpdb->prefix.'atlas_support_messages'; }
     public static function install() {
         global $wpdb;
@@ -18,12 +19,34 @@ final class Atlas_Support_Workflow {
     }
     public static function register() {
         self::install();
+        self::$payment_cases_ready=Atlas_Partner_Security::install('atlas_support_payment_cases','payment_id char(36) NOT NULL, case_id char(36) NOT NULL, created_at datetime(6) NOT NULL, PRIMARY KEY  (payment_id), UNIQUE KEY case_once (case_id)',array('payment_id'=>'char(36)','case_id'=>'char(36)','created_at'=>'datetime(6)'),array('PRIMARY'=>array('payment_id'),'case_once'=>array('case_id')));
+        add_filter('atlas_core_deliver_outbox',array(__CLASS__,'exception_case'),5,2);
         add_action('rest_api_init',array(__CLASS__,'routes'));
         add_action('admin_post_atlas_support_reply',array(__CLASS__,'form_reply'));
         add_action('admin_post_atlas_support_triage',array(__CLASS__,'form_triage'));
         add_filter('wp_privacy_personal_data_exporters',array(__CLASS__,'exporter'));
     }
+    /** Build an idempotent review case from verified, committed money facts only. */
+    public static function exception_case($prior,$event) {
+        global $wpdb;
+        if (!is_array($event) || ($event['event_type']??'')!=='payment.exception' || !is_string($event['aggregate_id']??null)) return $prior;
+        $id=$event['aggregate_id'];
+        if (!self::$payment_cases_ready) return self::error('atlas_support_unavailable','Payment review storage is unavailable.',503);
+        $table=$wpdb->prefix.'atlas_support_payment_cases';
+        $wpdb->query('START TRANSACTION');
+        try {
+            $payment=$wpdb->get_row($wpdb->prepare('SELECT p.id,p.booking_id,p.status,p.exception_code,b.user_id FROM '.DB::table('payments').' p INNER JOIN '.DB::table('bookings').' b ON b.id=p.booking_id WHERE p.id=%s FOR UPDATE',$id));
+            if (!$payment || $payment->status!=='verified' || $payment->exception_code==='') { $wpdb->query('ROLLBACK'); return self::error('atlas_payment_review_invalid','Verified payment exception unavailable.',409); }
+            if ($wpdb->get_var($wpdb->prepare("SELECT case_id FROM $table WHERE payment_id=%s",$id))) { $wpdb->query('ROLLBACK'); return $prior; }
+            $user=get_user_by('id',(int)$payment->user_id); if (!$user) { $wpdb->query('ROLLBACK'); return self::error('atlas_payment_review_invalid','Payment case owner unavailable.',409); }
+            $fa=str_starts_with(get_user_locale($user),'fa'); $case=wp_generate_uuid4(); $now=DB::now();
+            $fields=array('state'=>'new','category'=>'payment_review','subject'=>$fa?'بررسی پرداخت دریافت‌شده':'Received payment review','message'=>$fa?'پرداخت شما دریافت شد و رزرو در حال بررسی است. این درخواست تأیید ورود یا تکمیل بازپرداخت نیست.':'We received your payment and are reviewing the reservation. This case does not confirm admission or a completed refund.','booking_id'=>$payment->booking_id,'priority'=>'urgent','next_action'=>$fa?'در انتظار بررسی عملیات و مالی.':'Awaiting operations and finance review.');
+            if (!$wpdb->insert(DB::table('records'),array('id'=>$case,'type'=>'support_case','org_id'=>0,'owner_id'=>(int)$payment->user_id,'state'=>'new','payload'=>wp_json_encode($fields),'version'=>1,'created_at'=>$now,'updated_at'=>$now)) || !$wpdb->insert($table,array('payment_id'=>$id,'case_id'=>$case,'created_at'=>$now)) || !DB::audit(0,0,'support.payment_exception',$case,'success',$id)) throw new RuntimeException('case');
+            $wpdb->query('COMMIT'); return $prior;
+        } catch (Throwable $e) { $wpdb->query('ROLLBACK'); return self::error('atlas_payment_review_failed','Payment review case could not be saved.',503); }
+    }
     public static function routes() {
+        register_rest_route('agency/v1','/support-cases',array('methods'=>'GET','permission_callback'=>array('Atlas_Partner_Security','permission'),'callback'=>array(__CLASS__,'listing')));
         register_rest_route('agency/v1','/support-cases/(?P<id>[a-f0-9-]{36})/messages',array(
             array('methods'=>'GET','permission_callback'=>static function(){return is_user_logged_in();},'callback'=>array(__CLASS__,'thread')),
             array('methods'=>'POST','permission_callback'=>static function(){return is_user_logged_in();},'callback'=>array(__CLASS__,'reply')),
@@ -35,14 +58,46 @@ final class Atlas_Support_Workflow {
         if (!is_user_logged_in() || !is_string($id) || !preg_match('/^[a-f0-9-]{36}$/',$id)) return self::error('atlas_not_found','Case unavailable.',404);
         return Records::get('support_case',$id,get_current_user_id());
     }
+    public static function cases(int $page,bool $queue=false) {
+        global $wpdb;
+        if (!is_user_logged_in() || ($queue && !Auth::agency())) return self::error('atlas_forbidden','Sign in with case access.',403);
+        if ($page<1 || $page>10000) return self::error('atlas_invalid_page','Invalid case page.');
+        $limit=20; $offset=($page-1)*$limit;
+        $table=DB::table('records');
+        if ($queue) {
+            $ids=$wpdb->get_col($wpdb->prepare("SELECT id FROM $table WHERE type=%s ORDER BY (state IN ('resolved','closed')), CASE JSON_UNQUOTE(JSON_EXTRACT(payload,'$.priority')) WHEN 'urgent' THEN 0 WHEN 'low' THEN 2 ELSE 1 END, created_at,id LIMIT %d OFFSET %d",'support_case',$limit+1,$offset));
+        } else {
+            $ids=$wpdb->get_col($wpdb->prepare("SELECT id FROM $table WHERE type=%s AND org_id=0 AND owner_id=%d ORDER BY created_at DESC,id DESC LIMIT %d OFFSET %d",'support_case',get_current_user_id(),$limit+1,$offset));
+        }
+        $cases=array();
+        foreach (array_slice($ids,0,$limit) as $id) { $case=self::case_record($id); if (!is_wp_error($case)) $cases[]=$case; }
+        return array('items'=>$cases,'page'=>$page,'has_more'=>count($ids)>$limit);
+    }
+    public static function listing($request) {
+        $page=$request->get_param('page')??1; $scope=$request->get_param('scope')??'mine';
+        if ((!is_int($page) && !(is_string($page) && ctype_digit($page))) || !in_array($scope,array('mine','queue'),true)) return self::error('atlas_invalid_page','Invalid case scope or page.');
+        $result=self::cases((int)$page,$scope==='queue');
+        return is_wp_error($result)?$result:Atlas_Partner_Security::response($result);
+    }
+    public static function case_links($data,$parameter) {
+        $html='<nav aria-label="'.esc_attr(self::text('Support case pages','صفحه‌های درخواست پشتیبانی')).'">';
+        if ($data['page']>1) $html.='<a href="'.esc_url(add_query_arg($parameter,$data['page']-1)).'">'.esc_html(self::text('Previous cases','درخواست‌های قبل')).'</a> ';
+        if ($data['has_more']) $html.='<a href="'.esc_url(add_query_arg($parameter,$data['page']+1)).'">'.esc_html(self::text('More cases','درخواست‌های بیشتر')).'</a>';
+        return $html.'</nav>';
+    }
     public static function thread($request) {
         global $wpdb;
         $case=self::case_record((string)$request['id']); if (is_wp_error($case)) return $case;
         if (get_option('atlas_support_schema')!=='1') return self::error('atlas_support_unavailable','Support storage is unavailable.',503);
         $table=self::table(); $internal=Auth::agency() ? '' : ' AND internal_note=0';
-        $rows=$wpdb->get_results($wpdb->prepare("SELECT id,author_id,internal_note,body,created_at FROM $table WHERE case_id=%s$internal ORDER BY created_at,id LIMIT 100",$case['id']),ARRAY_A);
+        $page=$request->get_param('page') ?? 1; $limit=$request->get_param('limit') ?? 50;
+        foreach (array($page,$limit) as $number) if ((!is_int($number) && !(is_string($number) && ctype_digit($number))) || (int)$number<1) return self::error('atlas_invalid_page','Invalid conversation page.');
+        $page=(int)$page; $limit=(int)$limit;
+        if ($page>10000 || $limit>100) return self::error('atlas_invalid_page','Invalid conversation page.');
+        $rows=$wpdb->get_results($wpdb->prepare("SELECT id,author_id,internal_note,body,created_at FROM $table WHERE case_id=%s$internal ORDER BY created_at,id LIMIT %d OFFSET %d",$case['id'],$limit+1,($page-1)*$limit),ARRAY_A);
+        $hasMore=count($rows)>$limit; $rows=array_slice($rows,0,$limit);
         $messages=array(); foreach ($rows as $row) $messages[]=array('id'=>$row['id'],'author'=>(int)$row['author_id']===(int)$case['owner_id']?'customer':'agency','internal_note'=>(bool)$row['internal_note'],'body'=>$row['body'],'created_at'=>$row['created_at']);
-        $response=new WP_REST_Response(array('case_id'=>$case['id'],'state'=>$case['state'],'priority'=>$case['fields']['priority']??'normal','next_action'=>$case['fields']['next_action']??'','messages'=>$messages),200);
+        $response=new WP_REST_Response(array('case_id'=>$case['id'],'state'=>$case['state'],'priority'=>$case['fields']['priority']??'normal','next_action'=>$case['fields']['next_action']??'','messages'=>$messages,'pagination'=>array('page'=>$page,'limit'=>$limit,'has_more'=>$hasMore)),200);
         $response->header('Cache-Control','private, no-store'); return $response;
     }
     public static function reply($request) {
@@ -65,7 +120,7 @@ final class Atlas_Support_Workflow {
                 $fields=json_decode($locked->payload,true)?:array(); $fields['state']='new'; unset($fields['resolution_code']);
                 if ($wpdb->update(DB::table('records'),array('state'=>'new','payload'=>wp_json_encode($fields),'version'=>(int)$locked->version+1,'updated_at'=>DB::now()),array('id'=>$case['id'],'version'=>(int)$locked->version))!==1) throw new RuntimeException('case reopen');
             }
-            if (!DB::audit($actor,(int)$locked->org_id,'support.reply',$case['id'],'success',$internal?'internal_note':'shared_reply') || !DB::emit('support.reply',$case['id'])) throw new RuntimeException('audit or event');
+            if (!DB::audit($actor,(int)$locked->org_id,'support.reply',$case['id'],'success',$internal?'internal_note':'shared_reply') || !DB::emit($internal?'support.internal_note':'support.shared_reply',$case['id'])) throw new RuntimeException('audit or event');
             $wpdb->query('COMMIT'); return new WP_REST_Response(array('id'=>$id,'case_id'=>$case['id'],'status'=>'recorded'),201);
         } catch (Throwable $error) { $wpdb->query('ROLLBACK'); return self::error('atlas_support_failed','Message could not be recorded.',503); }
     }
@@ -95,10 +150,15 @@ final class Atlas_Support_Workflow {
     }
     private static function text($en,$fa) { return isset($_GET['lang']) && $_GET['lang']==='fa' ? $fa : $en; }
     public static function panel($case) {
-        $request=new WP_REST_Request('GET','/'); $request['id']=$case['id']; $thread=self::thread($request); if (is_wp_error($thread)) return '';
+        $request=new WP_REST_Request('GET','/'); $request['id']=$case['id'];
+        $pageKey='support_page_'.$case['id']; $request->set_param('page',isset($_GET[$pageKey]) && is_scalar($_GET[$pageKey])?max(1,absint($_GET[$pageKey])):1);
+        $thread=self::thread($request); if (is_wp_error($thread)) return '';
         $data=$thread->get_data(); $html='<section class="atlas-support-thread"><p>'.esc_html($data['next_action']).'</p><ol>';
         foreach ($data['messages'] as $message) $html.='<li><strong>'.esc_html($message['internal_note']?self::text('Internal agency note','یادداشت داخلی آژانس'):($message['author']==='agency'?self::text('Agency','آژانس'):self::text('Customer','مشتری'))).'</strong><p>'.nl2br(esc_html($message['body'])).'</p></li>';
-        $html.='</ol><form method="post" action="'.esc_url(admin_url('admin-post.php')).'">'.wp_nonce_field('atlas_support_reply','_wpnonce',true,false).'<input type="hidden" name="action" value="atlas_support_reply"><input type="hidden" name="case_id" value="'.esc_attr($case['id']).'"><input type="hidden" name="idempotency_key" value="'.esc_attr(wp_generate_uuid4()).'"><label>'.esc_html(self::text('Reply','پاسخ')).'<textarea name="message" required maxlength="4000"></textarea></label>';
+        $html.='</ol><nav aria-label="'.esc_attr(self::text('Conversation pages','صفحه‌های گفتگو')).'">';
+        if ($data['pagination']['page']>1) $html.='<a href="'.esc_url(add_query_arg($pageKey,$data['pagination']['page']-1)).'">'.esc_html(self::text('Earlier page','صفحه قبل')).'</a> ';
+        if ($data['pagination']['has_more']) $html.='<a href="'.esc_url(add_query_arg($pageKey,$data['pagination']['page']+1)).'">'.esc_html(self::text('Next page','صفحه بعد')).'</a>';
+        $html.='</nav><form method="post" action="'.esc_url(admin_url('admin-post.php')).'">'.wp_nonce_field('atlas_support_reply','_wpnonce',true,false).'<input type="hidden" name="action" value="atlas_support_reply"><input type="hidden" name="case_id" value="'.esc_attr($case['id']).'"><input type="hidden" name="idempotency_key" value="'.esc_attr(wp_generate_uuid4()).'"><label>'.esc_html(self::text('Reply','پاسخ')).'<textarea name="message" required maxlength="4000"></textarea></label>';
         if (Auth::agency()) $html.='<label><input type="checkbox" name="internal_note" value="1">'.esc_html(self::text('Internal note — hidden from customer','یادداشت داخلی — پنهان از مشتری')).'</label>';
         $html.='<button>'.esc_html(self::text('Record reply','ثبت پاسخ')).'</button></form>';
         if (Auth::agency()) {
@@ -110,9 +170,11 @@ final class Atlas_Support_Workflow {
     }
     public static function queue() {
         if (!Auth::agency()) return '';
-        $cases=Records::query('support_case',array('limit'=>50),get_current_user_id()); if (is_wp_error($cases)) return '';
+        $page=isset($_GET['support_queue_page']) && is_scalar($_GET['support_queue_page'])?max(1,absint($_GET['support_queue_page'])):1;
+        $cases=self::cases($page,true); if (is_wp_error($cases)) return '';
         $html='<details><summary>'.esc_html(self::text('Customer support queue','صف پشتیبانی مشتریان')).'</summary>';
-        foreach ($cases as $case) $html.='<details><summary>'.esc_html($case['fields']['subject'].' — '.$case['state']).'</summary><p>'.nl2br(esc_html($case['fields']['message'])).'</p>'.self::panel($case).'</details>';
+        foreach ($cases['items'] as $case) $html.='<details><summary>'.esc_html($case['fields']['subject'].' — '.$case['state']).'</summary><p>'.nl2br(esc_html($case['fields']['message'])).'</p>'.self::panel($case).'</details>';
+        $html.=self::case_links($cases,'support_queue_page');
         return $html.'</details>';
     }
     public static function form_reply() {
