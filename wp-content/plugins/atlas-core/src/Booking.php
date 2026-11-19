@@ -14,7 +14,14 @@ final class VerifiedPayment {
     public static function from_adapter(string $provider, string $reference, int $amountIrr, ?string $trustedPaidAt=null): self|\WP_Error {
         if (!preg_match('/^[a-z0-9_-]{2,64}$/',$provider) || strlen($reference)<1 || strlen($reference)>190 || $amountIrr<0) { return new \WP_Error('atlas_invalid_proof','Invalid payment verification evidence.'); }
         $paid=null;
-        if ($trustedPaidAt!==null) { try { if (!preg_match('/(?:Z|[+-]00:00)$/',$trustedPaidAt)) { throw new \RuntimeException(); } $paid=(new \DateTimeImmutable($trustedPaidAt))->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s.u'); } catch (\Throwable $e) { return new \WP_Error('atlas_invalid_proof','Invalid provider payment time.'); } }
+        if ($trustedPaidAt!==null) {
+            try {
+                if (!preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]00:00)$/D',$trustedPaidAt)) { throw new \RuntimeException(); }
+                $date=new \DateTimeImmutable($trustedPaidAt); $errors=\DateTimeImmutable::getLastErrors();
+                if (is_array($errors) && ($errors['warning_count'] || $errors['error_count'])) { throw new \RuntimeException(); }
+                $paid=$date->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s.u');
+            } catch (\Throwable $e) { return new \WP_Error('atlas_invalid_proof','Invalid provider payment time.'); }
+        }
         return new self($provider,$reference,$amountIrr,$paid);
     }
 }
@@ -30,12 +37,12 @@ final class Booking {
         $hash=hash('sha256',wp_json_encode($hashData)); $scope='user:'.$userId;
         $existing=$wpdb->get_row($wpdb->prepare('SELECT request_hash,response FROM '.DB::table('idempotency').' WHERE scope=%s AND operation=%s AND idem_key=%s',$scope,'hold',$key));
         if ($existing) { return hash_equals($existing->request_hash,$hash) ? json_decode($existing->response,true) : self::error('atlas_idempotency_conflict','Idempotency key was reused for another request.'); }
-        $wpdb->query('START TRANSACTION');
+        if ($wpdb->query('START TRANSACTION')===false) { return self::error('atlas_storage_error','Could not start a safe transaction.',503); }
         try {
             $inv=$wpdb->get_row($wpdb->prepare('SELECT * FROM '.DB::table('inventory').' WHERE offer_id=%d FOR UPDATE',$offerId));
             $d=$inv ? json_decode($inv->offer_snapshot,true) : null; $now=DB::now();
             $prior=$wpdb->get_row($wpdb->prepare('SELECT request_hash,response FROM '.DB::table('idempotency').' WHERE scope=%s AND operation=%s AND idem_key=%s',$scope,'hold',$key));
-            if ($prior) { $wpdb->query('COMMIT'); return hash_equals($prior->request_hash,$hash) ? json_decode($prior->response,true) : self::error('atlas_idempotency_conflict','Idempotency key was reused for another request.'); }
+            if ($prior) { if ($wpdb->query('COMMIT')===false) { throw new \RuntimeException('commit'); } return hash_equals($prior->request_hash,$hash) ? json_decode($prior->response,true) : self::error('atlas_idempotency_conflict','Idempotency key was reused for another request.'); }
             if (!$inv || !is_array($d) || $d['status']!=='published' || $d['mode']!=='local') { $wpdb->query('ROLLBACK'); return self::error('atlas_unavailable','Offer unavailable.'); }
             $d['id']=$offerId;
             if ($d['kind']==='tour' && apply_filters('atlas_core_validate_tour_hold', false, $d, $offerId)!==true) { $wpdb->query('ROLLBACK'); return self::error('atlas_tour_review_required','An approved itinerary is required.'); }
@@ -89,7 +96,7 @@ final class Booking {
             if (!$wpdb->insert(DB::table('idempotency'),['scope'=>$scope,'operation'=>'hold','idem_key'=>$key,'request_hash'=>$hash,'response'=>wp_json_encode($response),'created_at'=>$now])) { throw new \RuntimeException('idempotency'); }
             if (!DB::audit($userId,(int)$d['org_id'],'hold.create',$booking,'success') || !DB::emit('booking.held',$booking)) { throw new \RuntimeException('events'); }
             if ($admission && !DB::audit($userId,(int)$d['org_id'],'hold.admission_exception',$booking,'success',$admission['reference'].': '.$admission['reason'])) throw new \RuntimeException('exception audit');
-            $wpdb->query('COMMIT'); return $response;
+            if ($wpdb->query('COMMIT')===false) { throw new \RuntimeException('commit'); } return $response;
         } catch (\Throwable $e) {
             $wpdb->query('ROLLBACK');
             $prior=$wpdb->get_row($wpdb->prepare('SELECT request_hash,response FROM '.DB::table('idempotency').' WHERE scope=%s AND operation=%s AND idem_key=%s',$scope,'hold',$key));
@@ -101,24 +108,26 @@ final class Booking {
         global $wpdb;
         $row=$wpdb->get_row($wpdb->prepare('SELECT * FROM '.DB::table('bookings').' WHERE id=%s',$bookingId),ARRAY_A);
         if (!$row || !Auth::actor($userId) || ((int)$row['user_id']!==$userId && !Auth::agency())) { return self::error('atlas_not_found','Booking not found.',404); }
+        $snapshot=json_decode($row['snapshot'],true)?:[];
         unset($row['snapshot'], $row['participants']);
         foreach (['offer_id','user_id','quantity','amount_irr','offer_version','order_id'] as $k) { $row[$k]=(int)$row[$k]; }
         // Monetary verification is its own persisted fact, independent of service
         // confirmation or a Woo order status. Do not expose provider references.
         $verified=$wpdb->get_var($wpdb->prepare('SELECT id FROM '.DB::table('payments').' WHERE booking_id=%s AND status=%s LIMIT 1',$bookingId,'verified'));
-        $row['payment_status']=$verified ? 'verified' : 'unverified';
+        $noPayment=$row['amount_irr']===0 && ($snapshot['settlement']['type']??'')==='no_payment_required' && (int)($snapshot['settlement']['order_id']??0)===$row['order_id'];
+        $row['payment_status']=$verified ? 'verified' : ($noPayment?'not_required':'unverified');
         return $row;
     }
     public static function expire(string $holdId): array|\WP_Error {
         global $wpdb;
         $reference=$wpdb->get_row($wpdb->prepare('SELECT offer_id FROM '.DB::table('holds').' WHERE id=%s',$holdId));
         if (!$reference) { return self::error('atlas_not_found','Hold not found.',404); }
-        $wpdb->query('START TRANSACTION');
+        if ($wpdb->query('START TRANSACTION')===false) { return self::error('atlas_storage_error','Could not start a safe transaction.',503); }
         try {
             $inv=$wpdb->get_row($wpdb->prepare('SELECT * FROM '.DB::table('inventory').' WHERE offer_id=%d FOR UPDATE',$reference->offer_id));
             $hold=$wpdb->get_row($wpdb->prepare('SELECT * FROM '.DB::table('holds').' WHERE id=%s FOR UPDATE',$holdId));
             if (!$inv || !$hold) { throw new \RuntimeException('missing'); }
-            if ($hold->state!=='active') { $wpdb->query('COMMIT'); return ['hold_id'=>$holdId,'state'=>$hold->state]; }
+            if ($hold->state!=='active') { if ($wpdb->query('COMMIT')===false) { throw new \RuntimeException('commit'); } return ['hold_id'=>$holdId,'state'=>$hold->state]; }
             if (DB::now() < $hold->expires_at) { $wpdb->query('ROLLBACK'); return self::error('atlas_not_expired','Hold deadline has not passed.'); }
             $primary=$hold->primary_quantity===null?(int)$hold->quantity:(int)$hold->primary_quantity;
             if ((int)$inv->allocated < $primary) { throw new \RuntimeException('invariant'); }
@@ -126,23 +135,25 @@ final class Booking {
             $extra=apply_filters('atlas_core_hold_released',true,$hold->booking_id,$holdId);
             if ($extra!==true) { throw new \RuntimeException('additional release failed'); }
             $booking=$wpdb->get_row($wpdb->prepare('SELECT * FROM '.DB::table('bookings').' WHERE id=%s FOR UPDATE',$hold->booking_id));
-            if ($booking && in_array($booking->status,['held','pending_payment'],true)) { $wpdb->update(DB::table('bookings'),['status'=>'expired','updated_at'=>DB::now()],['id'=>$booking->id]); }
+            if (!$booking || $booking->hold_id!==$holdId || (int)$booking->offer_id!==(int)$hold->offer_id) { throw new \RuntimeException('booking invariant'); }
+            if (in_array($booking->status,['held','pending_payment'],true) && $wpdb->update(DB::table('bookings'),['status'=>'expired','updated_at'=>DB::now()],['id'=>$booking->id,'status'=>$booking->status])!==1) { throw new \RuntimeException('booking expiry'); }
             if (!DB::audit(0,0,'hold.expire',$holdId,'success') || !DB::emit('hold.released',$holdId)) { throw new \RuntimeException('event'); }
-            $wpdb->query('COMMIT'); return ['hold_id'=>$holdId,'state'=>'released'];
+            if ($wpdb->query('COMMIT')===false) { throw new \RuntimeException('commit'); } return ['hold_id'=>$holdId,'state'=>'released'];
         } catch (\Throwable $e) { $wpdb->query('ROLLBACK'); return self::error('atlas_storage_error','Could not release hold.',503); }
     }
     public static function verify(string $bookingId, VerifiedPayment $proof): array|\WP_Error {
         global $wpdb;
         $ref=$wpdb->get_row($wpdb->prepare('SELECT hold_id,offer_id FROM '.DB::table('bookings').' WHERE id=%s',$bookingId));
         if (!$ref) { return self::error('atlas_not_found','Booking not found.',404); }
-        $wpdb->query('START TRANSACTION');
+        if ($wpdb->query('START TRANSACTION')===false) { return self::error('atlas_storage_error','Could not start a safe transaction.',503); }
         try {
             $inv=$wpdb->get_row($wpdb->prepare('SELECT * FROM '.DB::table('inventory').' WHERE offer_id=%d FOR UPDATE',$ref->offer_id));
             $hold=$wpdb->get_row($wpdb->prepare('SELECT * FROM '.DB::table('holds').' WHERE id=%s FOR UPDATE',$ref->hold_id));
             $booking=$wpdb->get_row($wpdb->prepare('SELECT * FROM '.DB::table('bookings').' WHERE id=%s FOR UPDATE',$bookingId));
             if (!$inv || !$hold || !$booking || (int)$booking->amount_irr!==$proof->amount_irr) { throw new \RuntimeException('mismatch'); }
+            if ((int)$booking->amount_irr===0) { $wpdb->query('ROLLBACK');return self::error('atlas_zero_due_settlement_required','A zero-due booking requires checkout settlement, not payment evidence.',422); }
             $previous=$wpdb->get_row($wpdb->prepare('SELECT * FROM '.DB::table('payments').' WHERE provider=%s AND provider_ref=%s FOR UPDATE',$proof->provider,$proof->reference));
-            if ($previous) { if ($previous->booking_id!==$bookingId || (int)$previous->amount_irr!==$proof->amount_irr) { throw new \RuntimeException('reference'); } $wpdb->query('COMMIT'); return ['booking_id'=>$bookingId,'status'=>$booking->status,'payment_status'=>'verified','payment_id'=>$previous->id,'payment_exception'=>$previous->exception_code]; }
+            if ($previous) { if ($previous->booking_id!==$bookingId || (int)$previous->amount_irr!==$proof->amount_irr) { throw new \RuntimeException('reference'); } if ($wpdb->query('COMMIT')===false) { throw new \RuntimeException('commit'); } return ['booking_id'=>$bookingId,'status'=>$booking->status,'payment_status'=>'verified','payment_id'=>$previous->id,'payment_exception'=>$previous->exception_code]; }
             $alreadyPaid=(bool)$wpdb->get_var($wpdb->prepare('SELECT id FROM '.DB::table('payments').' WHERE booking_id=%s AND status=%s LIMIT 1',$bookingId,'verified'));
             $protected=in_array($booking->status,['paid_pending_confirmation','confirmed','fulfilled','canceled'],true);
             $excess=$alreadyPaid || $protected;
@@ -160,8 +171,36 @@ final class Booking {
             if ($wpdb->update(DB::table('bookings'),['status'=>$status,'updated_at'=>DB::now()],['id'=>$bookingId])===false || !DB::audit(0,0,'payment.verify',$payment['id'],'success')) { throw new \RuntimeException('write'); }
             if ($exception!=='' && (!DB::audit(0,0,'payment.exception',$payment['id'],'review',$exception) || !DB::emit('payment.exception',$payment['id']))) { throw new \RuntimeException('exception'); }
             if ($status!==$booking->status && !DB::emit('booking.'.$status,$bookingId)) { throw new \RuntimeException('event'); }
-            $wpdb->query('COMMIT'); return ['booking_id'=>$bookingId,'status'=>$status,'payment_status'=>'verified','payment_id'=>$payment['id'],'payment_exception'=>$exception];
+            if ($wpdb->query('COMMIT')===false) { throw new \RuntimeException('commit'); } return ['booking_id'=>$bookingId,'status'=>$status,'payment_status'=>'verified','payment_id'=>$payment['id'],'payment_exception'=>$exception];
         } catch (\Throwable $e) { $wpdb->query('ROLLBACK'); return self::error('atlas_verification_conflict','Payment could not be safely reconciled.',409); }
+    }
+    /** Persist a server-validated zero obligation. No provider, payment or monetary ledger fact is invented. */
+    public static function complete_zero_due(string $bookingId,int $userId,int $orderId): array|\WP_Error {
+        global $wpdb;
+        if (!Auth::actor($userId) || $orderId<1) return self::error('atlas_forbidden','Sign in to complete this reservation.',403);
+        $ref=$wpdb->get_row($wpdb->prepare('SELECT hold_id,offer_id FROM '.DB::table('bookings').' WHERE id=%s AND user_id=%d',$bookingId,$userId));
+        if (!$ref) return self::error('atlas_not_found','Reservation unavailable.',404);
+        if ($wpdb->query('START TRANSACTION')===false) return self::error('atlas_storage_error','Could not start a safe transaction.',503);
+        try {
+            $inventory=$wpdb->get_row($wpdb->prepare('SELECT * FROM '.DB::table('inventory').' WHERE offer_id=%d FOR UPDATE',$ref->offer_id));
+            $hold=$wpdb->get_row($wpdb->prepare('SELECT * FROM '.DB::table('holds').' WHERE id=%s FOR UPDATE',$ref->hold_id));
+            $booking=$wpdb->get_row($wpdb->prepare('SELECT * FROM '.DB::table('bookings').' WHERE id=%s FOR UPDATE',$bookingId));
+            $order=function_exists('wc_get_order')?wc_get_order($orderId):false;
+            if (!$inventory || !$hold || !$booking || (int)$booking->user_id!==$userId || (int)$booking->order_id!==$orderId || (int)$booking->amount_irr!==0 || !$order instanceof \WC_Order || (int)$order->get_customer_id()!==$userId || $order->get_currency()!=='IRR' || !preg_match('/^0(?:\.0+)?$/D',(string)$order->get_total())) throw new \RuntimeException('zero obligation mismatch');
+            $items=$order->get_items('line_item');$item=count($items)===1?reset($items):null;$offer=json_decode($inventory->offer_snapshot,true);$snapshot=json_decode($booking->snapshot,true)?:[];
+            if (!$item || $item->get_meta('_atlas_booking_id',true)!==$bookingId || (int)$item->get_quantity()!==(int)$booking->quantity || !preg_match('/^0(?:\.0+)?$/D',(string)$item->get_total()) || (int)$item->get_variation_id()!==0 || !is_array($offer) || (int)$offer['product_id']!==(int)$item->get_product_id() || $hold->booking_id!==$bookingId || (int)$hold->offer_id!==(int)$booking->offer_id) throw new \RuntimeException('zero obligation line');
+            if (($snapshot['settlement']['type']??'')==='no_payment_required' && (int)($snapshot['settlement']['order_id']??0)===$orderId) {
+                if ($wpdb->query('COMMIT')===false) throw new \RuntimeException('commit');
+                return ['booking_id'=>$bookingId,'status'=>$booking->status,'payment_status'=>'not_required'];
+            }
+            if ($inventory->status!=='published' || ($offer['status']??'')!=='published' || (int)$inventory->version!==(int)$booking->offer_version || $hold->state!=='active' || DB::now()>=$hold->expires_at || !in_array($booking->status,['held','pending_payment'],true) || !in_array($order->get_status(),['pending','checkout-draft','failed','on-hold'],true)) { $wpdb->query('ROLLBACK');return self::error('atlas_zero_due_unavailable','The zero-due reservation expired or changed.'); }
+            $ready=self::can_initiate_payment($bookingId,$userId,$orderId);if (is_wp_error($ready)) { $wpdb->query('ROLLBACK');return $ready; }
+            if ($wpdb->update(DB::table('holds'),['state'=>'consumed'],['id'=>$hold->id,'state'=>'active'])!==1 || apply_filters('atlas_core_hold_consumed',true,$bookingId,$hold->id)!==true) throw new \RuntimeException('zero allocation');
+            $snapshot['settlement']=['type'=>'no_payment_required','order_id'=>$orderId,'settled_at'=>self::iso(DB::now())];
+            if ($wpdb->update(DB::table('bookings'),['status'=>'paid_pending_confirmation','snapshot'=>wp_json_encode($snapshot),'updated_at'=>DB::now()],['id'=>$bookingId])!==1 || !DB::audit($userId,(int)($snapshot['org_id']??0),'booking.no_payment_required',$bookingId,'success') || !DB::emit('booking.no_payment_required',$bookingId)) throw new \RuntimeException('zero settlement');
+            if ($wpdb->query('COMMIT')===false) throw new \RuntimeException('commit');
+            return ['booking_id'=>$bookingId,'status'=>'paid_pending_confirmation','payment_status'=>'not_required'];
+        } catch (\Throwable $error) { $wpdb->query('ROLLBACK');return self::error('atlas_zero_due_failed','Zero-due checkout could not be safely recorded.',503); }
     }
     /** Revalidate initiation rights; this is not provider verification or capture. */
     public static function can_initiate_payment(string $bookingId,int $userId,int $orderId): true|\WP_Error {
@@ -209,7 +248,11 @@ final class Booking {
         global $wpdb;
         if (!Auth::actor($actorId) || !Auth::agency() || !Auth::can('atlas_manage_bookings',null,null,'read')) { return self::error('atlas_forbidden','Agency authority required.',403); }
         if ($page<1 || $page>100000 || $limit<1 || $limit>50 || !in_array($status,['paid_pending_confirmation','exception','confirmed'],true)) { return self::error('atlas_invalid_request','Invalid booking queue filter.',422); }
-        $rows=$wpdb->get_results($wpdb->prepare('SELECT id AS booking_id,offer_id,status,quantity,amount_irr,order_id,created_at,updated_at FROM '.DB::table('bookings').' WHERE status=%s ORDER BY created_at,id LIMIT %d OFFSET %d',$status,$limit,($page-1)*$limit),ARRAY_A);
+        $rows=$wpdb->get_results($wpdb->prepare('SELECT b.id AS booking_id,b.offer_id,b.status,b.quantity,b.amount_irr,b.order_id,b.created_at,b.updated_at,
+            CASE WHEN EXISTS (SELECT 1 FROM '.DB::table('payments').' p WHERE p.booking_id=b.id AND p.status=%s)
+                THEN %s WHEN b.amount_irr=0 AND JSON_UNQUOTE(JSON_EXTRACT(b.snapshot,\'$.settlement.type\'))=%s
+                AND CAST(JSON_UNQUOTE(JSON_EXTRACT(b.snapshot,\'$.settlement.order_id\')) AS UNSIGNED)=b.order_id THEN %s ELSE %s END AS payment_status
+            FROM '.DB::table('bookings').' b WHERE b.status=%s ORDER BY b.created_at,b.id LIMIT %d OFFSET %d','verified','verified','no_payment_required','not_required','unverified',$status,$limit,($page-1)*$limit),ARRAY_A);
         if ($rows===null || !DB::audit($actorId,0,'booking.queue',$status,'read')) { return self::error('atlas_storage_error','Booking queue could not be safely read.',503); }
         foreach ($rows as &$row) { foreach (['offer_id','quantity','amount_irr','order_id'] as $key) { $row[$key]=(int)$row[$key]; } $row['currency']='IRR'; } unset($row);
         return ['items'=>$rows,'page'=>$page,'limit'=>$limit];
@@ -220,13 +263,13 @@ final class Booking {
         $reason=trim($reason); $key=$key ?: 'confirm-direct:'.$bookingId;
         if (strlen($reason)>190 || !preg_match('/^[A-Za-z0-9._:-]{8,128}$/',$key)) { return self::error('atlas_invalid_request','A bounded reason and idempotency key are required.',422); }
         $scope='user:'.$actorId; $operation='booking.confirm'; $hash=hash('sha256',wp_json_encode([$bookingId,$reason]));
-        $wpdb->query('START TRANSACTION');
+        if ($wpdb->query('START TRANSACTION')===false) { return self::error('atlas_storage_error','Could not start a safe transaction.',503); }
         try {
             $row=$wpdb->get_row($wpdb->prepare('SELECT * FROM '.DB::table('bookings').' WHERE id=%s FOR UPDATE',$bookingId));
             if (!$row) { $wpdb->query('ROLLBACK'); return self::error('atlas_not_found','Booking not found.',404); }
             $prior=$wpdb->get_row($wpdb->prepare('SELECT request_hash,response FROM '.DB::table('idempotency').' WHERE scope=%s AND operation=%s AND idem_key=%s',$scope,$operation,$key));
             if ($prior) {
-                $wpdb->query('COMMIT');
+                if ($wpdb->query('COMMIT')===false) { throw new \RuntimeException('commit'); }
                 return self::confirmation_replay($prior,$hash,$row->status);
             }
             if (!in_array($row->status,['paid_pending_confirmation','confirmed'],true)) { $wpdb->query('ROLLBACK'); return self::error('atlas_invalid_transition','Booking cannot be confirmed.'); }
@@ -240,7 +283,7 @@ final class Booking {
                 if ($wpdb->update(DB::table('bookings'),['status'=>'confirmed','updated_at'=>DB::now()],['id'=>$bookingId])!==1 || !DB::audit($actorId,$org,'booking.confirm',$bookingId,'success',$reason) || !DB::emit('booking.confirmed',$bookingId)) { throw new \RuntimeException('confirm'); }
             }
             if (!$wpdb->insert(DB::table('idempotency'),['scope'=>$scope,'operation'=>$operation,'idem_key'=>$key,'request_hash'=>$hash,'response'=>wp_json_encode($response),'created_at'=>DB::now()])) { throw new \RuntimeException('idempotency'); }
-            $wpdb->query('COMMIT'); return $response;
+            if ($wpdb->query('COMMIT')===false) { throw new \RuntimeException('commit'); } return $response;
         } catch (\Throwable $e) {
             $wpdb->query('ROLLBACK');
             $prior=$wpdb->get_row($wpdb->prepare('SELECT request_hash,response FROM '.DB::table('idempotency').' WHERE scope=%s AND operation=%s AND idem_key=%s',$scope,$operation,$key));

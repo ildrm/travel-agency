@@ -1,10 +1,13 @@
 {
-  "started_at": "2026-11-18T07:09:53.420954+00:00",
-  "finished_at": "2026-11-18T07:10:38.963907+00:00",
+  "started_at": "2026-11-19T06:05:35.926214+00:00",
+  "finished_at": "2026-11-19T06:06:28.556329+00:00",
   "headless": true,
   "workers": 1,
-  "source_sha256": "d022d55075978b95aa3f02d69d158067f8f049fd58b0519750398868c7138a1c",
+  "source_sha256": "f2f24511220fbb5ef50c8f61762f9ab1ff302f191dc35cec2cefb750c2da7109",
+  "browser_inputs_sha256": "8dcae027d0b752cdaf256bf190b682eff655e09516be24e815837272bccd2800",
   "source_unchanged_during_run": true,
+  "results_sha256": "a6aea2e1cd389dc70a59ef485ed06a30ea537270a3e2952af4a6503cf64fdc97",
+  "full_run": true,
   "exit_code": 0,
   "production_or_live_provider_test": false
 }

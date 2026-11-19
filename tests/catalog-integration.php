@@ -50,7 +50,16 @@ try {
     $injection=$call('/agency/v1/catalog/search',['q'=>"nonexistent' OR 1=1 --"]);$check($injection->get_status()===200&&$injection->get_data()['total']===0,'Search input cannot widen publication policy through SQL syntax.');
     $secretQuery=$call('/agency/v1/catalog/search',['q'=>'catalog-private-source']);$check($secretQuery->get_data()['total']===0,'Private source references are not searched.');
     $_GET=['lang'=>'fa','cat_q'=>$tag,'cat_destination'=>'شيراز'];$html=do_shortcode('[atlas_catalog]');$check(str_contains($html,'name="cat_destination"')&&str_contains($html,'فیلتر')&&str_contains($html,'data-catalog-offer="'.$b.'"')&&!str_contains($html,'data-catalog-offer="'.$a.'"'),'Actual Persian catalog shortcode renders persisted filters and matching public card.');
+    $_GET=['lang'=>'fa','cat_q'=>$tag,'cat_min_price_irr'=>'۱۵۰۰۰۰۰','cat_max_price_irr'=>'٢٥٠٠٠٠٠','cat_price_unit'=>'per_person','cat_duration_max'=>'۲۰۰'];
+    $html=do_shortcode('[atlas_catalog]');
+    $check(str_contains($html,'name="cat_min_price_irr" value="1500000"')&&str_contains($html,'name="cat_duration_max" value="200"')&&str_contains($html,'data-catalog-offer="'.$b.'"')&&!str_contains($html,'data-catalog-offer="'.$a.'"'),'Persian and Arabic-Indic digits in the storefront apply exact numeric filters.');
     $_GET=['lang'=>'en','cat_q'=>$tag,'cat_limit'=>'2','cat_compare'=>$a.','.$rfq];$html=do_shortcode('[atlas_catalog]');$check(str_contains($html,'data-catalog-next')&&str_contains($html,'data-atlas-comparison')&&str_contains($html,'Request a quote; no confirmed rate'),'Catalog UI has working next-page URLs and public comparison with RFQ meaning.');
+    $_GET=['lang'=>'en','cat_q'=>$tag,'cat_page'=>'1000','cat_compare'=>(string)$a];
+    $html=do_shortcode('[atlas_catalog]');
+    $check(str_contains($html,'Go to the first page of matching offers')&&str_contains($html,'cat_page=1')&&str_contains($html,'data-atlas-comparison')&&!str_contains($html,'No offers match these filters'),'An out-of-range page offers a direct recovery without discarding comparison selections.');
+    $_GET=['lang'=>'en','cat_q'=>$tag,'cat_compare'=>$a.','.$draft];
+    $html=do_shortcode('[atlas_catalog]');
+    $check(str_contains($html,'A selected offer is unavailable')&&str_contains($html,'Clear comparison')&&!str_contains($html,'private-secret'),'An unavailable comparison entry exposes recovery and preserves draft confidentiality.');
     $_GET=['lang'=>'fa','cat_q'=>['bad']];$html=do_shortcode('[atlas_catalog]');$check(str_contains($html,'role="alert"')&&str_contains($html,'حذف همه فیلترها'),'Invalid UI inputs retain an accessible reset/error state without array warnings.');
     wp_set_current_user($admin);$_GET=['lang'=>'en','cat_edit_offer'=>(string)$a];$editor=Atlas_Catalog_UI::editor();$check(str_contains($editor,'catalog[destinations]')&&str_contains($editor,'catalog[languages][]')&&str_contains($editor,'expected_version')&&str_contains($editor,'catalog-private-source'),'Authorized authoring UI loads typed persisted metadata and private source reference.');
     $changed=$metadata;$changed['terms_en']='Updated fictional public terms';$saved=$write($a,$changed,1);$check($saved->get_status()===200&&$saved->get_data()['catalog']['terms_en']===$changed['terms_en'],'Metadata API persists typed offer authoring through shared versioned service.');

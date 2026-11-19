@@ -77,7 +77,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "7402fca7bc67f9870a15d716aa132aa4acc666b6427cd7305563cabcd14d0afa"
+          "content": "faa0985c8cfb7953f422f83b756b00ead181d083a6c6925e2442910e0f03f97e"
         }
       ],
       "name": "atlas-core/atlas-core.php",
@@ -119,7 +119,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "c504fd5684b275af6ca8db2a39c7ead48ac4c645459c67185aa06c0669d7e6a5"
+          "content": "9f4ab8ad2a93465aebfc47acf2246e6fa1fb1a6ede71e0328557d823ff8c849f"
         }
       ],
       "name": "atlas-core/src/Booking.php",
@@ -140,7 +140,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "8f97a8c51aef5413c6819afdfcb21c91c934c598e573cf8a069358eadaa490d1"
+          "content": "1cbede457106cd0a0ffd8b55b026c0ee0a8bc2b5bad22c96ca1e7fed4f3e3844"
         }
       ],
       "name": "atlas-core/src/Catalog.php",
@@ -203,7 +203,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "08a0883572ffbac4f396ecf1272e7ad05c533671d2741bc7e74a35471c5b0666"
+          "content": "4fc2fb0caa5e7caa8ffceedbaded84749841c9a640e0d873f8889dc4294d4c59"
         }
       ],
       "name": "atlas-core/src/Finance.php",
@@ -262,6 +262,27 @@
       "type": "file"
     },
     {
+      "bom-ref": "file:plugins/atlas-core/src/Preflight.php",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2f155ae513027ba7bacf700657af06395194b342653e29ee6ddb178dc0f0bc45"
+        }
+      ],
+      "name": "atlas-core/src/Preflight.php",
+      "properties": [
+        {
+          "name": "atlas:source_path",
+          "value": "wp-content/plugins/atlas-core/src/Preflight.php"
+        },
+        {
+          "name": "atlas:origin",
+          "value": "package-source"
+        }
+      ],
+      "type": "file"
+    },
+    {
       "bom-ref": "file:plugins/atlas-core/src/Privacy.php",
       "hashes": [
         {
@@ -308,7 +329,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "4b9f44a23d7893f048f2d08810bed011b98f557ceda643667d14ac0680fa1e3f"
+          "content": "faca155c750878a670f6e7ed6887bc5ac77bc2acf6cf5b22dd1fb721926e934d"
         }
       ],
       "name": "atlas-core/src/Rest.php",
@@ -329,7 +350,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "9568acb23106271a615f851910aba8000bfd33cda3e3acca9e26c3f1f0522806"
+          "content": "ec3c05cd48fe4c396db7f653f6a04f8fc42410f81a8c669e2b04b31a5ffd357f"
         }
       ],
       "name": "atlas-core/src/Woo.php",
@@ -413,7 +434,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "5fe2b89c6476b1489eda71e6c1b90c7ed0c01d5245ee87c212b8b8ecaf0fb1f4"
+          "content": "261b781378459262efc174fa3f216d586c4615f6ed494085e2ee358b605005b7"
         }
       ],
       "name": "atlas-gateways/atlas-gateways.php",
@@ -581,7 +602,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "f17fba234e293a52828eff477772bd929ab24506cba9d670c1d815ad5cdee90d"
+          "content": "f4746b36886f3c299f9aaf3bec1e75c02780e94c832bfc1093edf8a166a26046"
         }
       ],
       "name": "atlas-inventory/atlas-inventory.php",
@@ -686,7 +707,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "396db55c8afc523f31dc4243498b07ba9fcb4471c7ad8f847b053a7a5dfa92c5"
+          "content": "15b64323595dba77e89ac8de997de3821f3483916f60172f03cda2765ba5a9b8"
         }
       ],
       "name": "atlas-operations/assets/booking-queue.js",
@@ -728,7 +749,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "ec93c30b6a7570bd9909c974aa9d997556d61d3d53d26d745694f2e80b75bf65"
+          "content": "7fdd2f8dfc7c7934ba678e1ca7c4a642efb54c4ee968322481681879eee47227"
         }
       ],
       "name": "atlas-operations/assets/catalog.css",
@@ -749,7 +770,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "4f5e72f63907625ad952836ab2f12c62fd410676631ca0287857e6d0390166c0"
+          "content": "ca1e64a85f02bd6667ae6ad9a7766f087d570b7f2260fd937213477a991fd8bf"
         }
       ],
       "name": "atlas-operations/assets/catalog.js",
@@ -959,7 +980,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "251b9d2b981cf1c015363ac388e3f66e9cc04774db39f00ba4ea818e675b3b51"
+          "content": "06daffdbc510c6f61e4026ae9ee3cf8b399b921bc2032ece42417c660139d39c"
         }
       ],
       "name": "atlas-operations/assets/resource-booking.js",
@@ -1186,11 +1207,32 @@
       "type": "file"
     },
     {
+      "bom-ref": "file:plugins/atlas-operations/assets/workspace.js",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "5680159965560d65e0c2c403afc0265467a164b75e0ab8b2b34a16ba53064fbd"
+        }
+      ],
+      "name": "atlas-operations/assets/workspace.js",
+      "properties": [
+        {
+          "name": "atlas:source_path",
+          "value": "wp-content/plugins/atlas-operations/assets/workspace.js"
+        },
+        {
+          "name": "atlas:origin",
+          "value": "package-source"
+        }
+      ],
+      "type": "file"
+    },
+    {
       "bom-ref": "file:plugins/atlas-operations/atlas-operations.php",
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "0e3a4f181e7fddcee4acdf247bb20dff9ff14ea5869424d36de84ef9b1f4ca4d"
+          "content": "b95ce7fbbf6b388e7b1c169de920a5300aa3a0f0cde35cc06dae1a90db71bcfe"
         }
       ],
       "name": "atlas-operations/atlas-operations.php",
@@ -1211,7 +1253,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "a496414045b1bbff7b14f1412a520035bd6addad04f8aeb485e621f6f7c81262"
+          "content": "6ac9584bf1e26e6e997be3cd66290ab38f721a354badb7e05d2b16be55531a72"
         }
       ],
       "name": "atlas-operations/booking-queue.php",
@@ -1232,7 +1274,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "2e65f721367d682d26c7f047c5647057e0b59a2e81d2178efcb0f977cfec86bf"
+          "content": "4e5a7806589caa7448236787d4d9f90535aa504ce0732af1a34f6982aca11756"
         }
       ],
       "name": "atlas-operations/catalog.php",
@@ -1421,7 +1463,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "00745ba543a9348750fe8f320be121ea567dc0eeeba9165f99426a413e9d8c68"
+          "content": "064386680e8278abc35bb4aaabca01a5178f2b215c83efc2523becb038456715"
         }
       ],
       "name": "atlas-operations/health.php",
@@ -1463,7 +1505,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "6dffaa0c22417893ddb0d5579052e336d003454363c6dafeaf5226e7ab358692"
+          "content": "1dd9654b14b725879d156eddea7bf780089c6a6236177f17d710a0a75f0211ce"
         }
       ],
       "name": "atlas-operations/notifications.php",
@@ -1484,7 +1526,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "c6003488df744057c8018eeae67ccef7d698d7b493049f2107ca0243db852f05"
+          "content": "742c5c6d50c9a5073b71547493852be80b3252c8d753718462ccb75a4b3f635b"
         }
       ],
       "name": "atlas-operations/operations.php",
@@ -1610,7 +1652,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "2b261c03e03e3c47e57db0b06a4a7b5425548ebacfd4e423be4a306ef63316f0"
+          "content": "4fcd9cdd39e4e4d126cfb8ec571a19b789ae2b00c9f765bc9f660d939c0c26d1"
         }
       ],
       "name": "atlas-operations/reservation-status.php",
@@ -1631,7 +1673,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "f44e591d6940da292c004c0c04a3fd649650916cdf90c777d14f1dea3db63d08"
+          "content": "1629bc332d9d8619681db22b92b2a3616ca34eb13d58bc0603afdd93e2a98542"
         }
       ],
       "name": "atlas-operations/resource-booking.php",
@@ -1673,7 +1715,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "5ada7b75fcfcabcc478410344870cb690367a57c485dff1cbc22c2ef775fbc43"
+          "content": "f1e7c68c507f49232666c7605fc31d8a55a4f6886185564d9322bbe5f84e6099"
         }
       ],
       "name": "atlas-operations/support.php",
@@ -1799,7 +1841,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "09c45dc4d2b741ad967bc5d551af6beee2aa1fdef496712e8bfa2718566dd3a1"
+          "content": "b60f6db5704a5cb23338778977e1c9514d4942e0ec50b1ef928e1d6f135f57be"
         }
       ],
       "name": "atlas-leisure/assets/css/main.css",
@@ -1807,6 +1849,27 @@
         {
           "name": "atlas:source_path",
           "value": "wp-content/themes/atlas-leisure/assets/css/main.css"
+        },
+        {
+          "name": "atlas:origin",
+          "value": "package-source"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "file:themes/atlas-leisure/assets/js/navigation.js",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e1704616725a0f8df4ba0f560ebeed3531d8c0bdb9ea8c0696edf2302931d424"
+        }
+      ],
+      "name": "atlas-leisure/assets/js/navigation.js",
+      "properties": [
+        {
+          "name": "atlas:source_path",
+          "value": "wp-content/themes/atlas-leisure/assets/js/navigation.js"
         },
         {
           "name": "atlas:origin",
@@ -1967,7 +2030,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "d002eb06c4f0de03215926bc5f57eb2d551f143cecfde8426d73c43fb303fecf"
+          "content": "1b9cf911c743cf563ef2aed52f52da5a76a08710f7435349efda6fda5844401e"
         }
       ],
       "name": "atlas-leisure/functions.php",
@@ -2072,7 +2135,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "a8873d368e4be270216d25047e802a3afde51461f50c5020234b2b49aa2547ea"
+          "content": "0fe145383f889196ccab0c8fe606074523897fc5f8271a02ca9b8703ced66268"
         }
       ],
       "name": "atlas-leisure/screenshot.png",
@@ -2093,7 +2156,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "7cc35ee466923e9d50bff990f54d5e1c2c9166453fafa35815e4d22c14fa8182"
+          "content": "c53a6e9e8e46fe36e618f52df69620d5ef62f412de000fd65956ee1676ddc9c5"
         }
       ],
       "name": "atlas-leisure/style.css",
@@ -2185,6 +2248,27 @@
         {
           "name": "atlas:source_path",
           "value": "wp-content/themes/atlas-leisure/templates/index.html"
+        },
+        {
+          "name": "atlas:origin",
+          "value": "package-source"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "file:themes/atlas-leisure/templates/page-checkout.html",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d66edb456896542b1cd99959b68b88b01b2f56028dfc5093514224d667517b3e"
+        }
+      ],
+      "name": "atlas-leisure/templates/page-checkout.html",
+      "properties": [
+        {
+          "name": "atlas:source_path",
+          "value": "wp-content/themes/atlas-leisure/templates/page-checkout.html"
         },
         {
           "name": "atlas:origin",
@@ -2686,7 +2770,7 @@
         }
       ],
       "type": "application",
-      "version": "0.2.0"
+      "version": "1.0.0-rc.1"
     },
     {
       "bom-ref": "source:wp-content/plugins/atlas-gateways",
@@ -2706,7 +2790,7 @@
         }
       ],
       "type": "application",
-      "version": "0.2.0"
+      "version": "1.0.0-rc.1"
     },
     {
       "bom-ref": "source:wp-content/plugins/atlas-inventory",
@@ -2726,7 +2810,7 @@
         }
       ],
       "type": "application",
-      "version": "0.2.0"
+      "version": "1.0.0-rc.1"
     },
     {
       "bom-ref": "source:wp-content/plugins/atlas-operations",
@@ -2746,7 +2830,7 @@
         }
       ],
       "type": "application",
-      "version": "0.2.0"
+      "version": "1.0.0-rc.1"
     },
     {
       "bom-ref": "source:wp-content/themes/atlas-leisure",
@@ -2773,7 +2857,7 @@
         }
       ],
       "type": "application",
-      "version": "0.2.0"
+      "version": "1.0.0-rc.1"
     }
   ],
   "metadata": {
@@ -2788,7 +2872,7 @@
       ],
       "name": "atlas-leisure-platform",
       "type": "application",
-      "version": "0.2.0"
+      "version": "1.0.0-rc.1"
     },
     "properties": [
       {
@@ -2801,7 +2885,7 @@
       },
       {
         "name": "atlas:source_fingerprint_sha256",
-        "value": "d1f856b476fdabd4d7f5fdd2268be55ae103196272af6b4d9e01c070fbccd857"
+        "value": "d7d39808a7f308c88ee1194a3a36bccf371838739ae818cbe79bf2d7bb73d01b"
       },
       {
         "name": "atlas:coverage",
@@ -2821,7 +2905,7 @@
       },
       {
         "name": "atlas:input_manifest",
-        "value": "[{\"path\": \"package.json\", \"sha256\": \"c6d139d23a601b79a4be21baafeb31a1f827f7d8270476373a3f8fe9986b0053\", \"status\": \"read\"}, {\"path\": \"package-lock.json\", \"sha256\": \"142f3be37b0fd50da03c7410f254c0e996389b1a897401c2ade2264e6e635081\", \"status\": \"read\"}, {\"path\": \"composer.json\", \"sha256\": \"662285466be99bf7fffa55f3ae44c45a30e4f92a1ab2e19eef3275984cafde79\", \"status\": \"read\"}, {\"path\": \"composer.lock\", \"sha256\": \"e38bbccc2a055ea86d5e3fc943d58bc9ffba416be8d4c66271539b4ee5cc2322\", \"status\": \"read\"}, {\"path\": \"deploy/runtime.lock.json\", \"sha256\": \"72180589ef34216b45928a4e4f4e88d19e8d17d0911f1aeaa571822ade6bc755\", \"status\": \"read\"}, {\"path\": \"LICENSE\", \"sha256\": \"8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643\", \"status\": \"read\"}]"
+        "value": "[{\"path\": \"package.json\", \"sha256\": \"4f7609ae0b4123e4f9456534e7b3be840b00fee0932bec47a382a962fa36b8b1\", \"status\": \"read\"}, {\"path\": \"package-lock.json\", \"sha256\": \"975b2ccabddf817562c32a98e44fc3a948ed23da21af948d445b6cb4e86cb811\", \"status\": \"read\"}, {\"path\": \"composer.json\", \"sha256\": \"662285466be99bf7fffa55f3ae44c45a30e4f92a1ab2e19eef3275984cafde79\", \"status\": \"read\"}, {\"path\": \"composer.lock\", \"sha256\": \"e38bbccc2a055ea86d5e3fc943d58bc9ffba416be8d4c66271539b4ee5cc2322\", \"status\": \"read\"}, {\"path\": \"deploy/runtime.lock.json\", \"sha256\": \"72180589ef34216b45928a4e4f4e88d19e8d17d0911f1aeaa571822ade6bc755\", \"status\": \"read\"}, {\"path\": \"LICENSE\", \"sha256\": \"8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643\", \"status\": \"read\"}]"
       },
       {
         "name": "atlas:php_platform_constraint",
@@ -2829,7 +2913,7 @@
       }
     ]
   },
-  "serialNumber": "urn:uuid:f39ef867-d066-5501-9679-34cc32830753",
+  "serialNumber": "urn:uuid:ea609efe-3535-579d-a1a9-063e168b4fd9",
   "specVersion": "1.6",
   "version": 1
 }

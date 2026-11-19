@@ -13,7 +13,7 @@ python3 deploy/local.py start
 
 The socket-only project MariaDB uses a 32 MB InnoDB buffer and no TCP listener. PHP binds only to `127.0.0.1:8840`. Generated credentials are private in `.runtime/credentials.json`; keep them out of source, reports and screenshots. The scripts do not change Homebrew/system services. `python3 deploy/local.py stop` stops project runtime processes.
 
-Current companion schema versions are **Atlas Core 6** and **Atlas Inventory 3**. Refresh installed local schemas after an authorized code update with the supplied helper, rather than editing version options or tables:
+Current companion schema versions are **Atlas Core 7** and **Atlas Inventory 3**. Refresh installed local schemas after an authorized code update with the supplied helper, rather than editing version options or tables:
 
 ```sh
 WP_CLI_CACHE_DIR="$PWD/.runtime/cache" wp --path="$PWD/.runtime/wordpress" eval-file deploy/migrate-all.php
@@ -67,7 +67,7 @@ For a reviewed deployment, a real server scheduler must invoke `wp atlas run_due
 WP_CLI_CACHE_DIR="$PWD/.runtime/cache" wp --path="$PWD/.runtime/wordpress" atlas run_due
 ```
 
-The worker processes bounded due holds and available outbox work. The agency workspace shows the last completed worker run, lag, due and failed queue counts, bookings awaiting review and primary inventory over capacity. `GET /agency/v1/operations-health` requires agency authority and a fresh REST nonce. Use these signals with the agreed production scheduler and alert thresholds.
+Each worker run processes at most 25 due holds and 25 ready outbox events. A database lock serializes runs for the same WordPress installation. Failed releases remain visible and the worker advances past a full batch so older failures cannot stop later releases. `wp atlas run_due` returns an error when it cannot acquire the worker lock, record its result or finish a batch without storage and release errors. The agency workspace shows the last completed worker run, lag, due and failed queue counts, bookings awaiting review and primary inventory over capacity. `GET /agency/v1/operations-health` requires agency authority and a fresh REST nonce. Use these signals with the agreed production scheduler and alert thresholds.
 
 In-account delivery requires an approved template for the recipient's language and event. Review the notification queue when an event exhausts its retries. A verified payment exception opens a private support case even when the notice template is unavailable. Review money and capacity in their own queues. External email and SMS delivery require their own configured and verified provider channels.
 
@@ -109,3 +109,6 @@ For a real incident, stop new financial initiation, preserve the backup/build ha
 A restore does not reverse out-of-band payments, refunds or supplier actions. A qualified owner must reconcile those events from the backup timestamp and establish the external outcome before sales resume. Production backup storage, scheduler/monitoring/alerts, provider reconciliation and witnessed RPO/RTO acceptance remain required.
 
 Keep workstation verification quiet: one sequential low-priority runner, hidden/headless browser, no foreground focus and no system-service changes. Large peak-load and 100-process stress gates require a separate approved environment. Human/vendor, native-language, security/privacy and release acceptance remain listed separately in [EXTERNAL-DEPENDENCIES.md](EXTERNAL-DEPENDENCIES.md) and [FEATURE-GAPS.md](FEATURE-GAPS.md).
+
+
+For target hosting, exclude WordPress session traffic, Atlas account and partner pages, WooCommerce cart, checkout and account pages, and private endpoints from the reverse proxy and page cache. Atlas sends private no-store headers for these page responses. Exercise the target cache with fresh signed-in and signed-out sessions when verifying a deployment.

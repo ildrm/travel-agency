@@ -1,7 +1,7 @@
 {
   "suite": "static",
-  "executed_at": "2026-11-18T07:06:10.807209+00:00",
-  "source_sha256": "d022d55075978b95aa3f02d69d158067f8f049fd58b0519750398868c7138a1c",
+  "executed_at": "2026-11-19T06:02:52.747802+00:00",
+  "source_sha256": "f2f24511220fbb5ef50c8f61762f9ab1ff302f191dc35cec2cefb750c2da7109",
   "checks": [
     {
       "name": "php-lint:wp-content/plugins/atlas-core/atlas-core.php",
@@ -47,6 +47,11 @@
       "name": "php-lint:wp-content/plugins/atlas-core/src/Offers.php",
       "passed": true,
       "detail": "No syntax errors detected in /Users/shahinilderemi/Documents/tmp/iranbroker/wp-content/plugins/atlas-core/src/Offers.php\n"
+    },
+    {
+      "name": "php-lint:wp-content/plugins/atlas-core/src/Preflight.php",
+      "passed": true,
+      "detail": "No syntax errors detected in /Users/shahinilderemi/Documents/tmp/iranbroker/wp-content/plugins/atlas-core/src/Preflight.php\n"
     },
     {
       "name": "php-lint:wp-content/plugins/atlas-core/src/Privacy.php",
@@ -364,6 +369,16 @@
       "detail": ""
     },
     {
+      "name": "js-syntax:wp-content/plugins/atlas-operations/assets/workspace.js",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "js-syntax:wp-content/themes/atlas-leisure/assets/js/navigation.js",
+      "passed": true,
+      "detail": ""
+    },
+    {
       "name": "svg:wp-content/themes/atlas-leisure/assets/svg/character-daro-concept.svg",
       "passed": true,
       "detail": ""
@@ -435,6 +450,11 @@
     },
     {
       "name": "secret-pattern:wp-content/plugins/atlas-core/src/Offers.php",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "secret-pattern:wp-content/plugins/atlas-core/src/Preflight.php",
       "passed": true,
       "detail": ""
     },
@@ -614,6 +634,11 @@
       "detail": ""
     },
     {
+      "name": "secret-pattern:wp-content/plugins/atlas-operations/assets/workspace.js",
+      "passed": true,
+      "detail": ""
+    },
+    {
       "name": "secret-pattern:wp-content/plugins/atlas-operations/atlas-operations.php",
       "passed": true,
       "detail": ""
@@ -754,6 +779,11 @@
       "detail": ""
     },
     {
+      "name": "secret-pattern:wp-content/themes/atlas-leisure/assets/js/navigation.js",
+      "passed": true,
+      "detail": ""
+    },
+    {
       "name": "secret-pattern:wp-content/themes/atlas-leisure/functions.php",
       "passed": true,
       "detail": ""
@@ -799,6 +829,11 @@
       "detail": ""
     },
     {
+      "name": "secret-pattern:wp-content/themes/atlas-leisure/templates/page-checkout.html",
+      "passed": true,
+      "detail": ""
+    },
+    {
       "name": "secret-pattern:wp-content/themes/atlas-leisure/templates/page.html",
       "passed": true,
       "detail": ""
@@ -829,6 +864,6 @@
       "detail": ""
     }
   ],
-  "passed": 165,
+  "passed": 172,
   "failed": 0
 }

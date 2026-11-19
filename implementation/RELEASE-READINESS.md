@@ -1,6 +1,6 @@
 # Release decision
 
-**VERIFIED_LOCAL** for Atlas Leisure 0.2.0 on WordPress 7.1.4 and WooCommerce 11.3.0. The frozen theme and companion build passed 165 static checks, 24 integration suites, 13 headless browser tests, deterministic packaging, a fresh installation from the five ZIPs and isolated database recovery. [Exact evidence](TEST-EVIDENCE.md) · [Current ZIPs](../dist/manifest.json)
+**VERIFIED_LOCAL** for Atlas Leisure 1.0.0-rc.1 on WordPress 7.1.4 and WooCommerce 11.3.0. The frozen theme and companion build passed 172 static checks, 25 integration suites, 13 headless browser tests, deterministic packaging, a fresh installation from the five ZIPs and isolated database recovery. [Exact evidence](TEST-EVIDENCE.md) · [Current ZIPs](../dist/manifest.json)
 
 | Module | Locally verified scope | Remaining acceptance |
 | --- | --- | --- |
@@ -9,7 +9,7 @@
 | Tours | Reusable versions and departures, schedule review, customer consent, rooming, manifests and assigned operations | Real itinerary and supplier evidence, staff rehearsal |
 | Events | Tiers and quotas, reviewed recurrence, changes, versioned attendee forms, QR image and local scan queue | Venue/catering integration and field testing with physical devices |
 | Academy | Cohort scheduling, group enrollment, payer separation, attendance, assessments and certificate controls | Instructor and learner acceptance, any chosen accreditation/provider agreement |
-| Stays | Exact dated quotes, shared room-night capacity, WooCommerce, supplier and agency acceptance and cancellation | Multiple rates, allotments and approved channel/PMS reconciliation |
+| Stays | Named rate plans, exact dated quotes, shared room-night capacity, WooCommerce, supplier and agency acceptance and cancellation | Mixed-rate stays, allotments and approved channel/PMS reconciliation |
 | Rentals | Local fleet pricing, inventory, eligibility, pickup, return, disputes and cancellation | Inspection workflows, external deposits and insurer verification |
 | Transfers | Manual dispatch, assigned driver, schedule locks, waiting and no-show lifecycle | Staffed operations, approved provider tracking if selected |
 | Flight, rail and bus | Scoped inquiry records and review | Licensed supplier terms and authoritative shopping, hold, issue and change/refund APIs |
@@ -31,3 +31,31 @@
 | Digital assets | Hard-disabled. | Separate legal, financial, security and provider review under the original decision. |
 
 The four desktop axe scans in English and Persian reported zero violations and zero incomplete findings. The tested checkout email reference is present in both languages. Native accessibility and real-device usage, independent security and production performance checks remain open. Local restore checks cover the database. Staging must verify actual external delivery, encrypted file and key recovery, approved rollback, reconciliation and staff procedures. [Accessibility](ACCESSIBILITY-REPORT.md) · [Security](SECURITY-REPORT.md) · [Performance](PERFORMANCE-REPORT.md) · [External dependency owners](EXTERNAL-DEPENDENCIES.md)
+
+
+## Target installation preflight
+
+Run these commands from the intended WordPress installation after installing the five candidate ZIPs and activating WooCommerce.
+
+```sh
+wp atlas migrate
+wp atlas preflight
+wp atlas run_due
+wp atlas preflight --production
+```
+
+The first preflight verifies the installed stack, Core and Inventory schema readiness, matching package versions, a published Checkout Blocks page and whole IRR configuration. The production check also verifies the site's configured HTTPS URL, environment, demo and debug settings, and a recorded worker run without errors. Add `--service-payments` when the launch scope requires ZarinPal. The check confirms local configuration and gateway availability. Merchant acceptance requires an authorized provider exercise and reconciliation evidence. Provision the external scheduler and monitor the age of the worker heartbeat, due holds and failed outbox events separately. [Operations runbook](OPERATIONAL-RUNBOOK.md) · [ZarinPal configuration](API-CONTRACTS/ZARINPAL-V4.md)
+
+## Production launch decision
+
+| Gate | Candidate evidence | Acceptance needed |
+| --- | --- | --- |
+| G-01 Commercial scope and G-02 provider | Request-only paths and provider availability checks | Sponsor scope, terms, staffing and authorized merchant and supplier acceptance |
+| G-03 Money and inventory | Local holds, dated quotes, checkout, verification, exception and refund regressions | Reconciliation and concurrency exercise with approved target workload and contracted processors |
+| G-04 Security and privacy | Local role, ownership, data and file checks | Independent review, deployed scanner, secrets and retention acceptance |
+| G-05 Accessibility and localization | Mobile and desktop EN/FA automation and page snapshots | Native Persian review, screen readers and real devices |
+| G-06 Packaging and compatibility | Reproducible ZIPs and disposable WordPress install | Compatibility and populated upgrade on the intended hosting and WooCommerce stack |
+| G-07 Reliability and support | Scheduler recovery regressions and isolated logical database restore | Real cron and alerting, file and key recovery, witnessed rollback, support rota |
+| G-08 Content and G-09 user acceptance | Local fixture journeys and approved-content workflows | Approved bilingual production content, staffed acceptance scenarios and release signoff |
+
+Production launch remains pending while these acceptances are outstanding. [Launch requirements and accountable signers](../docs/DOC-48_LAUNCH-UAT-HANDOVER.md)

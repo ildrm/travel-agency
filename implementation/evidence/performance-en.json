@@ -1,8 +1,8 @@
 {
   "scope": "one local headless desktop navigation; not field p75, load capacity, INP or a production benchmark",
-  "navigation_ms": 119.3000000002794,
-  "lcp_ms": 128,
+  "navigation_ms": 133.79999999981374,
+  "lcp_ms": 140,
   "cls": 0,
-  "resources": 19,
-  "encoded_resource_bytes": 325826
+  "resources": 20,
+  "encoded_resource_bytes": 336134
 }

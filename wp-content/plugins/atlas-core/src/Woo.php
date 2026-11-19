@@ -6,6 +6,8 @@ final class Woo {
     public static function register(): void {
         if (!class_exists('WooCommerce')) { return; }
         add_filter('woocommerce_add_to_cart_validation',[self::class,'add_validation'],10,6);
+        add_filter('woocommerce_product_title',[self::class,'localized_service_title'],10,2);
+        add_filter('woocommerce_get_item_data',[self::class,'reservation_deadline'],10,2);
         add_filter('woocommerce_add_cart_item_data',[self::class,'cart_item_data'],10,3);
         add_filter('woocommerce_store_api_add_to_cart_data',[self::class,'store_cart_data'],10,2);
         add_action('woocommerce_check_cart_items',[self::class,'classic_cart_validation']);
@@ -21,6 +23,39 @@ final class Woo {
         // Checkout Blocks and the Store API existing-order endpoint both dispatch here.
         // Run before Woo's legacy gateway adapter (priority 999) can initiate payment.
         add_action('woocommerce_rest_checkout_process_payment_with_context',[self::class,'guard_store_payment'],0,1);
+    }
+    public static function localized_service_title(string $title, $product): string {
+        if (!str_starts_with(determine_locale(), 'fa')) return $title;
+        $id = self::offer_id($product->get_id());
+        if (!$id) return $title;
+        $offer = Offers::get($id, true);
+        if (is_wp_error($offer) || (int)$offer['product_id'] !== $product->get_id()) return $title;
+        return $offer['title_fa'] ?: $title;
+    }
+    /** Expose the owner's hold deadline in native cart and Checkout Blocks summaries. */
+    public static function reservation_deadline(array $rows, array $item): array {
+        global $wpdb;
+        $booking = $item['atlas_booking_id'] ?? '';
+        if (!is_string($booking) || $booking === '' || !is_user_logged_in()) {
+            return $rows;
+        }
+        $reservation = $wpdb->get_row($wpdb->prepare(
+            'SELECT h.expires_at,b.amount_irr FROM '.DB::table('holds').' h JOIN '.DB::table('bookings').' b ON b.hold_id=h.id WHERE b.id=%s AND b.user_id=%d AND h.state=%s',
+            $booking, get_current_user_id(), 'active'
+        ));
+        if ($reservation) {
+            $utc = new \DateTimeImmutable($reservation->expires_at, new \DateTimeZone('UTC'));
+            $zone = wp_timezone();
+            $fa = str_starts_with(determine_locale(), 'fa');
+            $deadline = wp_date('Y-m-d H:i:s', $utc->getTimestamp(), $zone).' ('.$zone->getName().')';
+            $zero = (string)$reservation->amount_irr === '0';
+            $label = $zero ? ($fa ? 'مهلت رزرو' : 'Reservation deadline') : ($fa ? 'مهلت پرداخت' : 'Payment deadline');
+            $rows[] = [
+                'key' => $label,
+                'value' => $fa ? "\u{2066}".$deadline."\u{2069}" : $deadline,
+            ];
+        }
+        return $rows;
     }
     private static function offer_id(int $product): int { return (int)get_post_meta($product,'_atlas_offer_id',true); }
     private static function service_cart(): bool {
@@ -58,14 +93,39 @@ final class Woo {
         $method=isset($_POST['payment_method']) && is_string($_POST['payment_method']) ? sanitize_key(wp_unslash($_POST['payment_method'])) : '';
         // This Woo hook is outside its exception handler; an error notice safely
         // prevents dispatch, while the availability filter rejects the method too.
-        if (self::service_order($order) && !self::service_gateway_allowed($method)) { wc_add_notice(__('This payment method is not available for service bookings.','atlas-core'),'error'); }
+        if (self::service_order($order)) {
+            if (!self::service_gateway_allowed($method)) { wc_add_notice(__('This payment method is not available for service bookings.','atlas-core'),'error'); return; }
+            $booking=self::order_booking($order);
+            $ready=is_wp_error($booking)?$booking:Booking::can_initiate_payment($booking['id'],get_current_user_id(),(int)$order->get_id());
+            if (is_wp_error($ready)) { wc_add_notice(__('The order reservation expired or changed. Review it before payment.','atlas-core'),'error'); }
+        }
     }
     public static function after_pay(): void { self::$payOrderId=0; }
     public static function guard_store_payment($context): void {
-        if (self::service_order($context->order) && !self::service_gateway_allowed((string)$context->payment_method)) { throw new \Exception(__('This payment method is not available for service bookings.','atlas-core')); }
+        if (!self::service_order($context->order)) return;
+        if (!self::service_gateway_allowed((string)$context->payment_method)) { throw new \Exception(__('This payment method is not available for service bookings.','atlas-core')); }
+        $booking=self::order_booking($context->order);
+        $ready=is_wp_error($booking)?$booking:Booking::can_initiate_payment($booking['id'],get_current_user_id(),(int)$context->order->get_id());
+        if (is_wp_error($ready)) { throw new \Exception(__('The order reservation expired or changed. Review it before payment.','atlas-core')); }
     }
     private static function guard_order_payment($order): void {
+        // Native free checkout has no gateway. bind_order still proves the exact
+        // zero order/line/reservation amounts before recording zero-due settlement.
+        if ($order instanceof \WC_Order && self::integer_amount((string)$order->get_total())===0) return;
         if (self::service_order($order) && !self::service_gateway_allowed((string)$order->get_payment_method())) { throw new \Exception(__('This payment method is not available for service bookings.','atlas-core')); }
+    }
+    /** Existing-order payment is governed by its own persisted reservation, never a different cart. */
+    private static function order_booking($order,bool $allowUnbound=false): array|\WP_Error {
+        $error=new \WP_Error('atlas_order_reservation_invalid',__('The service order and reservation require review.','atlas-core'));
+        if (!$order instanceof \WC_Order || (int)$order->get_id()<1 || !is_user_logged_in() || (int)$order->get_customer_id()!==get_current_user_id() || $order->get_currency()!=='IRR') return $error;
+        $items=$order->get_items('line_item'); if (count($items)!==1) return $error;
+        $item=reset($items); $id=$item->get_meta('_atlas_booking_id',true);
+        if (!is_string($id) || !preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/D',$id)) return $error;
+        $booking=Booking::get($id,get_current_user_id());
+        if (is_wp_error($booking) || $booking['user_id']!==get_current_user_id() || ($booking['order_id']!==(int)$order->get_id() && !($allowUnbound && $booking['order_id']===0))) return $error;
+        $offer=Offers::get($booking['offer_id'],true);
+        if (is_wp_error($offer) || self::offer_id((int)$item->get_product_id())!==$booking['offer_id'] || (int)$item->get_product_id()!==(int)$offer['product_id'] || (int)$item->get_variation_id()!==0 || (int)$item->get_quantity()!==$booking['quantity'] || self::integer_amount((string)$item->get_total())!==$booking['amount_irr'] || self::integer_amount((string)$order->get_total())!==$booking['amount_irr']) return $error;
+        return $booking;
     }
     public static function add_validation(bool $passed,int $productId,int $quantity,int $variationId=0,array $variation=[],?array $cartItemData=null): bool {
         if (!$passed || !function_exists('WC') || !WC()->cart) { return $passed; }
@@ -152,23 +212,46 @@ final class Woo {
     private static function bind_order($order): void {
         global $wpdb;
         if (!is_user_logged_in() || (int)$order->get_customer_id()!==get_current_user_id()) { throw new \Exception(__('Sign in before checkout.','atlas-core')); }
+        if (!self::service_order($order)) return;
+        $orderLines=$order->get_items('line_item'); $persisted=null;
+        foreach ($orderLines as $line) {
+            if ($line->get_meta('_atlas_booking_id',true)==='') continue;
+            $persisted=self::order_booking($order,true);
+            if (is_wp_error($persisted)) throw new \Exception($persisted->get_error_message());
+            if ($persisted['order_id']===(int)$order->get_id()) {
+                if ($persisted['amount_irr']===0) {
+                    $settled=Booking::complete_zero_due($persisted['id'],get_current_user_id(),(int)$order->get_id());
+                    if (is_wp_error($settled)) throw new \Exception($settled->get_error_message());
+                    return;
+                }
+                $ready=Booking::can_initiate_payment($persisted['id'],get_current_user_id(),(int)$order->get_id());
+                $receipt=$order->is_paid() && $persisted['payment_status']==='verified' && in_array($persisted['status'],['paid_pending_confirmation','confirmed','fulfilled'],true);
+                if (is_wp_error($ready) && !$receipt) throw new \Exception(__('The order reservation expired or changed. Review it before payment.','atlas-core'));
+                return;
+            }
+        }
         if (!WC()->cart || ($error=self::cart_error(WC()->cart))) { throw new \Exception($error ?: __('Cart unavailable.','atlas-core')); }
         $serviceItems=[]; foreach (WC()->cart->get_cart() as $item) { if (self::offer_id((int)$item['product_id'])) { $serviceItems[]=$item; } }
         if (!$serviceItems) { return; }
         if (count($serviceItems)!==1) { throw new \Exception(__('Separate service checkouts are required.','atlas-core')); }
         $cartItem=$serviceItems[0]; $bookingId=(string)$cartItem['atlas_booking_id']; $booking=Booking::get($bookingId,get_current_user_id());
-        if (is_wp_error($booking) || self::integer_amount((string)$order->get_total())!==$booking['amount_irr'] || $order->get_currency()!=='IRR') { throw new \Exception(__('Order total requires review.','atlas-core')); }
+        if (is_wp_error($booking) || ($persisted && $persisted['id']!==$bookingId) || self::integer_amount((string)$order->get_total())!==$booking['amount_irr'] || $order->get_currency()!=='IRR') { throw new \Exception(__('Order total requires review.','atlas-core')); }
         $matches=[]; foreach ($order->get_items('line_item') as $item) { if ((int)$item->get_product_id()===(int)$cartItem['product_id']) { $matches[]=$item; } }
-        if (count($matches)!==1) { throw new \Exception(__('Order line requires review.','atlas-core')); }
+        if (count($orderLines)!==1 || count($matches)!==1 || (int)$matches[0]->get_variation_id()!==0 || (int)$matches[0]->get_quantity()!==$booking['quantity'] || self::integer_amount((string)$matches[0]->get_total())!==$booking['amount_irr']) { throw new \Exception(__('Order line requires review.','atlas-core')); }
         $item=$matches[0]; $item->update_meta_data('_atlas_booking_id',$bookingId); $item->save();
-        $wpdb->query('START TRANSACTION');
+        if ($wpdb->query('START TRANSACTION')===false) throw new \Exception(__('Reservation cannot be used for this order.','atlas-core'));
         try {
             $inventory=$wpdb->get_row($wpdb->prepare('SELECT * FROM '.DB::table('inventory').' WHERE offer_id=%d FOR UPDATE',$booking['offer_id']));
             $hold=$wpdb->get_row($wpdb->prepare('SELECT * FROM '.DB::table('holds').' WHERE id=%s FOR UPDATE',$booking['hold_id']));
             $locked=$wpdb->get_row($wpdb->prepare('SELECT * FROM '.DB::table('bookings').' WHERE id=%s FOR UPDATE',$bookingId));
-            if (!$inventory || !$hold || !$locked || $hold->state!=='active' || DB::now()>=$hold->expires_at || ((int)$locked->order_id!==0 && (int)$locked->order_id!==(int)$order->get_id()) || !in_array($locked->status,['held','pending_payment'],true)) { throw new \RuntimeException('hold unavailable'); }
-            if ($wpdb->update(DB::table('bookings'),['order_id'=>(int)$order->get_id(),'status'=>'pending_payment','updated_at'=>DB::now()],['id'=>$bookingId])===false || !DB::audit(get_current_user_id(),0,'booking.order_link',$bookingId,'success')) { throw new \RuntimeException('link failed'); }
-            $wpdb->query('COMMIT');
+            $offer=$inventory?json_decode($inventory->offer_snapshot,true):null;
+            if (!$inventory || !$hold || !$locked || !is_array($offer) || $inventory->status!=='published' || $offer['status']!=='published' || (int)$inventory->version!==(int)$locked->offer_version || (int)$locked->user_id!==get_current_user_id() || (int)$locked->quantity!==(int)$item->get_quantity() || (int)$locked->amount_irr!==self::integer_amount((string)$order->get_total()) || (int)$offer['product_id']!==(int)$item->get_product_id() || $hold->booking_id!==$bookingId || (int)$hold->offer_id!==(int)$locked->offer_id || $hold->state!=='active' || DB::now()>=$hold->expires_at || ((int)$locked->order_id!==0 && (int)$locked->order_id!==(int)$order->get_id()) || !in_array($locked->status,['held','pending_payment'],true)) { throw new \RuntimeException('hold unavailable'); }
+            if ($wpdb->update(DB::table('bookings'),['order_id'=>(int)$order->get_id(),'status'=>'pending_payment','updated_at'=>DB::now()],['id'=>$bookingId])===false || !DB::audit(get_current_user_id(),(int)($offer['org_id']??0),'booking.order_link',$bookingId,'success')) { throw new \RuntimeException('link failed'); }
+            if ($wpdb->query('COMMIT')===false) throw new \RuntimeException('commit');
         } catch (\Throwable $e) { $wpdb->query('ROLLBACK'); throw new \Exception(__('Reservation cannot be used for this order.','atlas-core')); }
+        if ($booking['amount_irr']===0) {
+            $settled=Booking::complete_zero_due($bookingId,get_current_user_id(),(int)$order->get_id());
+            if (is_wp_error($settled)) throw new \Exception($settled->get_error_message());
+        }
     }
 }

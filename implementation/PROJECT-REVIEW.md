@@ -1,6 +1,6 @@
 # Whole-project review
 
-Reviewed 18 November 2026 against the 49 primary specifications in `docs/`, their traceability registry, the implementation prompt, source and executed evidence. The repository intake covers 56 documentation files and 811 evidence rows. This review describes Atlas Leisure 0.2.0 on `feat/atlas-implementation`. All local verification and archive checks share a frozen product hash. [Release evidence](evidence/development-release.json)
+Reviewed 19 November 2026 against the 49 primary specifications in `docs/`, their traceability registry, the implementation prompt, source and executed evidence. The repository intake covers 56 documentation files and 811 evidence rows. This review describes Atlas Leisure 1.0.0-rc.1 on `feat/atlas-implementation`. All local verification and archive checks share a frozen product hash. [Release evidence](evidence/development-release.json)
 
 | Area | Current behavior | Remaining acceptance work |
 | --- | --- | --- |

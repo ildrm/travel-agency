@@ -13,3 +13,10 @@ External PSP callback schemas are deliberately not invented. Three disabled prov
 Booking status: owner-authorized `GET /agency/v1/bookings/{uuid}` returns independent persisted `payment_status` (`unverified` or `verified`) and service `status`, with `Cache-Control: private, no-store`. Monetary verification does not imply agency confirmation or supplier issuance; provider references, participants and snapshot fields are excluded. `GET /agency/v1/booking-queue` and `POST /agency/v1/bookings/{uuid}/confirm` are agency-only, bounded/reasoned/idempotent operational interfaces. Customer and partner capabilities alone cannot authorize confirmation.
 
 Finance interfaces expose scoped operational exceptions/ledger and manual refund request/approval. There is no public route to submit trusted payment/refund proof or execute a bank transfer. Internal proof factories must only be called after real adapter verification when such an adapter is implemented and approved.
+
+
+## Dated rate plans
+
+The existing reviewed resource-offer endpoint accepts `plan_id`, `name_en`, `name_fa` and `max_guests_per_unit` alongside its versioned price and policy fields. The public offer and availability requests accept `rate_plan_id`. The booking hold options include `rate_plan_id` and `rate_version` with the accepted date interval and terms. Multi-plan offers require explicit plan selection. Legacy single-plan holds may use the existing version field. Catalog price filters use the advertised base amount. The dated quote reports its chosen plan and price separately.
+
+The persisted booking retains the reviewed plan ID and version, exact totals and terms. Price choices for one offer share the same physical allocation. A single selected plan must cover the entire service interval.

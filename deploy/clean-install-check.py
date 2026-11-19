@@ -96,6 +96,14 @@ WP_CLI::success('Clean schema and catalog route verified');
 ''')
     wp('eval-file',smoke)
     REPORT['checks'].append('core7/inventory3/checkins1 schemas, repeatable migrations and registered public catalog route')
+    wp('option','update','woocommerce_currency','IRR')
+    wp('option','update','woocommerce_price_num_decimals','0')
+    wp('eval',"WC_Install::create_pages();")
+    wp('atlas','preflight')
+    if wp('atlas','preflight','--production','--service-payments',check=False) != 1:
+        raise RuntimeError('The local checkout unexpectedly satisfied production payment preflight.')
+    REPORT['checks'].append('read-only installed-stack preflight passed and production payment preflight rejected local setup')
+
     REPORT['passed']=True
 except Exception as error:
     REPORT['error']=str(error)

@@ -35,6 +35,7 @@ final class Atlas_Operations_Health {
         $heartbeat=is_array($beat)&&is_string($beat['finished_at']??null)?$beat['finished_at']:null;
         return array(
             'schema_version'=>1,'observed_at_utc'=>$now,'scheduler_heartbeat_utc'=>$heartbeat,
+            'last_worker_errors'=>is_array($beat)&&is_int($beat['errors']??null)?$beat['errors']:null,
             'wp_cron_disabled'=>defined('DISABLE_WP_CRON') && DISABLE_WP_CRON===true,
             'due_holds'=>array('count'=>(int)$due->total,'oldest_utc'=>$due->oldest),
             'due_outbox'=>array('count'=>(int)$queue->total,'oldest_utc'=>$queue->oldest),
@@ -45,11 +46,17 @@ final class Atlas_Operations_Health {
     }
     public static function panel(string $html,bool $customer): string {
         if ($customer || !self::permitted()) return $html;
-        $data=self::snapshot(); if (is_wp_error($data)) return $html;
+        $data=self::snapshot();
+        if (is_wp_error($data)) {
+            return $html.'<p role="status">'.esc_html(Atlas_Partner_Security::t(
+                'Operations health is temporarily unavailable.', 'سلامت عملیات موقتاً در دسترس نیست.'
+            )).'</p>';
+        }
         $t=array('Atlas_Partner_Security','t');
         $html.='<details><summary>'.esc_html($t('Operations health','سلامت عملیات')).'</summary><dl>';
         $fields=array(
             array($t('Last worker completion (UTC)','آخرین پایان کار پردازش (UTC)'),$data['scheduler_heartbeat_utc']??$t('No worker run recorded','اجرای پردازش ثبت نشده است')),
+            array($t('Last worker errors','خطاهای آخرین اجرای پردازش'),$data['last_worker_errors']??'—'),
             array($t('Holds awaiting release','نگهداشت‌های در انتظار آزادسازی'),$data['due_holds']['count']),
             array($t('Due outbox events','رویدادهای آماده پردازش'),$data['due_outbox']['count']),
             array($t('Failed outbox events','رویدادهای ناموفق'),$data['failed_outbox']),

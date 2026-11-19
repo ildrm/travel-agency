@@ -44,7 +44,7 @@ foreach ( array( 'en' => 'ltr', 'fa' => 'rtl' ) as $language => $direction ) {
     $attributes = apply_filters( 'language_attributes', 'lang="en" dir="ltr"' );
     $atlas_check( false !== strpos( $attributes, 'lang="' . $language . '"' ) && false !== strpos( $attributes, 'dir="' . $direction . '"' ), strtoupper( $language ) . ' document language and direction' );
     $html = atlas_theme_home();
-    $expected = 'fa' === $language ? 'برای لحظه‌های' : 'Make room for';
+    $expected = 'fa' === $language ? 'دوست دارید کجا بروید؟' : 'Where would you like to go?';
     $atlas_check( false !== strpos( $html, $expected ), strtoupper( $language ) . ' home copy rendered' );
 }
 if ( ! is_admin() ) {

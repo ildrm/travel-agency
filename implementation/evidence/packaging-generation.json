@@ -1,16 +1,16 @@
 {
   "command": "python3 deploy/package.py",
   "files": [
-    "atlas-leisure-0.2.0.zip",
-    "atlas-core-0.2.0.zip",
-    "atlas-gateways-0.2.0.zip",
-    "atlas-inventory-0.2.0.zip",
-    "atlas-operations-0.2.0.zip"
+    "atlas-leisure-1.0.0-rc.1.zip",
+    "atlas-core-1.0.0-rc.1.zip",
+    "atlas-gateways-1.0.0-rc.1.zip",
+    "atlas-inventory-1.0.0-rc.1.zip",
+    "atlas-operations-1.0.0-rc.1.zip"
   ],
   "limitations": "One generator run does not establish reproducibility, installability, vulnerability status, legal rights or product completeness.",
-  "manifest_sha256": "80711bcb1402d37cf095431f948b7e7f704fe3ad1ef05e70555801f1bb4a9702",
+  "manifest_sha256": "ef176e34f2ce23b7be0a134c34988728fc4eba1dc155192faba7021c8a6e8a9f",
   "packages": 5,
-  "sbom_sha256": "3d46d582a15a217aeddc1a31ced3fb46963ada9a1b6bf887c4e5dc5bcf303cdb",
-  "source_files": 106,
+  "sbom_sha256": "cf381c040fdef075389a4966e2672602fea8774b0259d383e721531ad81ef830",
+  "source_files": 110,
   "status": "archives_created_not_installed_or_production_approved"
 }

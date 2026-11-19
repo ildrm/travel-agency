@@ -45,8 +45,11 @@ function atlas_theme_setup() {
 }
 add_action( 'after_setup_theme', 'atlas_theme_setup' );
 function atlas_theme_assets() {
-    $path = get_theme_file_path( 'assets/css/main.css' );
-    wp_enqueue_style( 'atlas-leisure', get_theme_file_uri( 'assets/css/main.css' ), array(), file_exists( $path ) ? (string) filemtime( $path ) : '0.1.0' );
+    $version = wp_get_theme( get_template() )->get( 'Version' );
+    $script = 'assets/js/navigation.js';
+    $style  = 'assets/css/main.css';
+    wp_enqueue_script( 'atlas-navigation', get_theme_file_uri( $script ), array(), $version . '-' . filemtime( get_theme_file_path( $script ) ), true );
+    wp_enqueue_style( 'atlas-leisure', get_theme_file_uri( $style ), array(), $version . '-' . filemtime( get_theme_file_path( $style ) ) );
 }
 add_action( 'wp_enqueue_scripts', 'atlas_theme_assets' );
 /** Preserve only the validated presentation locale in local destination links. */
@@ -77,13 +80,22 @@ function atlas_theme_language_switch() {
 add_shortcode( 'atlas_theme_language', 'atlas_theme_language_switch' );
 function atlas_theme_utility_links() {
     $link = function ( $query, $en, $fa ) { return '<a href="' . esc_url( atlas_theme_url( $query ) ) . '">' . esc_html( atlas_theme_text( $en, $fa ) ) . '</a>'; };
+    $account = shortcode_exists( 'atlas_account' ) ? $link( array( 'atlas_area' => 'account' ), 'My account', 'حساب من' ) : '';
+    if ( $account === '' && function_exists( 'wc_get_page_permalink' ) ) {
+        $account_url = wc_get_page_permalink( 'myaccount', '' );
+        if ( $account_url ) $account = '<a href="' . esc_url( atlas_theme_localized_url( $account_url ) ) . '">' . esc_html( atlas_theme_text( 'My account', 'حساب من' ) ) . '</a>';
+    }
+    $portal = shortcode_exists( 'atlas_portal' ) ? $link( array( 'atlas_area' => 'portal' ), 'Partner portal', 'پنل همکاران' ) : '';
     $cart = function_exists( 'wc_get_cart_url' ) ? '<a href="' . esc_url( add_query_arg( 'lang', atlas_theme_requested_language(), wc_get_cart_url() ) ) . '">' . esc_html( atlas_theme_text( 'Cart', 'سبد خرید' ) ) . '</a>' : '';
-    return '<nav class="atlas-utility" aria-label="' . esc_attr( atlas_theme_text( 'Account and partner navigation', 'حساب کاربری و همکاران' ) ) . '">' . $link( array( 'atlas_area' => 'account' ), 'My account', 'حساب من' ) . $link( array( 'atlas_area' => 'portal' ), 'Partner portal', 'پنل همکاران' ) . $cart . '</nav>';
+    if ( $account === '' && $portal === '' && $cart === '' ) return '';
+    return '<nav class="atlas-utility" aria-label="' . esc_attr( atlas_theme_text( 'Account and shopping', 'حساب کاربری و خرید' ) ) . '">' . $account . $portal . $cart . '</nav>';
 }
 add_shortcode( 'atlas_theme_utility', 'atlas_theme_utility_links' );
 function atlas_theme_home() {
     $area = isset( $_GET['atlas_area'] ) && is_string( $_GET['atlas_area'] ) ? sanitize_key( wp_unslash( $_GET['atlas_area'] ) ) : '';
-    $offer = isset( $_GET['offer_id'] ) ? absint( $_GET['offer_id'] ) : 0;
+    $has_offer = isset( $_GET['offer_id'] );
+    $offer = $has_offer && is_string( $_GET['offer_id'] ) ? filter_var( $_GET['offer_id'], FILTER_VALIDATE_INT, array( 'options' => array( 'min_range' => 1 ) ) ) : false;
+    $has_catalog = shortcode_exists( 'atlas_catalog' );
     $allowed = array( 'tour', 'event', 'cohort', 'stay', 'rental', 'transfer', 'flight', 'rail', 'bus' );
     $kind = isset( $_GET['atlas_kind'] ) && is_string( $_GET['atlas_kind'] ) ? sanitize_key( wp_unslash( $_GET['atlas_kind'] ) ) : '';
     if ( ! in_array( $kind, $allowed, true ) ) { $kind = ''; }
@@ -94,9 +106,13 @@ function atlas_theme_home() {
         echo '</div>';
         return ob_get_clean();
     }
-    if ( $offer ) {
-        echo '<div class="atlas-shell atlas-app"><a class="atlas-back" href="' . esc_url( atlas_theme_url( array( 'atlas_kind' => $kind ) ) ) . '">' . esc_html( atlas_theme_text( '← Explore experiences', 'بازگشت به تجربه‌ها ←' ) ) . '</a>';
-        echo atlas_theme_companion( 'atlas_offer', array( 'id' => $offer ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- shortcode owns escaping.
+    if ( $has_offer ) {
+        echo '<div class="atlas-shell atlas-app"><a class="atlas-back" href="' . esc_url( atlas_theme_url( $kind ? array( 'atlas_kind' => $kind ) : array() ) . '#atlas-offers' ) . '">' . esc_html( atlas_theme_text( 'Back to offers', 'بازگشت به پیشنهادها' ) ) . '</a>';
+        if ( $offer === false ) {
+            echo '<h1>' . esc_html( atlas_theme_text( 'Offer unavailable', 'پیشنهاد در دسترس نیست' ) ) . '</h1><p>' . esc_html( atlas_theme_text( 'Use the catalog to find an available offer.', 'برای یافتن پیشنهادهای در دسترس به فهرست مراجعه کنید.' ) ) . '</p>';
+        } else {
+            echo atlas_theme_companion( 'atlas_offer', array( 'id' => $offer ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- shortcode owns escaping.
+        }
         echo '</div>';
         return ob_get_clean();
     }
@@ -104,32 +120,42 @@ function atlas_theme_home() {
     <section class="atlas-hero" aria-labelledby="atlas-home-title">
       <div class="atlas-shell atlas-hero__grid">
         <div class="atlas-hero__copy">
-          <p class="atlas-eyebrow"><span class="atlas-dot" aria-hidden="true"></span><?php echo esc_html( atlas_theme_text( 'A little further, together', 'با هم، کمی دورتر' ) ); ?></p>
-          <h1 id="atlas-home-title"><?php echo esc_html( atlas_theme_text( 'Make room for', 'برای لحظه‌های' ) ); ?><br><em><?php echo esc_html( atlas_theme_text( 'the memorable.', 'ماندگار جا باز کنید.' ) ); ?></em></h1>
-          <p class="atlas-hero__lead"><?php echo esc_html( atlas_theme_text( 'Thoughtful journeys, shared experiences and new things to learn — all in one place.', 'سفرهای سنجیده، تجربه‌های مشترک و فرصت‌های تازه برای یادگیری؛ همه در یک جا.' ) ); ?></p>
-          <div class="atlas-hero__actions"><a class="atlas-button" href="#atlas-discover"><?php echo esc_html( atlas_theme_text( 'Explore experiences', 'کاوش تجربه‌ها' ) ); ?><span aria-hidden="true"> ↗</span></a><a class="atlas-text-link" href="#atlas-how"><?php echo esc_html( atlas_theme_text( 'How it works', 'چطور کار می‌کند؟' ) ); ?></a></div>
-          <p class="atlas-hero__note"><?php echo esc_html( atlas_theme_text( 'Browse at your own pace. Details and availability are shown with each offer.', 'با آسودگی جست‌وجو کنید. جزئیات و وضعیت هر پیشنهاد در صفحه آن نمایش داده می‌شود.' ) ); ?></p>
+          <h1 id="atlas-home-title"><?php echo esc_html( atlas_theme_text( 'Where would you like to go?', 'دوست دارید کجا بروید؟' ) ); ?></h1>
+          <p class="atlas-hero__lead"><?php echo esc_html( atlas_theme_text( 'Find a tour, a place to stay, or something to learn.', 'تور، اقامتگاه یا دورهٔ آموزشی دلخواهتان را پیدا کنید.' ) ); ?></p>
+          <?php if ( $has_catalog ) : ?>
+          <form class="atlas-hero-search" role="search" aria-label="<?php echo esc_attr( atlas_theme_text( 'Find experiences', 'جست‌وجوی تجربه‌ها' ) ); ?>" method="get" action="<?php echo esc_url( home_url( '/' ) . '#atlas-offers' ); ?>">
+            <input type="hidden" name="lang" value="<?php echo esc_attr( atlas_theme_requested_language() ); ?>">
+            <label for="atlas-home-destination"><?php echo esc_html( atlas_theme_text( 'Destination', 'مقصد' ) ); ?></label>
+            <div><input type="search" id="atlas-home-destination" name="cat_destination" maxlength="100" placeholder="<?php echo esc_attr( atlas_theme_text( 'City or place', 'نام شهر یا مکان' ) ); ?>">
+            <button class="atlas-button" type="submit"><?php echo esc_html( atlas_theme_text( 'Search offers', 'جست‌وجوی پیشنهادها' ) ); ?></button></div>
+          </form>
+          <a class="atlas-text-link" href="<?php echo esc_url( atlas_theme_url() . '#atlas-offers' ); ?>"><?php echo esc_html( atlas_theme_text( 'Browse all experiences', 'مشاهدهٔ همهٔ تجربه‌ها' ) ); ?></a>
+          <?php endif; ?>
         </div>
-        <div class="atlas-hero__art" aria-hidden="true"><img src="<?php echo esc_url( get_theme_file_uri( 'assets/svg/paper-landscape.svg' ) ); ?>" alt="" width="900" height="760" fetchpriority="high"><span class="atlas-art-label"><?php echo esc_html( atlas_theme_text( 'A world of possibilities', 'دنیایی از امکان‌ها' ) ); ?></span></div>
+        <div class="atlas-hero__art" aria-hidden="true"><img src="<?php echo esc_url( get_theme_file_uri( 'assets/svg/paper-landscape.svg' ) ); ?>" alt="" width="900" height="760" fetchpriority="high"></div>
       </div>
     </section>
+    <?php if ( $has_catalog ) : ?>
     <section class="atlas-explore atlas-shell" id="atlas-discover" aria-labelledby="atlas-explore-title">
-      <div class="atlas-section-head"><div><p class="atlas-eyebrow"><?php echo esc_html( atlas_theme_text( 'Find your next story', 'داستان بعدی شما' ) ); ?></p><h2 id="atlas-explore-title"><?php echo esc_html( atlas_theme_text( 'Explore your way', 'به سبک خودتان بگردید' ) ); ?></h2></div><p><?php echo esc_html( atlas_theme_text( 'Choose a starting point, then find the details that matter to you.', 'از یک موضوع شروع کنید و جزئیاتی را ببینید که برایتان مهم است.' ) ); ?></p></div>
-      <nav class="atlas-category-grid" aria-label="<?php echo esc_attr( atlas_theme_text( 'Experience categories', 'دسته‌بندی تجربه‌ها' ) ); ?>">
+      <h2 id="atlas-explore-title"><?php echo esc_html( atlas_theme_text( 'Browse by category', 'مرور بر اساس دسته‌بندی' ) ); ?></h2>
+      <nav class="atlas-category-grid" aria-labelledby="atlas-explore-title">
       <?php
       $categories = array(
-          array( 'tour', '01', 'Tours', 'تورهای سفر', 'Go somewhere new.', 'به جایی تازه بروید.' ),
-          array( 'event', '02', 'Events', 'رویدادها', 'Make time together.', 'برای با هم بودن وقت بگذارید.' ),
-          array( 'cohort', '03', 'Academy', 'آموزشگاه', 'Learn by doing.', 'با تجربه یاد بگیرید.' ),
-          array( 'stay', '04', 'Stays', 'اقامت', 'Find a place to pause.', 'جایی برای آرام گرفتن بیابید.' ),
+          'tour' => atlas_theme_text( 'Tours', 'تورها' ),
+          'event' => atlas_theme_text( 'Events', 'رویدادها' ),
+          'cohort' => atlas_theme_text( 'Academy', 'آموزشگاه' ),
+          'stay' => atlas_theme_text( 'Stays', 'اقامتگاه‌ها' ),
+          'rental' => atlas_theme_text( 'Rentals', 'اجارهٔ خودرو' ),
+          'transfer' => atlas_theme_text( 'Transfers', 'ترانسفر' ),
       );
-      foreach ( $categories as $item ) {
-          echo '<a class="atlas-category" href="' . esc_url( atlas_theme_url( array( 'atlas_kind' => $item[0] ) ) . '#atlas-offers' ) . '"><span class="atlas-category__num">' . esc_html( $item[1] ) . '</span><span class="atlas-category__arrow" aria-hidden="true">↗</span><strong>' . esc_html( atlas_theme_text( $item[2], $item[3] ) ) . '</strong><span>' . esc_html( atlas_theme_text( $item[4], $item[5] ) ) . '</span></a>';
+      foreach ( $categories as $key => $label ) {
+          echo '<a class="atlas-category" href="' . esc_url( atlas_theme_url( array( 'atlas_kind' => $key ) ) . '#atlas-offers' ) . '">' . esc_html( $label ) . '</a>';
       }
       ?>
       </nav>
     </section>
-    <section class="atlas-listings" id="atlas-offers" aria-labelledby="atlas-offers-title"><div class="atlas-shell"><div class="atlas-section-head"><div><p class="atlas-eyebrow"><?php echo esc_html( atlas_theme_text( 'Made for curious minds', 'برای ذهن‌های کنجکاو' ) ); ?></p><h2 id="atlas-offers-title"><?php echo esc_html( atlas_theme_text( 'Discover what is on', 'پیشنهادهای پیش رو' ) ); ?></h2></div><a class="atlas-text-link" href="<?php echo esc_url( atlas_theme_url() . '#atlas-offers' ); ?>"><?php echo esc_html( atlas_theme_text( 'View all experiences', 'همه تجربه‌ها' ) ); ?> ↗</a></div>
+    <?php endif; ?>
+    <section class="atlas-listings" id="atlas-offers" aria-labelledby="atlas-offers-title"><div class="atlas-shell"><div class="atlas-section-head"><h2 id="atlas-offers-title"><?php echo esc_html( atlas_theme_text( 'Explore offers', 'مشاهدهٔ پیشنهادها' ) ); ?></h2></div>
       <?php echo atlas_theme_companion( 'atlas_catalog', $kind ? array( 'kind' => $kind ) : array() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- shortcode owns escaping. ?>
     </div></section>
     <section class="atlas-how atlas-shell" id="atlas-how" aria-labelledby="atlas-how-title"><div class="atlas-how__intro"><p class="atlas-eyebrow"><?php echo esc_html( atlas_theme_text( 'The journey, made clear', 'مسیر روشن‌تر' ) ); ?></p><h2 id="atlas-how-title"><?php echo esc_html( atlas_theme_text( 'Good plans start with good details.', 'برنامه خوب با جزئیات روشن شروع می‌شود.' ) ); ?></h2><p><?php echo esc_html( atlas_theme_text( 'Explore at your own pace, check the details and reach out when you need a hand.', 'با فرصت کافی بگردید، جزئیات را بررسی کنید و هر زمان به کمک نیاز داشتید با ما در تماس باشید.' ) ); ?></p></div><ol class="atlas-steps"><li><span>01</span><div><h3><?php echo esc_html( atlas_theme_text( 'Find your experience', 'تجربه خود را پیدا کنید' ) ); ?></h3><p><?php echo esc_html( atlas_theme_text( 'Browse tours, events, learning and more.', 'تور، رویداد، آموزش و پیشنهادهای دیگر را ببینید.' ) ); ?></p></div></li><li><span>02</span><div><h3><?php echo esc_html( atlas_theme_text( 'Check the details', 'جزئیات را بررسی کنید' ) ); ?></h3><p><?php echo esc_html( atlas_theme_text( 'Review timing, availability, inclusions and terms.', 'زمان، وضعیت، خدمات و شرایط را بخوانید.' ) ); ?></p></div></li><li><span>03</span><div><h3><?php echo esc_html( atlas_theme_text( 'Continue with confidence', 'با آگاهی ادامه دهید' ) ); ?></h3><p><?php echo esc_html( atlas_theme_text( 'Register or send a request where available.', 'در صورت امکان ثبت‌نام کنید یا درخواست بفرستید.' ) ); ?></p></div></li></ol></section>
@@ -244,17 +270,21 @@ function atlas_theme_navigation( $attributes = array() ) {
     if ( has_nav_menu( $location ) ) {
         $list = wp_nav_menu( array( 'theme_location' => $location, 'container' => false, 'echo' => false, 'fallback_cb' => false, 'menu_class' => 'atlas-nav-list', 'depth' => 2 ) );
     } else {
-        $items = array(
+        $items = shortcode_exists( 'atlas_catalog' ) ? array(
             array( array(), 'Explore', 'کاوش', '#atlas-discover' ),
             array( array( 'atlas_kind' => 'tour' ), 'Tours', 'تورها', '#atlas-offers' ),
             array( array( 'atlas_kind' => 'event' ), 'Events', 'رویدادها', '#atlas-offers' ),
             array( array( 'atlas_kind' => 'cohort' ), 'Academy', 'آموزشگاه', '#atlas-offers' ),
-        );
+        ) : array( array( array(), 'Home', 'صفحهٔ اصلی', '' ) );
         $list = '<ul class="atlas-nav-list">';
         foreach ( $items as $item ) {
             $list .= '<li><a href="' . esc_url( atlas_theme_url( $item[0] ) . $item[3] ) . '">' . esc_html( atlas_theme_text( $item[1], $item[2] ) ) . '</a></li>';
         }
         $list .= '</ul>';
+    }
+    if ( $location === 'footer' && shortcode_exists( 'atlas_account' ) ) {
+        $support = atlas_theme_url( array( 'atlas_area' => 'account', 'atlas_task' => 'support_case' ) ) . '#atlas-task-support_case';
+        $list .= '<a href="' . esc_url( $support ) . '">' . esc_html( atlas_theme_text( 'Customer support', 'پشتیبانی مشتریان' ) ) . '</a>';
     }
     return '<nav class="atlas-main-navigation" aria-label="' . esc_attr( $label ) . '">' . $list . '</nav>'; // WP menu output escapes its fields.
 }

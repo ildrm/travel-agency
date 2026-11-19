@@ -1,11 +1,13 @@
 {
-  "verified_at_utc": "2026-11-18T07:11:05.222892+00:00",
-  "release_version": "0.2.0",
-  "product_sha256": "d022d55075978b95aa3f02d69d158067f8f049fd58b0519750398868c7138a1c",
-  "integration_sha256": "d07cba0a7bd23358b721811b6ed820d29121aa1b1fa35378f9ede44dc5143b7b",
+  "verified_at_utc": "2026-11-19T06:07:05.717432+00:00",
+  "release_version": "1.0.0-rc.1",
+  "product_sha256": "f2f24511220fbb5ef50c8f61762f9ab1ff302f191dc35cec2cefb750c2da7109",
+  "integration_sha256": "2b631460acce0659390d00d293db44cf72fb981e72583e2c2254f4b20fbc7fa9",
+  "browser_inputs_sha256": "8dcae027d0b752cdaf256bf190b682eff655e09516be24e815837272bccd2800",
   "checks": {
     "same_product_hash": true,
     "static_all_passed": true,
+    "same_test_inputs": true,
     "each_integration_suite_passed": true,
     "full_headless_browser_run_passed": true,
     "reproducible_archive_set": true,
@@ -14,17 +16,17 @@
     "archive_contents_match_workspace": true
   },
   "passed": true,
-  "static_checks": 165,
-  "integration_suites": 24,
+  "static_checks": 172,
+  "integration_suites": 25,
   "browser_tests": 13,
   "zip_archives": {
-    "atlas-leisure-0.2.0.zip": "261fbdc8a94bc5176c56bbb290db3777d326e213a8070e4f7c460f3f69e05b65",
-    "atlas-core-0.2.0.zip": "6cb6fcfcefbc2ed3345c0ebee0e0b5f2eb20ebcf437e7f9a0adfd409b881888c",
-    "atlas-gateways-0.2.0.zip": "0ff0da2fe8acc5deba0e3e4f0d6eb551e004c1e952a9bf2e71f1693b1fa8bfa5",
-    "atlas-inventory-0.2.0.zip": "a0d60f0a5dd82a1f3ed9ccda22a9ba87d0f67ec6371620150c3d9eb616d84d84",
-    "atlas-operations-0.2.0.zip": "b46dd8ad94a3946038f77961bfaacce6923d03c48ba2b5de300908323c023e75"
+    "atlas-leisure-1.0.0-rc.1.zip": "41c0c4d3b14f9ab206dc6b26586c1df6836267a1b25a1f453eb9ba8baef40b14",
+    "atlas-core-1.0.0-rc.1.zip": "c09625896a18b03cbdaf70385f52b077d63289b91eebf97843ee5b8b4ee5e084",
+    "atlas-gateways-1.0.0-rc.1.zip": "1e2f91dfb615bfb799c6b161610ac66a61c27e7ce3e40a30afa23de92ba0be3c",
+    "atlas-inventory-1.0.0-rc.1.zip": "db646ae48b09348403ba595da9c85d2b154564e7a354ab1a1f8f47130e00aacc",
+    "atlas-operations-1.0.0-rc.1.zip": "d456cb842d693ac0874285eff1bd450aaca7f09caa054af4c147b3701a90adb0"
   },
   "restored_tables": 102,
-  "restored_rows": 2727,
+  "restored_rows": 6541,
   "scope": "local development release evidence"
 }

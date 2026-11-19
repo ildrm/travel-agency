@@ -92,6 +92,17 @@ $unsupported=$api('POST','/wc/store/v1/checkout',['billing_address'=>$billing,'p
 global $wpdb;
 $unverifiedCount=(int)$wpdb->get_var($wpdb->prepare('SELECT COUNT(*) FROM '.DB::table('payments').' WHERE booking_id=%s',$hold['booking_id']));
 $check($unsupported->get_status()>=400 && $unverifiedCount===0,'Store API rejects bank transfer for a service before creating payment evidence');
+foreach (['quantity','line_total','extra_line','different_reservation'] as $shape) {
+    $candidate=wc_create_order(['customer_id'=>$user]);$candidate->set_currency('IRR');$candidate->set_payment_method('atlas_simulator');
+    $line=new WC_Order_Item_Product();$line->set_product(wc_get_product($serviceId));$line->set_quantity($shape==='quantity'?2:1);$line->set_subtotal('1000000');$line->set_total($shape==='line_total'?'999999':'1000000');
+    $line->add_meta_data('_atlas_booking_id',$shape==='different_reservation'?$otherHold['booking_id']:$hold['booking_id'],true);$candidate->add_item($line);
+    if ($shape==='extra_line') { $extraLine=new WC_Order_Item_Product();$extraLine->set_product(wc_get_product($physicalId));$extraLine->set_quantity(1);$extraLine->set_subtotal('0');$extraLine->set_total('0');$candidate->add_item($extraLine); }
+    $candidate->set_total('1000000');$candidate->save();$rejected=false;
+    try { Woo::store_order($candidate); } catch (Exception $error) { $rejected=true; }
+    $stillUnbound=\Atlas\Core\Booking::get($hold['booking_id'],$user);
+    $check($rejected && is_array($stillUnbound) && $stillUnbound['order_id']===0 && !$candidate->is_paid(),'native order binding rejects '.$shape.' drift even when the cart and final order amount are unchanged');
+    $candidate->delete(true);
+}
 $checkout=$api('POST','/wc/store/v1/checkout',['billing_address'=>$billing,'payment_method'=>'atlas_simulator','payment_data'=>[]]);
 $checkoutData=$checkout->get_data(); $orderId=(int)($checkoutData['order_id'] ?? 0);
 $check($checkout->get_status()>=200 && $checkout->get_status()<300 && $orderId>0,'Store API checkout invokes local-only payment simulator');
@@ -164,7 +175,21 @@ if (is_array($lateHold)) {
     if (!is_wp_error($lateOrder)) {
         $lateOrder->set_currency('IRR'); $lateOrder->set_payment_method('atlas_simulator'); $lateOrder->add_product(wc_get_product($serviceId),1); $lateOrder->set_total('1000000'); $lateOrder->save();
         \Atlas\Core\Woo::store_order($lateOrder);
+        // The existing-order endpoint must use its own persisted reservation even
+        // if the same account later opens a different valid service cart.
+        WC()->cart->empty_cart();$api('POST','/wc/store/v1/cart/add-item',['id'=>$serviceId,'quantity'=>1,'atlas_booking_id'=>$otherHold['booking_id']]);WC()->cart->calculate_totals();
+        $unrelatedCart=$cartSnapshot();$lateOrder->set_status('failed');$lateOrder->save();$retryValid=true;
+        $retryContext=new \Automattic\WooCommerce\StoreApi\Payments\PaymentContext();$retryContext->set_order($lateOrder);$retryContext->set_payment_method('atlas_simulator');
+        try { Woo::store_order($lateOrder);Woo::guard_store_payment($retryContext); } catch (Exception $error) { $retryValid=false; }
+        $check($retryValid && $cartSnapshot()===$unrelatedCart && \Atlas\Core\Booking::get($lateHold['booking_id'],$user)['order_id']===(int)$lateOrder->get_id(),'an owned linked unpaid order retries independently of an unrelated service cart without rebinding or clearing it');
+        $lateItems=$lateOrder->get_items('line_item');$lateItem=reset($lateItems);$lateItem->set_quantity(2);$lateItem->save();$lineRejected=false;
+        try { Woo::guard_store_payment($retryContext); } catch (Exception $error) { $lineRejected=true; }
+        $check($lineRejected && !$lateOrder->is_paid(),'payment dispatch revalidates persisted line quantity instead of trusting a prior binding');
+        $lateItem->set_quantity(1);$lateItem->save();
         DB::set_test_now($lateHold['payment_deadline']);
+        $deadlineRejected=false;try { Woo::guard_store_payment($retryContext); } catch (Exception $error) { $deadlineRejected=true; }
+        $savedPaymentPost=$_POST;$_POST['payment_method']='atlas_simulator';wc_clear_notices();Woo::before_pay($lateOrder);$classicDeadlineRejected=wc_notice_count('error')>0;Woo::after_pay();$_POST=$savedPaymentPost;wc_clear_notices();
+        $check($deadlineRejected && $classicDeadlineRejected,'Blocks and classic existing-order guards stop even an enabled verified gateway at the hold deadline');
         $gateway=new Atlas_Gateway_Simulator(); $denied=$gateway->process_payment($lateOrder->get_id());
         $attempts=(int)$wpdb->get_var($wpdb->prepare('SELECT COUNT(*) FROM '.DB::table('payments').' WHERE booking_id=%s',$lateHold['booking_id']));
         $check(($denied['result'] ?? '')==='failure' && $attempts===0 && !wc_get_order($lateOrder->get_id())->is_paid(),'simulator rejects initiation at deadline before creating verified-money evidence');
@@ -186,6 +211,49 @@ if ($order && $payment) {
     $preserved=\Atlas\Core\Booking::get($hold['booking_id'],$user);
     $check(is_array($confirmed) && ($receipt['result'] ?? '')==='success' && $beforePayments===$afterPayments && $beforeLedger===$afterLedger && is_array($preserved) && $preserved['status']==='confirmed','paid confirmed order replay returns its receipt without a new proof or regressed entitlement');
 }
+// Native no-payment-required checkout must consume the allocation without
+// manufacturing verified money, a credit ledger entry, or an automatic ticket.
+wp_set_current_user($admin);$zeroProduct=new WC_Product_Simple();$zeroProduct->set_name('Fictional free event '.$suffix);$zeroProduct->set_status('publish');$zeroProduct->set_virtual(true);$zeroProduct->set_regular_price('0');$zeroProductId=$zeroProduct->save();
+$zeroOffer=Offers::save(0,array_replace($offerFields,['title_en'=>'Fictional no-payment-required event','amount_irr'=>0,'capacity'=>4,'product_id'=>$zeroProductId]),$admin);
+wp_set_current_user($user);DB::set_test_now('2027-06-01T06:00:00.000000Z');WC()->cart->empty_cart();wc_clear_notices();
+$zeroHold=\Atlas\Core\Booking::hold($zeroOffer,1,1,$user,'zero-native-'.$suffix);
+if (is_array($zeroHold)) {
+    $fakeZero=\Atlas\Core\VerifiedPayment::from_adapter('local_simulator','zero-proof-'.$suffix,0);
+    $fakeResult=$fakeZero instanceof \Atlas\Core\VerifiedPayment?\Atlas\Core\Booking::verify($zeroHold['booking_id'],$fakeZero):$fakeZero;
+    $check(is_wp_error($fakeResult) && $fakeResult->get_error_code()==='atlas_zero_due_settlement_required','a zero obligation cannot be labeled verified funds through a synthetic payment proof');
+    $zeroAdded=$api('POST','/wc/store/v1/cart/add-item',['id'=>$zeroProductId,'quantity'=>1,'atlas_booking_id'=>$zeroHold['booking_id']]);
+    $zeroCheckout=$api('POST','/wc/store/v1/checkout',['billing_address'=>$billing,'payment_method'=>'','payment_data'=>[]]);$zeroCheckoutData=$zeroCheckout->get_data();$zeroOrderId=(int)($zeroCheckoutData['order_id']??0);$zeroOrder=$zeroOrderId?wc_get_order($zeroOrderId):false;
+    $zeroBooking=\Atlas\Core\Booking::get($zeroHold['booking_id'],$user);$zeroPayments=(int)$wpdb->get_var($wpdb->prepare('SELECT COUNT(*) FROM '.DB::table('payments').' WHERE booking_id=%s',$zeroHold['booking_id']));$zeroLedger=(int)$wpdb->get_var($wpdb->prepare('SELECT COUNT(*) FROM '.DB::table('ledger').' l INNER JOIN '.DB::table('payments').' p ON p.id=l.payment_id WHERE p.booking_id=%s',$zeroHold['booking_id']));
+    $zeroHoldState=$wpdb->get_var($wpdb->prepare('SELECT state FROM '.DB::table('holds').' WHERE id=%s',$zeroHold['hold_id']));
+    $check($zeroAdded->get_status()<300 && $zeroCheckout->get_status()<300 && $zeroOrder instanceof WC_Order && $zeroOrder->get_total()==='0' && $zeroBooking['status']==='paid_pending_confirmation' && $zeroBooking['payment_status']==='not_required' && $zeroHoldState==='consumed' && $zeroPayments===0 && $zeroLedger===0,'native zero-total checkout retains allocation and awaits agency confirmation with no payment or monetary ledger');
+    if (!$zeroOrderId) echo 'Zero checkout diagnostic: '.wp_json_encode(['code'=>$zeroCheckoutData['code']??null,'http_status'=>$zeroCheckout->get_status(),'message'=>$zeroCheckoutData['message']??null,'booking_status'=>$zeroBooking['status']??null,'payment_status'=>$zeroBooking['payment_status']??null,'hold_state'=>$zeroHoldState,'payments'=>$zeroPayments,'ledger_entries'=>$zeroLedger])."\n";
+    if ($zeroOrder) {
+        $_GET['lang']='en';
+        $zeroNotice=Atlas_Reservation_Status::notice($zeroOrderId);
+        unset($_GET['lang']);
+        $check(str_contains($zeroNotice,'requires no payment') && !str_contains($zeroNotice,'Payment verified'),
+            'zero-due customer receipt presents the pending agency review without implying payment');
+        $zeroReplay=true;try { Woo::store_order($zeroOrder); } catch (Exception $error) { $zeroReplay=false; }
+        $zeroAudits=(int)$wpdb->get_var($wpdb->prepare('SELECT COUNT(*) FROM '.DB::table('audit').' WHERE action=%s AND object_id=%s','booking.no_payment_required',$zeroHold['booking_id']));$zeroEvents=(int)$wpdb->get_var($wpdb->prepare('SELECT COUNT(*) FROM '.DB::table('outbox').' WHERE event_type=%s AND aggregate_id=%s','booking.no_payment_required',$zeroHold['booking_id']));
+        $check($zeroReplay && $zeroAudits===1 && $zeroEvents===1,'native zero-total order replay records one zero-due settlement and never consumes capacity twice');
+        wp_set_current_user($admin);$foreignZero=\Atlas\Core\Booking::complete_zero_due($zeroHold['booking_id'],$admin,$zeroOrderId);$check(is_wp_error($foreignZero),'even an agency actor cannot settle a different customer zero-due order as its owner');
+        $zeroConfirmed=\Atlas\Core\Booking::confirm($zeroHold['booking_id'],$admin,'Fictional free service agency review','zero-confirm-'.$suffix);$zeroRefund=Finance::request_refund($zeroHold['booking_id'],1,$admin,'zero-refund-'.$suffix,'No payment exists to refund.');
+        wp_set_current_user($user);$zeroConfirmedRead=\Atlas\Core\Booking::get($zeroHold['booking_id'],$user);$check(is_array($zeroConfirmed) && $zeroConfirmedRead['status']==='confirmed' && $zeroConfirmedRead['payment_status']==='not_required' && is_wp_error($zeroRefund),'agency confirmation preserves no-payment-required semantics and cannot manufacture a zero-due refund');
+    }
+} else { $check(false,'native free service hold fixture'); }
+WC()->cart->empty_cart();wc_clear_notices();DB::set_test_now('2027-06-01T06:00:00.000000Z');$declinedZero=\Atlas\Core\Booking::hold($zeroOffer,1,1,$user,'zero-decline-'.$suffix);
+if (is_array($declinedZero)) {
+    $api('POST','/wc/store/v1/cart/add-item',['id'=>$zeroProductId,'quantity'=>1,'atlas_booking_id'=>$declinedZero['booking_id']]);
+    $decline=static fn($valid,$bookingId)=>$bookingId===$declinedZero['booking_id']?new WP_Error('atlas_fixture_zero_declined','Fictional required service review declined.', ['status'=>409]):$valid;
+    add_filter('atlas_core_before_payment_initiation',$decline,99,2);
+    try { $declinedCheckout=$api('POST','/wc/store/v1/checkout',['billing_address'=>$billing,'payment_method'=>'','payment_data'=>[]]); } finally { remove_filter('atlas_core_before_payment_initiation',$decline,99); }
+    $declinedRead=\Atlas\Core\Booking::get($declinedZero['booking_id'],$user);$declinedState=$wpdb->get_var($wpdb->prepare('SELECT state FROM '.DB::table('holds').' WHERE id=%s',$declinedZero['hold_id']));
+    $declinedBody=$declinedCheckout->get_data();$check($declinedCheckout->get_status()>=400 && str_contains($declinedBody['message']??'','Fictional required service review declined.') && $declinedRead['order_id']>0 && $declinedRead['payment_status']==='unverified' && in_array($declinedRead['status'],['held','pending_payment'],true) && $declinedState==='active','a declined native zero-due precondition leaves allocation active and cannot claim persisted settlement or confirmation');
+    DB::set_test_now($declinedZero['payment_deadline']);$expiredZero=\Atlas\Core\Booking::complete_zero_due($declinedZero['booking_id'],$user,$declinedRead['order_id']);
+    $zeroAttempts=(int)$wpdb->get_var($wpdb->prepare('SELECT COUNT(*) FROM '.DB::table('payments').' WHERE booking_id=%s',$declinedZero['booking_id']));
+    $check(is_wp_error($expiredZero) && $zeroAttempts===0 && \Atlas\Core\Booking::get($declinedZero['booking_id'],$user)['payment_status']==='unverified','a declined zero-due order cannot complete settlement at the expired hold deadline');
+    \Atlas\Core\Booking::expire($declinedZero['hold_id']);
+} else { $check(false,'declined native free service hold fixture'); }
 WC()->cart->empty_cart();
 $classicPhysical=apply_filters('woocommerce_add_to_cart_validation',true,$physicalId,1);
 $physicalAdd=$api('POST','/wc/store/v1/cart/add-item',['id'=>$physicalId,'quantity'=>1]);

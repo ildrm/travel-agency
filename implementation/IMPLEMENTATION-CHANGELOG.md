@@ -1,12 +1,24 @@
 # Implementation changelog
 
+## 1.0.0-rc.1 · 19 November 2026
+
+- Hardened hold expiry, refund authorization, WooCommerce order linkage and payment retries. Zero-due reservations use native checkout and await agency confirmation with no monetary ledger entry.
+- Added named dated resource rate plans for one physical inventory pool. A reservation retains the selected plan, revision, price and terms.
+- Added localized catalog filter recovery, keyboard focus after navigation and controls that keep comparison selections across searches. Account reservations are paginated. Private workspace and commerce responses set cache and indexing headers.
+- Added a read-only installation preflight, failure-aware worker completion and fair retry of due holds. Release verification matches the shipped code, test inputs, browser result file and package manifest.
+- Verified 172 static checks, 25 integration suites, 13 headless browser journeys, and five reproducible ZIPs with a clean install and isolated restore. [Candidate evidence](evidence/development-release.json)
+
 ## 0.2.0 · 18 November 2026
+
+- Added a keyboard-accessible compact mobile menu, destination search on the home page, six-item catalog pages, featured ordering and expandable secondary filters.
+- Fixed RTL checkout overflow and supplied a localized heading, service title and payment deadline. Added mobile reflow checks and verification of the persisted order at receipt.
+- Added a keyboard-operated workspace task selector, direct support and inquiry links, and localized booking and payment states backed by separate database records.
 
 - Added guided discovery, source-reviewed EN/FA editorial content, reusable tours with material-change consent, event recurrence and attendee forms, QR operations and multi-learner Academy enrollment.
 - Connected dated stays and fleet inventory to Woo checkout and reviewed cancellation. Added manual transfer dispatch, private ticket inquiries and native merchandise shipping and refund verification.
 - Added scoped partner invitations and contracts, procurement and clean artwork revisions, encrypted private files, owner portability and reviewed retention. Added notifications, automatic paid exception cases and worker health.
 - Prepared the default-off ZarinPal V4 adapter, with fictional request, verification and reconciliation evidence. Added reciprocal service products, historical-order protection, printable EN/FA vouchers and the signed-in checkout email-description repair.
-- Verified the frozen build across 165 static checks, 24 integration suites, 13 single-worker headless browser tests, five reproducible ZIPs, a fresh archive install and an isolated database restore. [Release evidence](evidence/development-release.json)
+- Verified the frozen build across 170 static checks, 24 integration suites, 13 single-worker headless browser tests, five reproducible ZIPs, a fresh archive install and an isolated database restore. [Release evidence](evidence/development-release.json)
 
 ## Prior implementation checkpoint
 

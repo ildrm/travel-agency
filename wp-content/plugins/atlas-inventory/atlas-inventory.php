@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Atlas Local Inventory
  * Description: Authorized internal room-night and vehicle scheduling. No public sales or supplier connection.
- * Version: 0.2.0
+ * Version: 1.0.0-rc.1
  * Requires PHP: 8.2
  * Text Domain: atlas-inventory
  */

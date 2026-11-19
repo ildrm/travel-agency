@@ -80,6 +80,18 @@ try {
     wp_set_current_user($customer); $own_queue=$call('GET','resource-bookings')->get_data()['items']; $own=null; foreach ($own_queue as $item) if ($item['id']===$first['booking_id']) $own=$item;
     $check($own && !isset($own['fields']['supplier_users'],$own['fields']['quote']['policy_reference']),'Customer reservation projection omits internal supplier assignments and review references.');
     $check($call('POST','resource-bookings/'.$first['booking_id'].'/supplier-review',$decision)->get_status()===404,'Customer cannot record their own supplier acceptance.');
+    // The configured writer may fail before or after an operation's work.
+    // None of the review paths can acknowledge changes if its transaction fails.
+    $transaction_fault=static function($statement,$path,$body) use($call) {
+        $filter=static fn($sql)=>$sql===$statement?'SELECT id FROM atlas_failed_resource_transaction_fixture':$sql;
+        add_filter('query',$filter);
+        try { return $call('POST',$path,$body); }
+        finally { remove_filter('query',$filter); }
+    };
+    wp_set_current_user($supplier);
+    $failure=$transaction_fault('START TRANSACTION','resource-bookings/'.$first['booking_id'].'/supplier-review',$decision);
+    $check($failure->get_status()===503 && $mapping($first['booking_id'])['fields']['supplier_status']==='pending',
+        'Supplier review cannot change availability when its transaction cannot begin.');
     wp_set_current_user($supplier); $check($call('POST','resource-bookings/'.$first['booking_id'].'/supplier-review',$decision)->get_status()===200,'Only explicitly assigned active supplier can accept the held local allotment.');
     wp_set_current_user($admin); $confirmation=Atlas\Core\Booking::confirm($first['booking_id'],$admin,'Fictional supplier and agency confirmation'); $check(!is_wp_error($confirmation),'Agency may confirm after verified payment and recorded supplier acceptance: '.wp_json_encode($confirmation));
     $check(!is_wp_error(Atlas\Core\Booking::verify($contender['booking_id'],Atlas\Core\VerifiedPayment::from_adapter('local_simulator','resource-proof-'.wp_generate_uuid4(),24100000))),'Second fictional payment can be verified independently.');
@@ -89,6 +101,9 @@ try {
     // Customer consent and agency review release only this reservation's exact dated allocation.
     wp_set_current_user($outsider); $check($call('POST','resource-bookings/'.$first['booking_id'].'/cancel-request',array('version'=>0,'reason'=>'Fictional unauthorized cancellation.'))->get_status()===404,'Another customer or supplier cannot request cancellation of this booking.');
     wp_set_current_user($customer); $request_body=array('version'=>0,'reason'=>'Private fictional customer cancellation reason.');
+    $failure=$transaction_fault('START TRANSACTION','resource-bookings/'.$first['booking_id'].'/cancel-request',$request_body);
+    $check($failure->get_status()===503 && $mapping($first['booking_id'])['state']==='consumed',
+        'A failed cancellation-request transaction preserves the paid room allocation.');
     $requested=$call('POST','resource-bookings/'.$first['booking_id'].'/cancel-request',$request_body); $check($requested->get_status()===200 && $requested->get_data()['state']==='requested','Customer can request cancellation without immediately releasing or reversing payment.');
     $check($call('POST','resource-bookings/'.$first['booking_id'].'/cancel-request',$request_body)->get_data()['version']===1,'An identical cancellation request retry does not create another version or record.');
     wp_set_current_user($supplier); $supplier_queue=$call('GET','resource-bookings')->get_data()['items']; $supplier_item=null; foreach ($supplier_queue as $item) if ($item['id']===$first['booking_id']) $supplier_item=$item;
@@ -97,6 +112,9 @@ try {
     $check($call('POST','resource-bookings/'.$first['booking_id'].'/cancel-review',$cancel_review)->get_status()===403,'Supplier assignment does not confer agency cancellation or refund-review powers.');
     wp_set_current_user($admin); $unchecked=$cancel_review; $unchecked['terms_reviewed']=false;
     $check($call('POST','resource-bookings/'.$first['booking_id'].'/cancel-review',$unchecked)->get_status()===422,'Agency cannot bypass explicit review of the accepted cancellation terms.');
+    $failure=$transaction_fault('START TRANSACTION','resource-bookings/'.$first['booking_id'].'/cancel-review',$cancel_review);
+    $check($failure->get_status()===503 && $mapping($first['booking_id'])['state']==='consumed',
+        'A failed cancellation-review transaction preserves the paid room allocation.');
     Atlas\Core\DB::set_test_audit_failure(true); $cancel_failed=$call('POST','resource-bookings/'.$first['booking_id'].'/cancel-review',$cancel_review); Atlas\Core\DB::set_test_audit_failure(false);
     $check($cancel_failed->get_status()===503 && $mapping($first['booking_id'])['state']==='consumed' && $wpdb->get_var($wpdb->prepare('SELECT status FROM '.Atlas\Core\DB::table('bookings').' WHERE id=%s',$first['booking_id']))==='confirmed','Cancellation audit failure rolls back Core status and additional allocation changes together.');
     $check(array_map('intval',$wpdb->get_col($wpdb->prepare('SELECT allocated FROM '.$wpdb->prefix.'atlas_local_nights WHERE resource_id=%s AND local_date>=%s AND local_date<%s ORDER BY local_date',$resources[0],$dates['check_in'],$dates['check_out'])))===array(2,2,2),'Failed cancellation restores every room night, including quantities shared with another customer.');
@@ -105,6 +123,8 @@ try {
     $check(is_string($summary) && strlen($summary)<=190 && preg_match('//u',$summary)===1 && str_starts_with($summary,$cancel_review['evidence_reference']),'A bounded audit summary preserves a long Persian review and evidence reference without splitting characters.');
     $check($wpdb->get_var($wpdb->prepare('SELECT status FROM '.Atlas\Core\DB::table('bookings').' WHERE id=%s',$first['booking_id']))==='canceled' && $mapping($first['booking_id'])['state']==='released','Core cancellation and dated resource release commit together.');
     $check(array_map('intval',$wpdb->get_col($wpdb->prepare('SELECT allocated FROM '.$wpdb->prefix.'atlas_local_nights WHERE resource_id=%s AND local_date>=%s AND local_date<%s ORDER BY local_date',$resources[0],$dates['check_in'],$dates['check_out'])))===array(1,1,1),'Cancellation releases exactly this room, preserving the other customer allocation on all nights.');
+    $check($transaction_fault('COMMIT','resource-bookings/'.$first['booking_id'].'/cancel-review',$cancel_review)->get_status()===503,
+        'A cancellation replay reports a failed transaction completion.');
     $check($call('POST','resource-bookings/'.$first['booking_id'].'/cancel-review',$cancel_review)->get_data()===$canceled->get_data(),'An exact agency decision retry is idempotent after Core booking cancellation.');
     $check($call('POST','resource-bookings/'.$first['booking_id'].'/cancel-review',array_reverse($cancel_review,true))->get_data()===$canceled->get_data(),'Semantically identical review retries remain idempotent when JSON field order changes.');
     $changed=$cancel_review; $changed['reason']='Fictional changed review.'; $check($call('POST','resource-bookings/'.$first['booking_id'].'/cancel-review',$changed)->get_status()===409,'A changed decision cannot replay an already approved cancellation.');

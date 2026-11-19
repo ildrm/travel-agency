@@ -82,9 +82,36 @@ $check($mine->get_status()===200 && !$mine->get_data()['items'] && rest_do_reque
 wp_set_current_user($admin);$queueReq=$request('GET','/agency/v1/support-cases');$queueReq->set_param('scope','queue');$queue=rest_do_request($queueReq);
 $check($queue->get_status()===200 && $queue->get_headers()['Cache-Control']==='private, no-store' && count($queue->get_data()['items'])<=20,'authorized agency queue has bounded private pages');
 $oldBeat=get_option('atlas_core_worker_heartbeat',null);
-$heartbeat=Jobs::run();
+// Failed releases must reach operations and cannot block later valid holds.
+$holdTable=DB::table('holds');
+$oldResume=get_option('atlas_core_expiry_resume',null);
+delete_option('atlas_core_expiry_resume');
+$orphans=[];
+try {
+    for ($i=0; $i<25; ++$i) {
+        $id=wp_generate_uuid4();
+        $ok=$wpdb->insert($holdTable,[
+            'id'=>$id,'booking_id'=>wp_generate_uuid4(),'offer_id'=>0,'user_id'=>$customer,
+            'quantity'=>1,'accepted_at'=>'2000-01-01 00:00:00.000000',
+            'expires_at'=>'2000-01-01 00:10:00.000000','state'=>'active',
+        ]);
+        if ($ok!==1) WP_CLI::error('Could not prepare the isolated worker recovery fixture.');
+        $orphans[]=$id;
+    }
+    $first=Jobs::run();
+    $heartbeat=Jobs::run();
+    $state=$wpdb->get_var($wpdb->prepare("SELECT state FROM $holdTable WHERE id=%s",$hold['hold_id']));
+    $check(is_array($first) && $first['errors']===25 && $first['due_holds']===0
+        && is_array($heartbeat) && $heartbeat['due_holds']>=1 && $state==='released',
+        'worker reports a full batch of release failures and progresses to later healthy holds');
+} finally {
+    foreach ($orphans as $id) $wpdb->delete($holdTable,['id'=>$id]);
+    if ($oldResume===null) delete_option('atlas_core_expiry_resume');
+    else update_option('atlas_core_expiry_resume',$oldResume,false);
+}
+
 $health=rest_do_request($request('GET','/agency/v1/operations-health'));
-$check($health->get_status()===200 && $health->get_data()['scheduler_heartbeat_utc']===$heartbeat['finished_at'] && $health->get_headers()['Cache-Control']==='private, no-store' && !str_contains(wp_json_encode($health->get_data()),$late['booking_id']),'worker heartbeat and backlog measurements are scoped aggregates without booking identifiers');
+$check($health->get_status()===200 && $health->get_data()['scheduler_heartbeat_utc']===$heartbeat['finished_at'] && $health->get_data()['last_worker_errors']===$heartbeat['errors'] && $health->get_headers()['Cache-Control']==='private, no-store' && !str_contains(wp_json_encode($health->get_data()),$late['booking_id']),'worker heartbeat and backlog measurements are scoped aggregates without booking identifiers');
 if ($oldBeat===null) delete_option('atlas_core_worker_heartbeat'); else update_option('atlas_core_worker_heartbeat',$oldBeat,false);
 wp_set_current_user($other);
 $check(rest_do_request($request('GET','/agency/v1/operations-health'))->get_status()===403,'customer cannot inspect worker and settlement readiness signals');

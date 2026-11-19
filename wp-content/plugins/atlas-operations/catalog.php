@@ -8,7 +8,11 @@ use Atlas\Core\Offers;
 /** Progressive catalog: real GET filters work without JavaScript. */
 final class Atlas_Catalog_UI {
     private const PARAMS=['q','kind','destination','start_from','start_to','min_price_irr','max_price_irr','price_unit','language','accessibility','duration_min','duration_max','availability','sort','page','limit'];
-    private static function lang() { return isset($_GET['lang'])&&$_GET['lang']==='fa'?'fa':'en'; }
+    private static function lang() {
+        $requested=$_GET['lang']??null;
+        if (in_array($requested,['en','fa'],true)) return $requested;
+        return str_starts_with(determine_locale(),'fa')?'fa':'en';
+    }
     private static function t($en,$fa) { return self::lang()==='fa'?$fa:$en; }
     public static function register() {
         add_shortcode('atlas_catalog',[__CLASS__,'render']);
@@ -19,8 +23,8 @@ final class Atlas_Catalog_UI {
         add_action('rest_api_init',[__CLASS__,'routes']);
     }
     private static function assets() {
-        wp_enqueue_style('atlas-catalog',plugins_url('assets/catalog.css',__FILE__),[],'0.1.0');
-        wp_enqueue_script('atlas-catalog',plugins_url('assets/catalog.js',__FILE__),[],'0.1.0',true);
+        wp_enqueue_style('atlas-catalog',plugins_url('assets/catalog.css',__FILE__),[],ATLAS_CORE_VERSION.'-'.filemtime(__DIR__.'/assets/catalog.css'));
+        wp_enqueue_script('atlas-catalog',plugins_url('assets/catalog.js',__FILE__),[],ATLAS_CORE_VERSION.'-'.filemtime(__DIR__.'/assets/catalog.js'),true);
     }
     private static function labels() {
         return [
@@ -28,7 +32,7 @@ final class Atlas_Catalog_UI {
             'step_free'=>self::t('Step-free access','دسترسی بدون پله'),'accessible_toilet'=>self::t('Accessible toilet','سرویس بهداشتی مناسب‌سازی‌شده'),'hearing_support'=>self::t('Hearing support','پشتیبانی شنوایی'),'visual_support'=>self::t('Visual support','پشتیبانی بینایی'),'low_mobility'=>self::t('Reduced-mobility provision','امکانات برای تحرک محدود'),'sign_language'=>self::t('Sign language','زبان اشاره'),
             'open'=>self::t('Registration open','ثبت‌نام باز است'),'not_open'=>self::t('Registration not yet open','ثبت‌نام هنوز آغاز نشده'),'closed'=>self::t('Registration closed','ثبت‌نام بسته است'),'sold_out'=>self::t('No unallocated places','ظرفیت آزاد موجود نیست'),'on_request'=>self::t('Request only; availability unconfirmed','فقط درخواست؛ موجودی تأیید نشده'),'unavailable'=>self::t('Unavailable','در دسترس نیست'),'dates_required'=>self::t('Select dates to check availability','برای بررسی موجودی، تاریخ را انتخاب کنید'),
             'per_person'=>self::t('per person','برای هر نفر'),'per_group'=>self::t('per group','برای هر گروه'),'per_night'=>self::t('per night','برای هر شب'),'per_day'=>self::t('per started 24-hour period','برای هر بازهٔ ۲۴ ساعتهٔ آغازشده'),'per_item'=>self::t('per item','برای هر مورد'),
-            'newest'=>self::t('Newest','جدیدترین'),'date'=>self::t('Service date','تاریخ خدمت'),'price_asc'=>self::t('Price within each unit, low to high','قیمت در هر واحد، کم به زیاد'),'price_desc'=>self::t('Price within each unit, high to low','قیمت در هر واحد، زیاد به کم'),'title'=>self::t('Title','عنوان'),
+            'featured'=>self::t('Featured first','پیشنهادهای منتخب'),'newest'=>self::t('Newest','جدیدترین'),'date'=>self::t('Service date','تاریخ خدمت'),'price_asc'=>self::t('Price within each unit, low to high','قیمت در هر واحد، کم به زیاد'),'price_desc'=>self::t('Price within each unit, high to low','قیمت در هر واحد، زیاد به کم'),'title'=>self::t('Title','عنوان'),
             'recorded'=>self::t('Review recorded','بازبینی ثبت شده'),'unreviewed'=>self::t('Review date not recorded','تاریخ بازبینی ثبت نشده'),'overdue'=>self::t('Review overdue; confirm details','مهلت بازبینی گذشته؛ جزئیات را بررسی کنید')
         ];
     }
@@ -37,7 +41,11 @@ final class Atlas_Catalog_UI {
         return add_query_arg(array_merge($args,$extra),home_url('/')).'#atlas-offers';
     }
     private static function raw($attributes=[]) {
-        $raw=['locale'=>self::lang()];foreach (self::PARAMS as $key) if (isset($_GET['cat_'.$key])) $raw[$key]=wp_unslash($_GET['cat_'.$key]);
+        $raw=['locale'=>self::lang(),'limit'=>6,'sort'=>'featured'];foreach (self::PARAMS as $key) if (isset($_GET['cat_'.$key])) $raw[$key]=wp_unslash($_GET['cat_'.$key]);
+        foreach (['min_price_irr','max_price_irr','duration_min','duration_max'] as $key) {
+            $value=$raw[$key]??'';
+            if (is_string($value)&&preg_match('/^[0-9۰-۹٠-٩]+$/uD',$value)) $raw[$key]=ltrim(Catalog::normalize($value),'0')?:'0';
+        }
         if (!isset($raw['kind'])&&!empty($attributes['kind'])) $raw['kind']=$attributes['kind'];return $raw;
     }
     private static function input($name,$label,$value,$type='text',$attrs='') {
@@ -53,7 +61,9 @@ final class Atlas_Catalog_UI {
     }
     private static function price($item) {
         if ($item['price']['amount_irr']===null) return self::t('Request a quote; no confirmed rate','درخواست قیمت؛ نرخ تأییدشده ندارد');
-        $amount=preg_replace('/\B(?=(\d{3})+(?!\d))/',',',$item['price']['amount_irr']);return $amount.' IRR · '.(self::labels()[$item['price']['unit']]??$item['price']['unit']);
+        $prefix=($item['price']['from']??false)===true?self::t('From ','از '):'';
+        $amount=preg_replace('/\B(?=(\d{3})+(?!\d))/',',',$item['price']['amount_irr']);
+        return $prefix.$amount.' IRR · '.(self::labels()[$item['price']['unit']]??$item['price']['unit']);
     }
     private static function date_text($item) {
         $m=$item['catalog'];if (empty($m['starts_at'])) return self::t('Service date not specified','تاریخ خدمت مشخص نشده');
@@ -63,42 +73,103 @@ final class Atlas_Catalog_UI {
         $names=[];foreach ($item['catalog']['destinations']??[] as $p) $names[]=$p['name_'.self::lang()]?:($p['name_en']?:$p['name_fa']);return implode(' · ',$names);
     }
     public static function render($attributes=[]) {
-        self::assets();$raw=self::raw($attributes);$result=Catalog::search($raw);$safe=Catalog::filters($raw);$f=$safe;
+        self::assets();$raw=self::raw($attributes);$result=Catalog::search($raw);$safe=is_wp_error($result)?Catalog::filters($raw):$result['filters'];$f=$safe;
         if (is_wp_error($safe)) { $f=Catalog::filters(['locale'=>self::lang()]);foreach (self::PARAMS as $key) if (isset($raw[$key])&&is_scalar($raw[$key])) $f[$key]=sanitize_text_field((string)$raw[$key]);$access=$raw['accessibility']??[];if (is_string($access)) $access=explode(',',$access);$f['accessibility']=is_array($access)?array_values(array_filter($access,static fn($value)=>is_string($value)&&in_array($value,Catalog::ACCESSIBILITY,true))):[]; }
         $compare=self::compare_ids();
-        $html='<section class="atlas-catalog" data-atlas-catalog><form method="get" action="'.esc_url(home_url('/')).'" data-catalog-filter><input type="hidden" name="lang" value="'.esc_attr(self::lang()).'"><input type="hidden" name="cat_page" value="1">';
+        $compareArgs=$compare?['cat_compare'=>implode(',',$compare)]:[];
+        $clearFilters=self::url([],$compareArgs);
+        $html='<section class="atlas-catalog" data-atlas-catalog><form method="get" action="'.esc_url(home_url('/').'#atlas-offers').'" data-catalog-filter><input type="hidden" name="lang" value="'.esc_attr(self::lang()).'"><input type="hidden" name="cat_page" value="1">';
         if ($compare) $html.='<input type="hidden" name="cat_compare" value="'.esc_attr(implode(',',$compare)).'">';
+        if (isset($_GET['cat_limit'])&&!is_wp_error($safe)) $html.='<input type="hidden" name="cat_limit" value="'.esc_attr($safe['limit']).'">';
         $html.='<div class="atlas-catalog-filters">'.self::input('q',self::t('Search offers','جست‌وجوی پیشنهادها'),$f['q']??'','search','maxlength="190"').self::input('destination',self::t('Destination name or ID','نام یا شناسه مقصد'),$f['destination']??'','text','maxlength="100"');
-        $html.=self::select('kind',self::t('Offering type','نوع پیشنهاد'),Catalog::KINDS,$f['kind']??'').self::select('language',self::t('Service language','زبان ارائه خدمت'),Catalog::LANGUAGES,$f['language']??'');
+        $html.=self::select('kind',self::t('Offering type','نوع پیشنهاد'),Catalog::KINDS,$f['kind']??'').'</div>';
+        $advanced=['language','start_from','start_to','min_price_irr','max_price_irr','price_unit','duration_min','duration_max','availability','accessibility','sort'];
+        $open=is_wp_error($safe);
+        foreach ($advanced as $key) {
+            if (isset($raw[$key]) && $raw[$key]!=='' && $raw[$key]!==[] && !($key==='sort' && $raw[$key]==='featured')) $open=true;
+        }
+        $html.='<details class="atlas-refine"'.($open?' open':'').'><summary>'.esc_html(self::t('More filters','فیلترهای بیشتر')).'</summary><div class="atlas-catalog-filters">';
+        $html.=self::select('language',self::t('Service language','زبان ارائه خدمت'),Catalog::LANGUAGES,$f['language']??'');
         $html.=self::input('start_from',self::t('From date (UTC)','از تاریخ (UTC)'),$f['start_from']??'','date').self::input('start_to',self::t('Through date (UTC)','تا پایان تاریخ (UTC)'),$f['start_to']??'','date');
-        $html.=self::input('min_price_irr',self::t('Minimum IRR price','حداقل قیمت به ریال'),$f['min_price_irr']??'','text','inputmode="numeric" pattern="[0-9]+"').self::input('max_price_irr',self::t('Maximum IRR price','حداکثر قیمت به ریال'),$f['max_price_irr']??'','text','inputmode="numeric" pattern="[0-9]+"');
+        $numeric='inputmode="numeric" pattern="[0-9۰-۹٠-٩]+"';
+        $html.=self::input('min_price_irr',self::t('Minimum IRR price','حداقل قیمت به ریال'),$f['min_price_irr']??'','text',$numeric.' maxlength="19"').self::input('max_price_irr',self::t('Maximum IRR price','حداکثر قیمت به ریال'),$f['max_price_irr']??'','text',$numeric.' maxlength="19"');
         $html.=self::select('price_unit',self::t('Price unit','واحد قیمت'),Catalog::UNITS,$f['price_unit']??'');
-        $html.=self::input('duration_min',self::t('Minimum duration (minutes)','حداقل مدت (دقیقه)'),$f['duration_min']??'','number','min="0" max="5256000"').self::input('duration_max',self::t('Maximum duration (minutes)','حداکثر مدت (دقیقه)'),$f['duration_max']??'','number','min="0" max="5256000"');
-        $html.=self::select('availability',self::t('Availability','وضعیت ثبت‌نام'),['open','not_open','closed','sold_out','on_request'],$f['availability']??'').self::select('sort',self::t('Sort','مرتب‌سازی'),['newest','date','price_asc','price_desc','title'],$f['sort']??'newest',false).'</div><fieldset><legend>'.esc_html(self::t('Declared accessibility features — read the offer notes','امکانات دسترس‌پذیری اعلام‌شده — توضیحات پیشنهاد را بخوانید')).'</legend>';
+        $html.=self::input('duration_min',self::t('Minimum duration (minutes)','حداقل مدت (دقیقه)'),$f['duration_min']??'','text',$numeric.' maxlength="7"').self::input('duration_max',self::t('Maximum duration (minutes)','حداکثر مدت (دقیقه)'),$f['duration_max']??'','text',$numeric.' maxlength="7"');
+        $html.=self::select('availability',self::t('Availability','وضعیت ثبت‌نام'),['open','not_open','closed','sold_out','on_request'],$f['availability']??'').self::select('sort',self::t('Sort','مرتب‌سازی'),['featured','newest','date','price_asc','price_desc','title'],$f['sort']??'newest',false).'</div><fieldset><legend>'.esc_html(self::t('Declared accessibility features — read the offer notes','امکانات دسترس‌پذیری اعلام‌شده — توضیحات پیشنهاد را بخوانید')).'</legend>';
         $chosen=is_array($f['accessibility']??null)?$f['accessibility']:explode(',',is_string($f['accessibility']??null)?$f['accessibility']:'');foreach (Catalog::ACCESSIBILITY as $value) $html.='<label class="atlas-catalog-check"><input type="checkbox" name="cat_accessibility[]" value="'.esc_attr($value).'"'.checked(in_array($value,$chosen,true),true,false).'>'.esc_html(self::labels()[$value]).'</label>';
-        $html.='</fieldset><button type="submit">'.esc_html(self::t('Apply filters','اعمال فیلترها')).'</button> <a href="'.esc_url(self::url([])).'">'.esc_html(self::t('Clear all filters','حذف همه فیلترها')).'</a><p role="status" aria-live="polite" data-catalog-loading data-loading-text="'.esc_attr(self::t('Loading matching offers…','در حال دریافت پیشنهادهای مطابق…')).'"></p></form><p>'.esc_html(self::t('Date filters use UTC days; offer times show their named zone. Prices are integer IRR with the stated unit; quote requests have no confirmed rate. Availability is checked again when you reserve.','فیلتر تاریخ بر اساس روز UTC است؛ زمان پیشنهاد با منطقه زمانی آن نمایش داده می‌شود. قیمت‌ها ریال صحیح با واحد مشخص‌اند؛ درخواست قیمت نرخ قطعی ندارد. موجودی هنگام رزرو دوباره بررسی می‌شود.')).'</p>';
-        if (is_wp_error($result)) return $html.'<p role="alert">'.esc_html($result->get_error_message()).'</p><a href="'.esc_url(self::url($f)).'">'.esc_html(self::t('Retry with these filters','تلاش مجدد با همین فیلترها')).'</a></section>';
+        $html.='</fieldset></details><button type="submit">'.esc_html(self::t('Apply filters','اعمال فیلترها')).'</button> <a href="'.esc_url($clearFilters).'">'.esc_html(self::t('Clear all filters','حذف همه فیلترها')).'</a><p role="status" data-catalog-loading data-loading-text="'.esc_attr(self::t('Loading matching offers…','در حال دریافت پیشنهادهای مطابق…')).'"></p></form>';
+        if (is_wp_error($result)) {
+            $html.='<div class="atlas-catalog-notice"><p role="alert" tabindex="-1" data-catalog-result-focus>';
+            if (is_wp_error($safe)) {
+                $html.=esc_html(self::t('Some filters could not be applied. Check the search terms, dates and ranges, then apply the filters again.','بعضی از فیلترها اعمال نشدند. عبارت جست‌وجو، تاریخ‌ها و بازه‌ها را بررسی کنید و دوباره فیلترها را اعمال کنید.')).'</p>';
+                if (self::lang()==='en') $html.='<p>'.esc_html($safe->get_error_message()).'</p>';
+            } else {
+                $html.=esc_html(self::t('The catalog is temporarily unavailable. Your filters are still selected.','فهرست موقتاً در دسترس نیست. فیلترهای شما همچنان انتخاب شده‌اند.')).'</p><a href="'.esc_url(self::url($f,$compareArgs)).'">'.esc_html(self::t('Try again','تلاش مجدد')).'</a>';
+            }
+            return $html.'</div></section>';
+        }
+        $html.='<p class="atlas-catalog-hint">'.esc_html(self::t('Service-date filters use UTC days. Price filters use the listed rate in rials (IRR). Choose dates on the offer to see the exact stay or rental quote.','فیلتر تاریخ خدمت بر اساس روز UTC است. فیلتر قیمت بر اساس نرخ درج‌شده به ریال (IRR) است. برای دیدن قیمت دقیق اقامت یا اجاره، تاریخ‌ها را در صفحهٔ پیشنهاد انتخاب کنید.')).'</p>';
         $chipNames=['q'=>self::t('Search','جست‌وجو'),'kind'=>self::t('Type','نوع'),'destination'=>self::t('Destination','مقصد'),'start_from'=>self::t('From','از'),'start_to'=>self::t('Through','تا'),'min_price_irr'=>self::t('Minimum IRR','حداقل ریال'),'max_price_irr'=>self::t('Maximum IRR','حداکثر ریال'),'price_unit'=>self::t('Price unit','واحد قیمت'),'language'=>self::t('Language','زبان'),'accessibility'=>self::t('Accessibility','دسترس‌پذیری'),'duration_min'=>self::t('Minimum minutes','حداقل دقیقه'),'duration_max'=>self::t('Maximum minutes','حداکثر دقیقه'),'availability'=>self::t('Registration','ثبت‌نام')];
-        $html.='<nav aria-label="'.esc_attr(self::t('Applied filters','فیلترهای اعمال‌شده')).'" class="atlas-catalog-chips">';foreach ($f as $key=>$value) if (in_array($key,self::PARAMS,true)&&!in_array($key,['page','limit','sort'],true)&&$value!==''&&$value!==null&&$value!==[]) { $remove=$f;unset($remove[$key]);$remove['page']=1;$values=is_array($value)?$value:[$value];$display=implode(', ',array_map(static fn($v)=>self::labels()[$v]??(string)$v,$values));$label=($chipNames[$key]??'').': '.$display;$html.='<a href="'.esc_url(self::url($remove)).'">'.esc_html($label).' ×</a>'; }$html.='</nav><p role="status">'.esc_html(sprintf(self::t('%d matching offers; page %d','%d پیشنهاد مطابق؛ صفحه %d'),$result['total'],$result['page'])).'</p>';
-        if (!$result['items']) $html.='<p>'.esc_html(self::t('No offers match these filters. Change a filter or clear all to try again.','پیشنهادی با این فیلترها یافت نشد. فیلترها را تغییر دهید یا حذف کنید.')).'</p>';
+        $chips='';
+        foreach ($chipNames as $key=>$name) {
+            $value=$f[$key]??null;
+            if ($value===''||$value===null||$value===[]) continue;
+            $remove=$f; unset($remove[$key]); $remove['page']=1;
+            $values=is_array($value)?$value:[$value];
+            $display=implode(', ',array_map(static fn($v)=>self::labels()[$v]??(string)$v,$values));
+            $label=$name.': '.$display;
+            $chips.='<a aria-label="'.esc_attr(sprintf(self::t('Remove filter: %s','حذف فیلتر: %s'),$label)).'" href="'.esc_url(self::url($remove,$compareArgs)).'"><bdi>'.esc_html($label).'</bdi> <span aria-hidden="true">×</span></a>';
+        }
+        if ($chips!=='') $html.='<nav aria-label="'.esc_attr(self::t('Applied filters','فیلترهای اعمال‌شده')).'" class="atlas-catalog-chips">'.$chips.'</nav>';
+        $html.='<p class="atlas-catalog-result-summary" role="status" tabindex="-1" data-catalog-result-focus>';
+        if (!$result['total']) {
+            $html.=esc_html(self::t('No offers match these filters. Change a filter or clear all to try again.','پیشنهادی با این فیلترها یافت نشد. فیلترها را تغییر دهید یا حذف کنید.')).'</p><p><a href="'.esc_url($clearFilters).'">'.esc_html(self::t('Show all offers','نمایش همهٔ پیشنهادها')).'</a></p>';
+        } elseif ($result['page']>$result['total_pages']) {
+            $html.=esc_html(self::t('This page of offers is no longer available.','این صفحه از پیشنهادها دیگر در دسترس نیست.')).'</p><p><a href="'.esc_url(self::url(array_merge($f,['page'=>1]),$compareArgs)).'">'.esc_html(self::t('Go to the first page of matching offers','رفتن به صفحهٔ اول پیشنهادهای مطابق')).'</a></p>';
+        } else {
+            $html.=esc_html(sprintf(self::t('%d matching offers, page %d of %d','%d پیشنهاد مطابق، صفحهٔ %d از %d'),$result['total'],$result['page'],$result['total_pages'])).'</p>';
+        }
+        if ($compare) $html.=self::comparison($compare,$f);
+        if (!$result['items']) return $html.'</section>';
         $html.='<div class="atlas-offer-list">';foreach ($result['items'] as $item) {
             $selected=in_array($item['id'],$compare,true);$next=$selected?array_values(array_diff($compare,[$item['id']])):array_merge($compare,[$item['id']]);
-            $html.='<article data-catalog-offer="'.esc_attr($item['id']).'"><h3><a href="'.esc_url($item['url']).'">'.esc_html($item['title']).'</a></h3><p>'.esc_html(self::places($item)).'</p><p><bdi>'.esc_html(self::price($item)).'</bdi></p><p>'.esc_html(self::date_text($item)).'</p><p>'.esc_html(self::labels()[$item['availability']['status']]).'</p>';
-            if ($item['translation_fallback']) $html.='<p>'.esc_html(self::t('Translation unavailable; showing ','ترجمه موجود نیست؛ زبان نمایش: ').strtoupper($item['content_locale'])).'</p>';
+            $html.='<article data-catalog-offer="'.esc_attr($item['id']).'"><h3><a lang="'.esc_attr($item['content_locale']).'" href="'.esc_url($item['url']).'"><bdi>'.esc_html($item['title']).'</bdi></a></h3>';
+            $places=self::places($item);
+            if ($places!=='') $html.='<p>'.esc_html($places).'</p>';
+            $html.='<p><bdi>'.esc_html(self::price($item)).'</bdi></p><p><bdi>'.esc_html(self::date_text($item)).'</bdi></p><p>'.esc_html(self::labels()[$item['availability']['status']]).'</p>';
+            if ($item['content_locale']!==self::lang()) $html.='<p>'.esc_html(self::t('Offer title is shown in Persian.','عنوان پیشنهاد به انگلیسی نمایش داده می‌شود.')).'</p>';
             if ($item['information_review']['status']==='overdue') $html.='<p>'.esc_html(self::t('Information review overdue; confirm details with the agency.','مهلت بازبینی اطلاعات گذشته است؛ جزئیات را با آژانس بررسی کنید.')).'</p>';
             elseif ($item['information_review']['status']==='unreviewed') $html.='<p>'.esc_html(self::t('Information review date not recorded.','تاریخ بازبینی اطلاعات ثبت نشده است.')).'</p>';
-            if (count($next)<=4) $html.='<a data-catalog-compare="'.esc_attr($item['id']).'" href="'.esc_url(self::url($f,['cat_compare'=>implode(',',$next)])).'">'.esc_html($selected?self::t('Remove from comparison','حذف از مقایسه'):self::t('Add to comparison','افزودن به مقایسه')).'</a>';
+            if (count($next)<=4) {
+                $action=$selected?self::t('Remove from comparison','حذف از مقایسه'):self::t('Add to comparison','افزودن به مقایسه');
+                $html.='<a class="atlas-catalog-compare-link" data-catalog-compare="'.esc_attr($item['id']).'" href="'.esc_url(self::url($f,$next?['cat_compare'=>implode(',',$next)]:[])).'">'.esc_html($action).' <span class="atlas-catalog-sr-only" lang="'.esc_attr($item['content_locale']).'">'.esc_html($item['title']).'</span></a>';
+            }
             else $html.='<p>'.esc_html(self::t('Compare up to four offers; remove one first.','حداکثر چهار پیشنهاد را مقایسه کنید؛ ابتدا یکی را حذف کنید.')).'</p>';
             $html.='</article>';
-        }$html.='</div><nav aria-label="'.esc_attr(self::t('Catalog pages','صفحات فهرست')).'">';$extra=$compare?['cat_compare'=>implode(',',$compare)]:[];
-        if ($result['page']>1) $html.='<a data-catalog-prev href="'.esc_url(self::url(array_merge($f,['page'=>$result['page']-1]),$extra)).'">'.esc_html(self::t('Previous page','صفحه قبل')).'</a> ';
-        if ($result['page']<$result['total_pages']) $html.='<a data-catalog-next href="'.esc_url(self::url(array_merge($f,['page'=>$result['page']+1]),$extra)).'">'.esc_html(self::t('Next page','صفحه بعد')).'</a>';$html.='</nav>';
-        if ($compare) $html.=self::comparison($compare);return $html.'</section>';
+        }
+        $html.='</div>';
+        if ($result['total_pages']>1) {
+            $html.='<nav class="atlas-catalog-pagination" aria-label="'.esc_attr(self::t('Catalog pages','صفحات فهرست')).'">';
+            if ($result['page']>1) $html.='<a data-catalog-prev href="'.esc_url(self::url(array_merge($f,['page'=>$result['page']-1]),$compareArgs)).'">'.esc_html(self::t('Previous page','صفحه قبل')).'</a>';
+            if ($result['page']<$result['total_pages']) $html.='<a data-catalog-next href="'.esc_url(self::url(array_merge($f,['page'=>$result['page']+1]),$compareArgs)).'">'.esc_html(self::t('Next page','صفحه بعد')).'</a>';
+            $html.='</nav>';
+        }
+        return $html.'</section>';
     }
-    private static function comparison(array $ids) {
-        $result=Catalog::compare($ids,self::lang());if (is_wp_error($result)) return '<p role="alert">'.esc_html($result->get_error_message()).'</p>';
-        $html='<section data-atlas-comparison><h3>'.esc_html(self::t('Compare offers','مقایسه پیشنهادها')).'</h3><p>'.esc_html(self::t('Compare each price unit and its terms. Different units are not equivalent; request-only items have no confirmed rate.','واحد قیمت و شرایط هر پیشنهاد را بررسی کنید. واحدهای متفاوت معادل نیستند؛ موارد درخواستی نرخ قطعی ندارند.')).'</p><div class="atlas-catalog-table"><table><caption>'.esc_html(self::t('Public offer comparison','مقایسه اطلاعات عمومی پیشنهادها')).'</caption><thead><tr><th>'.esc_html(self::t('Attribute','ویژگی')).'</th>';
-        foreach ($result['items'] as $item) $html.='<th scope="col"><a href="'.esc_url($item['url']).'">'.esc_html($item['title']).'</a></th>';$html.='</tr></thead><tbody>';
+    private static function comparison(array $ids,array $filters) {
+        $result=Catalog::compare($ids,self::lang());
+        $clear='<a href="'.esc_url(self::url($filters)).'">'.esc_html(self::t('Clear comparison','پاک کردن مقایسه')).'</a>';
+        $html='<section class="atlas-catalog-comparison" data-atlas-comparison><h3>'.esc_html(self::t('Compare offers','مقایسه پیشنهادها')).'</h3>';
+        if (is_wp_error($result)) {
+            return $html.'<p role="alert">'.esc_html(self::t('A selected offer is unavailable. Clear the comparison and choose from the current offers.','یکی از پیشنهادهای انتخاب‌شده در دسترس نیست. مقایسه را پاک کنید و از پیشنهادهای فعلی انتخاب کنید.')).'</p>'.$clear.'</section>';
+        }
+        $html.='<p>'.esc_html(self::t('Compare each price unit and its terms. Request-only offers have no confirmed rate.','واحد قیمت و شرایط هر پیشنهاد را بررسی کنید. پیشنهادهای درخواستی نرخ قطعی ندارند.')).'</p><p>'.$clear.'</p><div class="atlas-catalog-table" role="region" aria-label="'.esc_attr(self::t('Offer comparison table','جدول مقایسهٔ پیشنهادها')).'" tabindex="0"><table><caption>'.esc_html(self::t('Public offer comparison','مقایسه اطلاعات عمومی پیشنهادها')).'</caption><thead><tr><th scope="col">'.esc_html(self::t('Attribute','ویژگی')).'</th>';
+        foreach ($result['items'] as $item) {
+            $remaining=array_values(array_diff($ids,[$item['id']]));
+            $removeUrl=self::url($filters,$remaining?['cat_compare'=>implode(',',$remaining)]:[]);
+            $html.='<th scope="col"><a lang="'.esc_attr($item['content_locale']).'" href="'.esc_url($item['url']).'"><bdi>'.esc_html($item['title']).'</bdi></a><br><a class="atlas-catalog-compare-link" href="'.esc_url($removeUrl).'">'.esc_html(self::t('Remove','حذف')).' <span class="atlas-catalog-sr-only" lang="'.esc_attr($item['content_locale']).'">'.esc_html($item['title']).'</span></a></th>';
+        }
+        $html.='</tr></thead><tbody>';
         $rows=['destination'=>self::t('Destination','مقصد'),'price'=>self::t('Price and unit','قیمت و واحد'),'date'=>self::t('Service time and zone','زمان خدمت و منطقه زمانی'),'availability'=>self::t('Registration','ثبت‌نام'),'language'=>self::t('Languages','زبان‌ها'),'accessibility'=>self::t('Declared accessibility','دسترس‌پذیری اعلام‌شده'),'inclusions'=>self::t('Inclusions','خدمات شامل'),'exclusions'=>self::t('Exclusions','خدمات خارج'),'terms'=>self::t('Terms','شرایط'),'review'=>self::t('Information review','بازبینی اطلاعات')];
         foreach ($rows as $key=>$label) { $html.='<tr><th scope="row">'.esc_html($label).'</th>';foreach ($result['items'] as $item) { $m=$item['catalog'];switch ($key) {case 'destination':$value=self::places($item);break;case 'price':$value=self::price($item);break;case 'date':$value=self::date_text($item);break;case 'availability':$value=self::labels()[$item['availability']['status']];break;case 'language':$value=implode(', ',$m['languages']??[]);break;case 'accessibility':$value=$m['accessibility_note_'.self::lang()]??'';break;case 'review':$value=(self::labels()[$item['information_review']['status']]??'').' · '.($m['reviewed_at']??'');break;default:$value=$m[$key.'_'.self::lang()]??'';}$html.='<td>'.nl2br(esc_html($value!==''?$value:self::t('Not specified','مشخص نشده'))).'</td>'; }$html.='</tr>'; }
         return $html.'</tbody></table></div></section>';

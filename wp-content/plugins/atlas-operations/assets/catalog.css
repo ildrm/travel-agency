@@ -1,1 +1,75 @@
 .atlas-catalog-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr));gap:1rem}.atlas-catalog label,.atlas-catalog-editor label{display:block}.atlas-catalog input,.atlas-catalog select,.atlas-catalog-editor input,.atlas-catalog-editor textarea,.atlas-catalog-editor select{max-width:100%;width:100%;box-sizing:border-box}.atlas-catalog fieldset,.atlas-catalog-editor fieldset{margin-block:1rem;padding:1rem}.atlas-catalog-check{display:inline-flex!important;gap:.4rem;align-items:center;margin-inline-end:1rem}.atlas-catalog-check input{width:auto}.atlas-catalog-chips{display:flex;flex-wrap:wrap;gap:.7rem;margin-block:1rem}.atlas-catalog-chips a{border:1px solid currentColor;border-radius:1rem;padding:.3rem .7rem}.atlas-catalog-table{overflow:auto;max-width:100%}.atlas-catalog-table table{border-collapse:collapse;min-width:36rem}.atlas-catalog-table th,.atlas-catalog-table td{border:1px solid #abb8b2;padding:.75rem;text-align:start;vertical-align:top}.atlas-catalog-editor [data-destination-row]{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,11rem),1fr));gap:.75rem;padding-block:1rem;border-block-end:1px solid #abb8b2}.atlas-catalog a:focus-visible,.atlas-catalog button:focus-visible,.atlas-catalog-editor button:focus-visible{outline:3px solid currentColor;outline-offset:4px}
+
+.atlas-catalog form[data-catalog-filter] {
+    padding: clamp(1rem, 2vw, 1.75rem);
+    border: 1px solid #c8d9d7;
+    border-radius: .75rem;
+    background: #fff;
+}
+.atlas-catalog-filters label { font-weight: 600; min-width: 0; }
+.atlas-catalog-filters :is(input, select) {
+    display: block;
+    margin-block-start: .3rem;
+    padding: .55rem .65rem;
+    min-height: 2.75rem;
+    border: 1px solid #688184;
+    border-radius: .3rem;
+    background: #fff;
+    color: #132638;
+}
+.atlas-refine { margin-block: 1rem; border-block: 1px solid #dae4e3; }
+.atlas-refine summary { padding-block: .7rem; cursor: pointer; font-weight: 650; }
+.atlas-refine[open] summary { margin-block-end: .5rem; }
+.atlas-catalog fieldset { min-inline-size: 0; }
+.atlas-catalog button[type=submit] {
+    min-height: 2.75rem;
+    margin-inline-end: 1rem;
+    padding: .6rem 1rem;
+    border: 0;
+    border-radius: .3rem;
+    background: #005f73;
+    color: white;
+    cursor: pointer;
+}
+.atlas-catalog [data-catalog-loading]:empty { margin: 0; }
+.atlas-catalog :is(a, button, input, select, summary, [tabindex]):focus-visible {
+    outline: 3px solid #005f73;
+    outline-offset: 3px;
+}
+.atlas-catalog-result-summary { font-weight: 650; }
+.atlas-catalog-hint { color: #405f60; font-size: .9rem; }
+.atlas-catalog-notice, .atlas-catalog-comparison {
+    margin-block: 1rem;
+    padding: clamp(.75rem, 2vw, 1.25rem);
+    border: 1px solid #c8d9d7;
+    border-radius: .5rem;
+    background: #fff;
+    min-inline-size: 0;
+    overflow-wrap: anywhere;
+}
+.atlas-catalog-notice > :first-child, .atlas-catalog-comparison > :first-child { margin-block-start: 0; }
+.atlas-catalog-table { margin: .25rem; }
+.atlas-catalog-table table { width: 100%; }
+.atlas-catalog-pagination { display: flex; flex-wrap: wrap; gap: 1rem; margin-block-start: 1rem; }
+.atlas-catalog :is(.atlas-catalog-pagination a, .atlas-catalog-chips a, .atlas-catalog-compare-link) {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    min-block-size: 2.75rem;
+    overflow-wrap: anywhere;
+}
+.atlas-catalog [data-catalog-offer] { overflow-wrap: anywhere; }
+.atlas-catalog-sr-only {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+@media (max-width: 480px) {
+    .atlas-catalog button[type=submit] { display: block; width: 100%; margin: 0 0 .65rem; }
+}

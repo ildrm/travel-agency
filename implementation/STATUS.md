@@ -1,8 +1,8 @@
 # Atlas Leisure implementation status
 
-**0.2.0 · VERIFIED_LOCAL · 18 November 2026**
+**1.0.0-rc.1 · VERIFIED_LOCAL · 19 November 2026**
 
-The release contains the Atlas Leisure block theme and four WooCommerce companion plugins. The frozen build passed 165 static checks, 24 integration suites and 13 headless browser tests. All five ZIPs matched across two builds and passed installation from the archives. The isolated restore matched 102 tables and 2,727 rows by count and logical checksum. [Release evidence](evidence/development-release.json) · [Installable artifacts](../dist/manifest.json)
+The release contains the Atlas Leisure block theme and four WooCommerce companion plugins. The frozen build passed 172 static checks, 25 integration suites and 13 headless browser tests. All five ZIPs matched across two builds and passed installation from the archives. The isolated restore matched 102 tables and 6,541 rows by count and logical checksum. [Release evidence](evidence/development-release.json) · [Installable artifacts](../dist/manifest.json)
 
 The English and Persian storefronts support discovery, service reservations, Checkout Blocks and private printable vouchers. The local implementation includes dated stays and rentals, manual transfer dispatch, tours, events, Academy groups, partner contracts, procurement, in-account notices and encrypted document review. Native WooCommerce manages physical shipping and offline checkout. Air, rail and bus use a private inquiry workflow until contracted ticket issuance is available. [Whole-project review](PROJECT-REVIEW.md)
 
