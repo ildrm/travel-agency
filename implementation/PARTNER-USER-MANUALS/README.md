@@ -6,7 +6,7 @@ This manual describes the implemented local development workflows. Use the theme
 
 Guests see WooCommerce's native login and registration form. Local setup enables account registration with a customer-chosen password; purchase requires sign-in. Returning from authentication preserves a valid same-origin published-offer intent. Password resets and order emails are not delivered in the local demo: its mail guard returns failure instead of sending outbound messages.
 
-**My reservations** shows only the signed-in customer's bookings, their references, exact IRR amounts and actual booking state. **View payment receipt** opens the linked Woo order receipt. A receipt and Woo order status do not establish service confirmation or ticket issuance.
+**My reservations** shows only the signed-in customer's bookings, their references, exact IRR amounts and actual booking state. Use **View payment receipt** for a paid service or **View order details** for a service with no amount due. A receipt and Woo order status do not establish service confirmation or ticket issuance.
 
 | Booking state | Meaning and next step |
 |---|---|
@@ -23,7 +23,7 @@ Customer support cases and their shared replies appear in the account. Internal 
 
 In **Partner portal**, expand **Booking confirmation queue**. Agency access is required; ordinary customers and partner roles cannot use it.
 
-1. Select `paid_pending_confirmation`, `exception` or `confirmed`. Use **Refresh queue** and the previous/next page controls to locate the reference. The queue displays separate booking and payment states.
+1. Select **Ready for confirmation**, **Needs review** or **Confirmed**. Use **Refresh queue** and the previous/next page controls to locate the reference. The queue displays separate booking and payment states.
 2. For a paid reservation awaiting confirmation, check actual service availability and supporting fulfillment evidence. Enter the real confirmation reason in the row.
 3. Use **Confirm service**. The server checks authorization and booking state and binds the request key to that reason. A repeated identical request does not confirm twice.
 4. Check the returned booking state. The customer's account/receipt reflects the confirmed reservation on refresh. Confirmation does not issue a supplier ticket or complete a refund.
@@ -75,3 +75,17 @@ Property/rental inventory is a staff-only local demonstration. Resource ownershi
 Makers respond only to RFQs addressed to their organization. Other suppliers' bids remain private. Bid deadlines and quote expiry are enforced; agency review and sample approval precede production. Record actual stage/inspection/evidence details. Full split awards, artwork revisions, shipping/returns and settlement remain incomplete.
 
 Actual staffing, supplier/merchant agreements, privacy/retention, terms, native Persian copy and human operating approvals are still required for production. See the [operational runbook](../OPERATIONAL-RUNBOOK.md) for local commands, workers, backups and recovery boundaries.
+
+
+## No-payment reservations and worker review
+
+A service with no amount due still needs an owned, unexpired reservation and a linked WooCommerce checkout. The customer sees that payment is unnecessary and the agency sees the reservation in **Ready for confirmation**. Confirm the service using the same review and reason fields as a paid reservation. A no-payment order has no amount to refund. Review and approve a bilingual in-account template for `booking.no_payment_required` when these offers are in scope.
+
+Use **Operations health** to inspect the last worker error count and the due queue. When a release fails, preserve the hold and check its booking and inventory association before making any operational change. Later valid holds continue through the worker.
+
+
+## Review a dated rate plan
+
+Create each named plan against the same physical resource assigned to the offer. Enter the bilingual name and terms, the local date band and timezone, the per-unit amount and applicable tax, the allowed duration and occupancy, and the assigned supplier reviewers. Suspend the offer before changing the published plans and reactivate after review. Existing holds preserve their accepted price and terms.
+
+A visitor selects one applicable plan for the entire reservation. Changing the plan refreshes its quote and clears prior acceptance. Room nights or vehicles are consumed from the shared physical allocation. Use agency review for a stay that spans two nonoverlapping seasonal bands. [Accommodation requirements](../../docs/DOC-32_ACCOMMODATION-PORTAL.md)

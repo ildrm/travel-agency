@@ -14,7 +14,18 @@ final class Atlas_Resource_Booking {
     private static function uuid($seed) { $h=hash('sha256',$seed); return substr($h,0,8).'-'.substr($h,8,4).'-'.substr($h,12,4).'-'.substr($h,16,4).'-'.substr($h,20,12); }
     private static function data($row) { return $row ? (json_decode($row->payload,true) ?: array()) : array(); }
     private static function row($type,$id,$lock=false) { global $wpdb; return $wpdb->get_row($wpdb->prepare('SELECT * FROM '.DB::table('records').' WHERE type=%s AND id=%s'.($lock?' FOR UPDATE':''),$type,$id)); }
-    private static function rate($offer,$lock=false) { return self::row('resource_rate',self::uuid('resource-rate:'.$offer),$lock); }
+    private static function rate($offer,$lock=false,$plan='') { $row=self::row('resource_rate',$plan!==''?$plan:self::uuid('resource-rate:'.$offer),$lock); return $row && (int)(self::data($row)['offer_id']??0)===(int)$offer?$row:null; }
+    private static function rates($offer,$lock=false) {
+        global $wpdb; $rows=$wpdb->get_results($wpdb->prepare('SELECT * FROM '.DB::table('records')." WHERE type=%s AND CAST(JSON_UNQUOTE(JSON_EXTRACT(payload,'$.offer_id')) AS UNSIGNED)=%d ORDER BY id LIMIT 51".($lock?' FOR UPDATE':''),'resource_rate',$offer));
+        if (!is_array($rows) || $wpdb->last_error!=='' || count($rows)>50) return self::error('rate_storage','Rate plans could not be read safely; agency review is required.','خواندن امن طرح‌های قیمت ممکن نیست؛ بررسی آژانس لازم است.',503);
+        return $rows;
+    }
+    private static function active_rates($offer,$lock=false) {
+        $rows=self::rates($offer,$lock); if (is_wp_error($rows)) return $rows;
+        $rows=array_filter($rows,static function($row) { $f=self::data($row); return $row->state==='published' && self::instant($f['valid_until']??null) && strtotime($f['valid_until'])>strtotime(DB::now()); });
+        usort($rows,static function($a,$b) { $price=(int)self::data($a)['unit_amount_irr']<=>(int)self::data($b)['unit_amount_irr']; return $price?:strcmp($a->id,$b->id); }); return $rows;
+    }
+    private static function plan_argument($value) { return $value===null || $value==='' ? '' : (is_string($value) && preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/D',$value)?$value:self::error('plan','Invalid rate-plan reference.','شناسه طرح قیمت نامعتبر است.',422)); }
     private static function record($row) { return array('id'=>$row->id,'version'=>(int)$row->version,'state'=>$row->state,'fields'=>self::data($row)); }
     private static function text($value,$max=1000) { return is_string($value) && trim($value)!=='' && strlen($value)<=$max && sanitize_textarea_field($value)===$value; }
     private static function date($value) { if (!is_string($value)) return false; $d=DateTimeImmutable::createFromFormat('!Y-m-d',$value,new DateTimeZone('UTC')); return $d && $d->format('Y-m-d')===$value ? $d : false; }
@@ -73,13 +84,15 @@ final class Atlas_Resource_Booking {
         } else return self::error('kind','Unsupported resource.','منبع پشتیبانی نمی‌شود.');
         return $r;
     }
-    private static function current($offer,$lock=false) {
-        $row=self::rate($offer,$lock); $f=self::data($row);
+    private static function current($offer,$lock=false,$plan='') {
+        $rows=$plan!==''?array(self::rate($offer,$lock,$plan)):self::active_rates($offer,$lock); if (is_wp_error($rows)) return $rows; $row=$rows?reset($rows):null; $f=self::data($row);
         if (!self::ready() || !$row || $row->state!=='published' || !self::instant($f['valid_until']??null) || strtotime($f['valid_until'])<=strtotime(DB::now())) return self::error('quote_expired','Reviewed quote expired or unavailable. Request a new quote.','قیمت بازبینی‌شده منقضی یا ناموجود است. قیمت جدید درخواست کنید.');
         return $row;
     }
     public static function publication($valid,$offer,$id,$actor=0) {
         if (!in_array($offer['kind']??'',array('stay','rental'),true)) return $valid;
+        // Suspension is a safe recovery state even when the quote/source expired.
+        if (($offer['status']??'')==='suspended' && $id>0 && Auth::actor((int)$actor) && Auth::agency()) return true;
         $rate=self::current((int)$id); if (is_wp_error($rate)) return false;
         $f=self::data($rate); $r=self::source($f['resource_id']);
         return !is_wp_error($r) && (int)$r->org_id===(int)($offer['org_id']??0) && $f['kind']===$offer['kind'];
@@ -87,27 +100,35 @@ final class Atlas_Resource_Booking {
     public static function hold_allowed($valid,$offer,$qty,$user,$options,$now) { return self::publication($valid,$offer,(int)($offer['id']??0),$user); }
     public static function save_rate($request) {
         if (!Auth::agency() || !current_user_can('atlas_manage_bookings')) return self::error('forbidden','Agency resource review required.','بررسی منابع توسط آژانس لازم است.',403);
-        $b=self::body($request,array('version','resource_id','start_date','end_date','timezone','valid_until','unit_amount_irr','tax_per_unit_irr','protection_irr','min_duration','max_duration','terms_en','terms_fa','policy_reference','supplier_reference','supplier_users','published','reason'));
+        $b=self::body($request,array('plan_id','name_en','name_fa','max_guests_per_unit','version','resource_id','start_date','end_date','timezone','valid_until','unit_amount_irr','tax_per_unit_irr','protection_irr','min_duration','max_duration','terms_en','terms_fa','policy_reference','supplier_reference','supplier_users','published','reason'));
         if (is_wp_error($b)) return $b;
         foreach (array('version','unit_amount_irr','tax_per_unit_irr','protection_irr','min_duration','max_duration') as $key) if (!is_int($b[$key]??null) || $b[$key]<0) return self::error('input','Enter nonnegative integer prices and durations.','قیمت و مدت را به‌صورت عدد صحیح نامنفی وارد کنید.',422);
         if (!is_string($b['resource_id']??null) || !preg_match('/^[a-f0-9-]{36}$/',$b['resource_id']) || !self::date($b['start_date']??null) || !self::date($b['end_date']??null) || $b['end_date']<=$b['start_date'] || !in_array($b['timezone']??null,timezone_identifiers_list(),true) || !self::instant($b['valid_until']??null) || strtotime($b['valid_until'])<=strtotime(DB::now()) || $b['min_duration']<1 || $b['max_duration']<$b['min_duration'] || $b['max_duration']>365 || !self::text($b['terms_en']??null,4000) || !self::text($b['terms_fa']??null,4000) || !self::text($b['policy_reference']??null,180) || !self::text($b['supplier_reference']??null,180) || !self::text($b['reason']??null) || !is_bool($b['published']??null) || !is_array($b['supplier_users']??null) || !array_is_list($b['supplier_users']) || count($b['supplier_users'])>20) return self::error('input','Complete the reviewed rate, local date period, named zone and bilingual terms.','قیمت بازبینی‌شده، بازه تاریخ محلی، منطقه زمانی و شرایط دوزبانه را کامل کنید.',422);
         $offer_id=(int)$request['id']; $offer=Offers::get($offer_id,false);
         if (is_wp_error($offer) || !in_array($offer['kind'],array('stay','rental'),true)) return self::error('offer','Select an existing stay or rental offer.','یک پیشنهاد اقامت یا اجاره موجود انتخاب کنید.',422);
-        global $wpdb; $wpdb->query('START TRANSACTION');
+        $plan=$b['plan_id']??self::uuid('resource-rate:'.$offer_id);
+        if ($plan==='' || is_wp_error(self::plan_argument($plan)) || (isset($b['max_guests_per_unit']) && (!is_int($b['max_guests_per_unit']) || $b['max_guests_per_unit']<1)) || (isset($b['name_en']) && !self::text($b['name_en'],180)) || (isset($b['name_fa']) && !self::text($b['name_fa'],180)) || ($plan!==self::uuid('resource-rate:'.$offer_id) && (!self::text($b['name_en']??null,180) || !self::text($b['name_fa']??null,180)))) return self::error('plan','A valid named bilingual rate plan and occupancy are required.','طرح قیمت معتبر با نام دوزبانه و ظرفیت مهمان لازم است.',422);
+        global $wpdb;
         try {
+            self::sql($wpdb->query('START TRANSACTION'));
             $locked_offer=$wpdb->get_row($wpdb->prepare('SELECT offer_snapshot FROM '.DB::table('inventory').' WHERE offer_id=%d FOR UPDATE',$offer_id));
             $current_offer=$locked_offer ? json_decode($locked_offer->offer_snapshot,true) : null;
-            $old=self::rate($offer_id,true); $resource=self::source($b['resource_id'],true);
+            $all=self::rates($offer_id,true); if (is_wp_error($all)) { $wpdb->query('ROLLBACK'); return $all; }
+            $old=self::row('resource_rate',$plan,true); if ($wpdb->last_error!=='') throw new RuntimeException('rate read'); $resource=self::source($b['resource_id'],true);
             if (is_wp_error($resource)) { $wpdb->query('ROLLBACK'); return $resource; }
+            if (($old && (int)(self::data($old)['offer_id']??0)!==$offer_id) || (!$old && count($all)>=50)) { $wpdb->query('ROLLBACK'); return self::error('plan','Rate plan belongs to another offer or the review limit was reached.','طرح قیمت متعلق به پیشنهاد دیگری است یا سقف بررسی تکمیل شده است.',409); }
             if (($old ? (int)$old->version : 0)!==$b['version']) { $wpdb->query('ROLLBACK'); return self::error('version','Rate changed. Reload before reviewing.','قیمت تغییر کرده است. پیش از بررسی دوباره دریافت کنید.'); }
-            if (!$current_offer || ($old && $current_offer['mode']==='local' && $current_offer['status']==='published')) { $wpdb->query('ROLLBACK'); return self::error('rate_active','Suspend the public offer before reviewing a replacement rate; accepted booking terms remain preserved.','پیش از بررسی قیمت جایگزین، پیشنهاد عمومی را تعلیق کنید؛ شرایط رزروهای پذیرفته‌شده حفظ می‌شود.'); }
+            if (!$current_offer || ($current_offer['mode']==='local' && $current_offer['status']==='published')) { $wpdb->query('ROLLBACK'); return self::error('rate_active','Suspend the public offer before reviewing any new or replacement rate; accepted booking terms remain preserved.','پیش از بررسی قیمت جدید یا جایگزین، پیشنهاد عمومی را تعلیق کنید؛ شرایط رزروهای پذیرفته‌شده حفظ می‌شود.'); }
+            foreach ($all as $other) if ($other->id!==$plan && (self::data($other)['resource_id']??'')!==$b['resource_id']) { $wpdb->query('ROLLBACK'); return self::error('plan_resource','All plans on one offer must share one physical resource; create another offer for another unit.','طرح‌های یک پیشنهاد باید منبع فیزیکی مشترک داشته باشند؛ برای واحد دیگر پیشنهاد تازه بسازید.',422); }
+            $max_guests=$b['max_guests_per_unit']??($offer['kind']==='stay'?$resource->occupancy:1);
+            if (($offer['kind']==='stay' && $max_guests>$resource->occupancy) || ($offer['kind']==='rental' && $max_guests!==1)) { $wpdb->query('ROLLBACK'); return self::error('occupancy','Plan occupancy exceeds its physical unit.','ظرفیت مهمان طرح از ظرفیت واحد فیزیکی بیشتر است.',422); }
             if ((int)$resource->org_id!==(int)$offer['org_id'] || ($offer['kind']==='stay' && $resource->kind!=='stay') || ($offer['kind']==='rental' && $resource->kind!=='vehicle') || ($offer['kind']==='stay' && ($resource->timezone!==$b['timezone'] || $b['min_duration']<(int)$resource->min_nights || $b['protection_irr']!==0))) { $wpdb->query('ROLLBACK'); return self::error('mismatch','Rate, resource organization and policies do not match.','قیمت، سازمان منبع و سیاست‌ها همخوان نیستند.',422); }
             foreach ($b['supplier_users'] as $user) if (!is_int($user) || !Auth::member((int)$resource->org_id,$user) || !user_can($user,'atlas_manage_records') || Auth::member_role((int)$resource->org_id,$user)==='viewer') { $wpdb->query('ROLLBACK'); return self::error('supplier','Supplier reviewers must be active authorized members of this resource organization.','بازبینان تأمین‌کننده باید اعضای فعال و مجاز سازمان همین منبع باشند.',422); }
-            $fields=$b; unset($fields['version'],$fields['published']); $fields['offer_id']=$offer_id; $fields['kind']=$offer['kind']; $fields['reviewed_by']=get_current_user_id(); $fields['reviewed_at']=DB::now(); $fields['deposit_instrument']='none'; $fields['billing_unit']=$offer['kind']==='stay'?'local_night':'started_24_hours';
-            $id=self::uuid('resource-rate:'.$offer_id); $now=DB::now(); $values=array('state'=>$b['published']?'published':'draft','payload'=>wp_json_encode($fields),'version'=>$old ? (int)$old->version+1 : 1,'updated_at'=>$now);
+            $fields=$b; unset($fields['version'],$fields['published'],$fields['plan_id']); $fields['name_en']=$b['name_en']??'Reviewed standard rate'; $fields['name_fa']=$b['name_fa']??'قیمت استاندارد بازبینی‌شده'; $fields['max_guests_per_unit']=$max_guests; $fields['offer_id']=$offer_id; $fields['kind']=$offer['kind']; $fields['reviewed_by']=get_current_user_id(); $fields['reviewed_at']=DB::now(); $fields['deposit_instrument']='none'; $fields['billing_unit']=$offer['kind']==='stay'?'local_night':'started_24_hours';
+            $id=$plan; $now=DB::now(); $values=array('state'=>$b['published']?'published':'draft','payload'=>wp_json_encode($fields),'version'=>$old ? (int)$old->version+1 : 1,'updated_at'=>$now);
             self::sql($old ? $wpdb->update(DB::table('records'),$values,array('id'=>$id,'version'=>(int)$old->version)) : $wpdb->insert(DB::table('records'),array_merge($values,array('id'=>$id,'type'=>'resource_rate','org_id'=>(int)$resource->org_id,'owner_id'=>(int)$offer['org_id'] ? (int)get_post_field('post_author',$offer_id) : get_current_user_id(),'created_at'=>$now))));
             if (!DB::audit(get_current_user_id(),(int)$resource->org_id,'resource.rate_review',$id,'success',$b['reason'])) throw new RuntimeException('audit');
-            self::sql($wpdb->query('COMMIT')); return self::record(self::rate($offer_id));
+            self::sql($wpdb->query('COMMIT')); return self::record(self::rate($offer_id,false,$plan));
         } catch (Throwable $e) { $wpdb->query('ROLLBACK'); return self::error('storage','Rate review could not be saved.','بررسی قیمت ثبت نشد.',503); }
     }
     public static function activate($request) {
@@ -122,17 +143,24 @@ final class Atlas_Resource_Booking {
         return is_wp_error($saved)?$saved:Offers::get($id,false);
     }
     public static function public_rate($request) {
-        $id=(int)$request['id']; $offer=Offers::get($id,true); $row=self::current($id);
+        $plan=self::plan_argument($request->get_param('rate_plan_id')); if (is_wp_error($plan)) return $plan;
+        $id=(int)$request['id']; $offer=Offers::get($id,true); $row=self::current($id,false,$plan);
         if (is_wp_error($offer) || is_wp_error($row)) return self::error('not_found','Reviewed quote unavailable.','قیمت بازبینی‌شده در دسترس نیست.',404);
         $f=self::data($row); $resource=self::source($f['resource_id']); if (is_wp_error($resource)) return $resource;
-        $keys=array('kind','start_date','end_date','timezone','valid_until','unit_amount_irr','tax_per_unit_irr','protection_irr','min_duration','max_duration','terms_en','terms_fa','reviewed_at','billing_unit','deposit_instrument'); $public=array_intersect_key($f,array_flip($keys));
-        $public['version']=(int)$row->version; $public['capacity_per_unit']=$f['kind']==='stay'?$resource->occupancy:1; $public['availability_source']='agency_reviewed_local_allotment'; $public['supplier_confirmation_required']=true;
+        $plans=self::active_rates($id); if (is_wp_error($plans)) return $plans;
+        $public=self::public_plan($row,$resource); $public['plans']=array_map(static function($item) use($resource) { return array_intersect_key(self::public_plan($item,$resource),array_flip(array('plan_id','version','name_en','name_fa','start_date','end_date','unit_amount_irr','capacity_per_unit'))); },$plans);
         return new WP_REST_Response($public,200,array('Cache-Control'=>'no-store'));
+    }
+    private static function public_plan($row,$resource) {
+        $f=self::data($row); $keys=array('name_en','name_fa','kind','start_date','end_date','timezone','valid_until','unit_amount_irr','tax_per_unit_irr','protection_irr','min_duration','max_duration','terms_en','terms_fa','reviewed_at','billing_unit','deposit_instrument'); $public=array_intersect_key($f,array_flip($keys));
+        $public['name_en']=$f['name_en']??'Reviewed standard rate'; $public['name_fa']=$f['name_fa']??'قیمت استاندارد بازبینی‌شده';
+        $public['plan_id']=$row->id; $public['version']=(int)$row->version; $public['capacity_per_unit']=$f['kind']==='stay'?min($resource->occupancy,(int)($f['max_guests_per_unit']??$resource->occupancy)):1; $public['availability_source']='agency_reviewed_local_allotment'; $public['supplier_confirmation_required']=true; return $public;
     }
     public static function review_rate($request) {
         if (!Auth::agency() || !current_user_can('atlas_manage_bookings')) return self::error('forbidden','Agency rate review required.','بررسی قیمت توسط آژانس لازم است.',403);
-        $offer=Offers::get((int)$request['id'],false); if (is_wp_error($offer)) return $offer; $rate=self::rate((int)$request['id']);
-        return array('offer'=>$offer,'rate'=>$rate?self::record($rate):null);
+        $plan=self::plan_argument($request->get_param('rate_plan_id')); if (is_wp_error($plan)) return $plan;
+        $offer=Offers::get((int)$request['id'],false); if (is_wp_error($offer)) return $offer; $rates=self::rates((int)$request['id']); if (is_wp_error($rates)) return $rates; $rate=self::rate((int)$request['id'],false,$plan); if (!$rate && $plan==='' && $rates) $rate=reset($rates);
+        return array('offer'=>$offer,'rate'=>$rate?self::record($rate):null,'plans'=>array_map(static function($item) { $f=self::data($item); return array('id'=>$item->id,'version'=>(int)$item->version,'state'=>$item->state,'name_en'=>$f['name_en']??'Reviewed standard rate','name_fa'=>$f['name_fa']??'قیمت استاندارد بازبینی‌شده'); },$rates),'new_plan_id'=>wp_generate_uuid4());
     }
     public static function reviewers($request) {
         if (!Auth::agency() || !current_user_can('atlas_manage_bookings')) return self::error('forbidden','Agency rate review required.','بررسی قیمت توسط آژانس لازم است.',403);
@@ -148,13 +176,22 @@ final class Atlas_Resource_Booking {
     }
     /** Read-only advisory quote; the later shared hold is the sole capacity authority. */
     public static function dated_availability($offer,$filters) {
-        $row=self::current((int)$offer['id']); if (is_wp_error($row)) return $row; $f=self::data($row); $r=self::source($f['resource_id']); if (is_wp_error($r)) return $r;
+        $plan=self::plan_argument($filters['rate_plan_id']??null); if (is_wp_error($plan)) return $plan;
+        if ($plan!=='') { $row=self::current((int)$offer['id'],false,$plan); return is_wp_error($row)?$row:self::rate_availability($offer,$filters,$row); }
+        $rates=self::active_rates((int)$offer['id']); if (is_wp_error($rates)) return $rates; $best=null; $error=null;
+        foreach ($rates as $row) { $result=self::rate_availability($offer,$filters,$row); if (is_wp_error($result)) { $error=$result; continue; } if ($best===null || (isset($result['amount_per_unit_irr'],$best['amount_per_unit_irr']) && $result['amount_per_unit_irr']<$best['amount_per_unit_irr'])) $best=$result; }
+        return $best??$error??self::error('quote_expired','Reviewed quote expired or unavailable. Request a new quote.','قیمت بازبینی‌شده منقضی یا ناموجود است. قیمت جدید درخواست کنید.');
+    }
+    private static function rate_availability($offer,$filters,$row) {
+        if (!self::ready()) return self::error('unavailable','Resource booking is unavailable.','رزرو منبع در دسترس نیست.');
+        $f=self::data($row); $r=self::source($f['resource_id']); if (is_wp_error($r)) return $r;
         if ($f['kind']!==$offer['kind'] || (int)$r->org_id!==(int)$offer['org_id']) return self::error('mismatch','Resource offer needs review.','پیشنهاد منبع نیازمند بررسی است.');
-        $base=array('status'=>'dates_required','source'=>'agency_reviewed_local_allotment','remaining'=>null,'checked_at'=>(new DateTimeImmutable(DB::now(),new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s.u\Z'),'admission_rechecked_at_hold'=>true,'supplier_confirmation_required'=>true,'rate_version'=>(int)$row->version);
+        $base=array('status'=>'dates_required','source'=>'agency_reviewed_local_allotment','remaining'=>null,'checked_at'=>(new DateTimeImmutable(DB::now(),new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s.u\Z'),'admission_rechecked_at_hold'=>true,'supplier_confirmation_required'=>true,'rate_plan_id'=>$row->id,'rate_version'=>(int)$row->version);
         if ($offer['mode']!=='local') { $base['status']='on_request'; return $base; }
         $now=new DateTimeImmutable(DB::now(),new DateTimeZone('UTC')); $open=new DateTimeImmutable($offer['registration_open_at']); $close=new DateTimeImmutable($offer['registration_close_at']);
         if ($now<$open || $now>=$close) { $base['status']=$now<$open?'not_open':'closed'; return $base; }
         if ($f['kind']==='stay') {
+            if (isset($filters['guests_per_unit']) && ((!is_int($filters['guests_per_unit']) && !(is_string($filters['guests_per_unit']) && ctype_digit($filters['guests_per_unit']))) || (int)$filters['guests_per_unit']<1 || (int)$filters['guests_per_unit']>min($r->occupancy,(int)($f['max_guests_per_unit']??$r->occupancy)))) return self::error('occupancy','Guest count exceeds this reviewed plan.','تعداد مهمان از ظرفیت این طرح بازبینی‌شده بیشتر است.',422);
             if (empty($filters['check_in']) || empty($filters['check_out'])) return $base;
             $start=self::date($filters['check_in']); $end=self::date($filters['check_out']);
             if (!$start || !$end || $end<=$start || $start->format('Y-m-d')<$now->setTimezone(new DateTimeZone($f['timezone']))->format('Y-m-d')) return self::error('dates','Enter ordered future local stay dates.','تاریخ محلی آینده و مرتب برای اقامت وارد کنید.',422);
@@ -185,10 +222,11 @@ final class Atlas_Resource_Booking {
     }
     public static function catalog_item($item,$offer,$filters) {
         if (!in_array($offer['kind']??'',array('stay','rental'),true) || $offer['mode']!=='local') return $item;
+        $item['price']=array('amount_irr'=>(string)$offer['amount_irr'],'currency'=>'IRR','unit'=>$offer['kind']==='stay'?'per_night':'per_day','from'=>true,'scope'=>'advertised_base_from');
         $row=self::current((int)$offer['id']);
-        if (is_wp_error($row)) { $item['price']=array('amount_irr'=>null,'currency'=>'IRR','unit'=>'on_request'); return $item; }
-        $f=self::data($row); $item['price']=array('amount_irr'=>(string)$f['unit_amount_irr'],'currency'=>'IRR','unit'=>$f['kind']==='stay'?'per_night':'per_day','tax_per_reserved_unit_irr'=>(string)$f['tax_per_unit_irr'],'optional_protection_irr'=>(string)$f['protection_irr']);
-        if (isset($item['availability']['amount_per_unit_irr'])) $item['dated_quote']=array('amount_per_unit_irr'=>(string)$item['availability']['amount_per_unit_irr'],'currency'=>'IRR','duration'=>$item['availability']['duration'],'billing_unit'=>$f['billing_unit'],'tax_included'=>true,'optional_protection_included'=>false,'rechecked_at_hold'=>true);
+        if (is_wp_error($row)) { $item['price']['quote_status']='unavailable'; return $item; }
+        $f=self::data($row);
+        if (isset($item['availability']['amount_per_unit_irr'])) $item['dated_quote']=array('rate_plan_id'=>$item['availability']['rate_plan_id'],'rate_version'=>$item['availability']['rate_version'],'amount_per_unit_irr'=>(string)$item['availability']['amount_per_unit_irr'],'currency'=>'IRR','duration'=>$item['availability']['duration'],'billing_unit'=>$f['billing_unit'],'tax_included'=>true,'optional_protection_included'=>false,'rechecked_at_hold'=>true);
         return $item;
     }
     /** Apply date-aware availability before count/pagination, retaining every previous visibility clause. */
@@ -234,8 +272,11 @@ final class Atlas_Resource_Booking {
     }
     public static function prepare($prepared,$offer,$qty,$user,$options,$now) {
         if (is_wp_error($prepared) || !in_array($offer['kind']??'',array('stay','rental'),true)) return $prepared;
-        $rate=self::current((int)$offer['id'],true); if (is_wp_error($rate)) return $rate; $f=self::data($rate);
-        $allowed=$offer['kind']==='stay'?array('rate_version','check_in','check_out','guests_per_unit','terms_accepted'):array('rate_version','pickup_local','return_local','pickup_offset','return_offset','protection','terms_accepted');
+        $plan=self::plan_argument($options['rate_plan_id']??null); if (is_wp_error($plan)) return $plan;
+        $plans=self::active_rates((int)$offer['id'],true); if (is_wp_error($plans)) return $plans;
+        if ($plan==='' && count($plans)>1) return self::error('plan_required','Choose and review one named rate plan before reserving.','پیش از رزرو یک طرح قیمت را انتخاب و بررسی کنید.',422);
+        $rate=self::current((int)$offer['id'],true,$plan); if (is_wp_error($rate)) return $rate; $f=self::data($rate);
+        $allowed=$offer['kind']==='stay'?array('rate_plan_id','rate_version','check_in','check_out','guests_per_unit','terms_accepted'):array('rate_plan_id','rate_version','pickup_local','return_local','pickup_offset','return_offset','protection','terms_accepted');
         if (array_diff(array_keys($options),$allowed) || !isset($options['rate_version']) || !(is_int($options['rate_version']) || (is_string($options['rate_version']) && ctype_digit($options['rate_version']))) || (int)$options['rate_version']!==(int)$rate->version || ($options['terms_accepted']??false)!==true) return self::error('terms','Review the current dated quote and explicitly accept its terms.','قیمت تاریخ‌دار جاری را بررسی و شرایط آن را صریحاً بپذیرید.',422);
         $r=self::source($f['resource_id'],true); if (is_wp_error($r)) return $r;
         if ((int)$r->org_id!==(int)$offer['org_id'] || $f['kind']!==$offer['kind']) return self::error('mismatch','Resource quote does not match this offer.','قیمت منبع با این پیشنهاد مطابقت ندارد.');
@@ -243,7 +284,7 @@ final class Atlas_Resource_Booking {
         if ($f['kind']==='stay') {
             $start=self::date($options['check_in']??null); $end=self::date($options['check_out']??null);
             $guests=$options['guests_per_unit']??null;
-            if (!$start || !$end || $end<=$start || (!is_int($guests) && !(is_string($guests) && ctype_digit($guests))) || (int)$guests<1 || (int)$guests>$r->occupancy || $qty>(int)$r->capacity || $start->format('Y-m-d')<(new DateTimeImmutable($now,new DateTimeZone('UTC')))->setTimezone(new DateTimeZone($r->timezone))->format('Y-m-d')) return self::error('dates','Choose valid future local stay dates, rooms and occupancy.','تاریخ محلی آینده، اتاق و تعداد مهمان معتبر انتخاب کنید.',422);
+            if (!$start || !$end || $end<=$start || (!is_int($guests) && !(is_string($guests) && ctype_digit($guests))) || (int)$guests<1 || (int)$guests>min($r->occupancy,(int)($f['max_guests_per_unit']??$r->occupancy)) || $qty>(int)$r->capacity || $start->format('Y-m-d')<(new DateTimeImmutable($now,new DateTimeZone('UTC')))->setTimezone(new DateTimeZone($r->timezone))->format('Y-m-d')) return self::error('dates','Choose valid future local stay dates, rooms and plan occupancy.','تاریخ محلی آینده، اتاق و ظرفیت مهمان طرح معتبر انتخاب کنید.',422);
             $duration=(int)$start->diff($end)->days; $startValue=$start->format('Y-m-d'); $endValue=$end->format('Y-m-d'); $effective=$endValue;
             if ($duration<$f['min_duration'] || $duration>$f['max_duration'] || $startValue<$f['start_date'] || $endValue>$f['end_date']) return self::error('rate_period','Dates or duration are outside the reviewed rate period.','تاریخ یا مدت خارج از بازه قیمت بازبینی‌شده است.',422);
             if ($duration<(int)$r->min_nights) return self::error('minimum','Minimum stay is not satisfied.','حداقل مدت اقامت رعایت نشده است.',422);
@@ -271,7 +312,7 @@ final class Atlas_Resource_Booking {
         $extras=(int)$f['tax_per_unit_irr']+($protection?(int)$f['protection_irr']:0);
         if ($extras<0 || $duration>intdiv(PHP_INT_MAX-$extras,max(1,(int)$f['unit_amount_irr']))) return self::error('amount','Quote amount is out of range.','مبلغ قیمت خارج از محدوده است.',422);
         $amount=$duration*(int)$f['unit_amount_irr']+$extras;
-        $snapshot=array('resource_id'=>$r->id,'rate_id'=>$rate->id,'rate_version'=>(int)$rate->version,'kind'=>$f['kind'],'start'=>$startValue,'end'=>$endValue,'effective_end'=>$effective,'timezone'=>$f['timezone'],'duration'=>$duration,'billing_unit'=>$f['billing_unit'],'unit_rate_irr'=>(int)$f['unit_amount_irr'],'tax_per_unit_irr'=>(int)$f['tax_per_unit_irr'],'protection_irr'=>$protection?(int)$f['protection_irr']:0,'terms_en'=>$f['terms_en'],'terms_fa'=>$f['terms_fa'],'policy_reference'=>$f['policy_reference'],'supplier_reviewed_at'=>$f['reviewed_at'],'supplier_confirmation_required'=>true,'deposit_instrument'=>'none','guests_per_unit'=>$f['kind']==='stay'?(int)$guests:null);
+        $snapshot=array('resource_id'=>$r->id,'rate_id'=>$rate->id,'rate_version'=>(int)$rate->version,'rate_name_en'=>$f['name_en']??'Reviewed standard rate','rate_name_fa'=>$f['name_fa']??'قیمت استاندارد بازبینی‌شده','max_guests_per_unit'=>$f['kind']==='stay'?min($r->occupancy,(int)($f['max_guests_per_unit']??$r->occupancy)):1,'kind'=>$f['kind'],'start'=>$startValue,'end'=>$endValue,'effective_end'=>$effective,'timezone'=>$f['timezone'],'duration'=>$duration,'billing_unit'=>$f['billing_unit'],'unit_rate_irr'=>(int)$f['unit_amount_irr'],'tax_per_unit_irr'=>(int)$f['tax_per_unit_irr'],'protection_irr'=>$protection?(int)$f['protection_irr']:0,'terms_en'=>$f['terms_en'],'terms_fa'=>$f['terms_fa'],'policy_reference'=>$f['policy_reference'],'supplier_reviewed_at'=>$f['reviewed_at'],'supplier_confirmation_required'=>true,'deposit_instrument'=>'none','guests_per_unit'=>$f['kind']==='stay'?(int)$guests:null);
         return array('unit_amount_irr'=>$amount,'primary_quantity'=>0,'snapshot'=>array('resource_booking'=>$snapshot),'handled_options'=>true,'resource_booking'=>array('resource'=>$r,'snapshot'=>$snapshot,'supplier_users'=>$f['supplier_users'],'nights'=>$nights,'allocation_id'=>wp_generate_uuid4()));
     }
     /** Core owns transaction boundaries in all four hold callbacks. */
@@ -313,8 +354,9 @@ final class Atlas_Resource_Booking {
     public static function supplier_review($request) {
         $b=self::body($request,array('version','accepted','evidence_reference','reason')); if (is_wp_error($b)) return $b;
         if (!is_int($b['version']??null) || !is_bool($b['accepted']??null) || !is_string($b['evidence_reference']??null) || !preg_match('/^[A-Za-z0-9._:-]{8,128}$/D',$b['evidence_reference']) || !self::text($b['reason']??null,190)) return self::error('review','Version, explicit decision, safe evidence reference and a short reason are required.','نسخه، تصمیم صریح، شناسه امن شواهد و دلیل کوتاه لازم است.',422);
-        global $wpdb; $wpdb->query('START TRANSACTION');
+        global $wpdb;
         try {
+            self::sql($wpdb->query('START TRANSACTION'));
             $core=$wpdb->get_row($wpdb->prepare('SELECT * FROM '.DB::table('bookings').' WHERE id=%s FOR UPDATE',(string)$request['id']));
             $row=self::row('resource_reservation',(string)$request['id'],true); $f=self::data($row);
             if (!$core || !$row || !self::supplier($row,$f) || (int)$row->owner_id===get_current_user_id()) { $wpdb->query('ROLLBACK'); return self::error('not_found','Assigned resource booking not found.','رزرو منبع تخصیص‌یافته یافت نشد.',404); }
@@ -352,14 +394,15 @@ final class Atlas_Resource_Booking {
     public static function cancel_request($request) {
         $b=self::body($request,array('version','reason','withdraw')); if (is_wp_error($b)) return $b;
         if (!is_int($b['version']??null) || !self::text($b['reason']??null) || (isset($b['withdraw']) && !is_bool($b['withdraw']))) return self::error('cancellation','Current version and your reason are required.','نسخه جاری و دلیل شما لازم است.',422);
-        global $wpdb; $id=(string)$request['id']; $wpdb->query('START TRANSACTION');
+        global $wpdb; $id=(string)$request['id'];
         try {
+            self::sql($wpdb->query('START TRANSACTION'));
             $locked=self::lock_booking($id); if (is_wp_error($locked)) { $wpdb->query('ROLLBACK'); return $locked; } list($booking,$hold)=$locked;
             $mapping=self::row('resource_reservation',$id,true); $f=self::data($mapping); $old=self::cancellation($id,true);
             if (!$mapping || (int)$booking->user_id!==get_current_user_id() || (int)$mapping->owner_id!==get_current_user_id()) { $wpdb->query('ROLLBACK'); return self::error('not_found','Your resource reservation was not found.','رزرو منبع متعلق به شما یافت نشد.',404); }
             if (!in_array($mapping->state,array('held','consumed'),true) || !in_array($booking->status,array('held','pending_payment','paid_pending_confirmation','confirmed','exception'),true)) { $wpdb->query('ROLLBACK'); return self::error('state','This reservation is no longer open for a cancellation request.','این رزرو دیگر برای درخواست لغو باز نیست.'); }
             $withdraw=$b['withdraw']??false; $previous=self::data($old);
-            if (!$withdraw && $old && $old->state==='requested' && ($previous['customer_reason']??'')===$b['reason']) { $wpdb->query('COMMIT'); return self::cancellation_view($old); }
+            if (!$withdraw && $old && $old->state==='requested' && ($previous['customer_reason']??'')===$b['reason']) { self::sql($wpdb->query('COMMIT')); return self::cancellation_view($old); }
             if (($old?(int)$old->version:0)!==$b['version'] || ($old && $old->state==='approved') || ($withdraw && (!$old || $old->state!=='requested'))) { $wpdb->query('ROLLBACK'); return self::error('version','Cancellation request changed. Reload it.','درخواست لغو تغییر کرده است. دوباره دریافت کنید.'); }
             $history=$previous['history']??array(); if (count($history)>=100) { $wpdb->query('ROLLBACK'); return self::error('review_limit','Ask the agency to review this cancellation history.','برای بررسی تاریخچه لغو با آژانس تماس بگیرید.'); }
             $history[]=array('action'=>$withdraw?'withdrawn':'requested','actor'=>get_current_user_id(),'at'=>DB::now(),'reason'=>$b['reason']);
@@ -373,14 +416,15 @@ final class Atlas_Resource_Booking {
         if (!Auth::agency() || !current_user_can('atlas_manage_bookings')) return self::error('forbidden','Agency cancellation review required.','بررسی لغو توسط آژانس لازم است.',403);
         $b=self::body($request,array('version','approved','terms_reviewed','policy_reference','evidence_reference','reason')); if (is_wp_error($b)) return $b;
         if (!is_int($b['version']??null) || !is_bool($b['approved']??null) || ($b['terms_reviewed']??false)!==true || !self::text($b['policy_reference']??null,180) || !is_string($b['evidence_reference']??null) || !preg_match('/^[A-Za-z0-9._:-]{8,128}$/D',$b['evidence_reference']) || !self::text($b['reason']??null,190)) return self::error('cancellation_review','Review the agreed terms and supply an explicit decision, policy and evidence reference.','شرایط توافق‌شده را بررسی و تصمیم صریح و شناسه سیاست و شواهد را وارد کنید.',422);
-        $id=(string)$request['id']; $canonical=$b; ksort($canonical,SORT_STRING); $hash=hash('sha256',wp_json_encode($canonical)); global $wpdb; $wpdb->query('START TRANSACTION');
+        $id=(string)$request['id']; $canonical=$b; ksort($canonical,SORT_STRING); $hash=hash('sha256',wp_json_encode($canonical)); global $wpdb;
         try {
+            self::sql($wpdb->query('START TRANSACTION'));
             $locked=self::lock_booking($id); if (is_wp_error($locked)) { $wpdb->query('ROLLBACK'); return $locked; } list($booking,$hold)=$locked;
             $mapping=self::row('resource_reservation',$id,true); $m=self::data($mapping); $row=self::cancellation($id,true); $f=self::data($row);
             if ((int)$booking->user_id===get_current_user_id()) { $wpdb->query('ROLLBACK'); return self::error('independent_review','A different agency reviewer must decide the customer cancellation request.','بازبین دیگری در آژانس باید درباره درخواست لغو مشتری تصمیم بگیرد.',403); }
             $accepted_snapshot=json_decode($booking->snapshot,true) ?: array();
             if (!$mapping || !$row || (int)$mapping->owner_id!==(int)$booking->user_id || (int)$mapping->org_id!==(int)($accepted_snapshot['org_id']??0) || ($m['hold_id']??'')!==$hold->id || (int)($m['offer_id']??0)!==(int)$booking->offer_id || (int)($m['quantity']??0)!==(int)$booking->quantity || ($m['quote']['kind']??'')!==($accepted_snapshot['kind']??'') || (int)$row->owner_id!==(int)$booking->user_id || (int)($f['requested_by']??0)!==(int)$booking->user_id || ($f['booking_id']??'')!==$id || ($f['accepted_policy_reference']??'')!==($m['quote']['policy_reference']??'') || $b['policy_reference']!==($m['quote']['policy_reference']??'')) { $wpdb->query('ROLLBACK'); return self::error('not_found','Customer-requested cancellation with matching agreed terms was not found.','درخواست لغو مشتری با شرایط توافق‌شده منطبق یافت نشد.',404); }
-            if (in_array($row->state,array('approved','rejected'),true) && ($f['review_hash']??'')===$hash) { $wpdb->query('COMMIT'); return self::cancellation_view($row); }
+            if (in_array($row->state,array('approved','rejected'),true) && ($f['review_hash']??'')===$hash) { self::sql($wpdb->query('COMMIT')); return self::cancellation_view($row); }
             if ((int)$row->version!==$b['version'] || $row->state!=='requested' || !in_array($mapping->state,array('held','consumed'),true)) { $wpdb->query('ROLLBACK'); return self::error('version','Cancellation request changed or is no longer pending.','درخواست لغو تغییر کرده یا دیگر در انتظار بررسی نیست.'); }
             $refund_review=null;
             if ($b['approved']) {
@@ -436,26 +480,30 @@ final class Atlas_Resource_Booking {
     }
     public static function booking_fields($html,$offer) {
         if (!in_array($offer['kind']??'',array('stay','rental'),true)) return $html;
-        $row=self::current((int)$offer['id']); if (is_wp_error($row)) return $html.'<p>'.esc_html($row->get_error_message()).'</p>';
+        $row=self::current((int)$offer['id']); if (is_wp_error($row)) { self::script(); return $html.'<p data-resource-unavailable>'.esc_html($row->get_error_message()).'</p>'; }
         $f=self::data($row); self::script();
-        $html.='<fieldset data-resource-booking><legend>'.esc_html(self::t('Dates and reviewed terms','تاریخ و شرایط بازبینی‌شده')).'</legend><input type="hidden" name="rate_version" data-atlas-booking-option value="'.esc_attr($row->version).'">';
+        $plans=self::active_rates((int)$offer['id']); if (is_wp_error($plans)) return $html.'<p data-resource-unavailable>'.esc_html($plans->get_error_message()).'</p>'; $multiple=count($plans)>1;
+        $html.='<fieldset data-resource-booking><legend>'.esc_html(self::t('Dates and reviewed terms','تاریخ و شرایط بازبینی‌شده')).'</legend><input type="hidden" name="rate_version" data-atlas-booking-option value="'.esc_attr($multiple?0:$row->version).'">';
+        if ($multiple) { $html.='<label>'.esc_html(self::t('Reviewed rate plan','طرح قیمت بازبینی‌شده')).'<select name="rate_plan_id" data-atlas-booking-option required><option value="">'.esc_html(self::t('Choose a plan and review its terms','طرح را انتخاب و شرایط آن را بررسی کنید')).'</option>'; foreach ($plans as $plan) { $p=self::data($plan); $html.='<option value="'.esc_attr($plan->id).'">'.esc_html(self::t($p['name_en']??'Reviewed standard rate',$p['name_fa']??'قیمت استاندارد بازبینی‌شده').' · '.$p['start_date'].' – '.$p['end_date']).'</option>'; } $html.='</select></label>'; }
+        else $html.='<input type="hidden" name="rate_plan_id" data-atlas-booking-option value="'.esc_attr($row->id).'">';
         $fields=$f['kind']==='stay'?array('check_in'=>array('Check-in','ورود','date'),'check_out'=>array('Check-out (exclusive)','خروج (روز خروج محاسبه نمی‌شود)','date'),'guests_per_unit'=>array('Guests per room / unit','مهمان در هر اتاق / واحد','number')):array('pickup_local'=>array('Pickup local time','زمان محلی تحویل','datetime-local'),'return_local'=>array('Return local time','زمان محلی بازگشت','datetime-local'));
+        $html.='<div class="atlas-dated-fields">';
         foreach ($fields as $name=>$label) $html.='<label>'.esc_html(self::t($label[0],$label[1])).'<input name="'.esc_attr($name).'" type="'.$label[2].'" data-atlas-booking-option required'.($label[2]==='number'?' min="1" value="1"':'').'></label>';
-        $html.='<p>'.esc_html(self::t('Named time zone: ','منطقه زمانی: ').$f['timezone']).'</p>';
+        $html.='</div><p data-resource-zone>'.esc_html(self::t('Named time zone: ','منطقه زمانی: ').$f['timezone']).'</p>';
         if ($f['kind']==='rental') {
             $html.='<details><summary>'.esc_html(self::t('Clock-change offset, when needed','اختلاف ساعت هنگام تغییر ساعت، در صورت نیاز')).'</summary>';
             foreach (array('pickup_offset','return_offset') as $name) $html.='<label>'.esc_html($name==='pickup_offset'?self::t('Pickup UTC offset (for example +03:30)','اختلاف تحویل با UTC (مانند +03:30)'):self::t('Return UTC offset','اختلاف بازگشت با UTC')).'<input name="'.$name.'" data-atlas-booking-option pattern="[+-][0-9]{2}:[0-9]{2}" placeholder="+03:30"></label>';
-            $html.='</details><label><input type="checkbox" name="protection" data-atlas-booking-option data-value-type="bool">'.esc_html(self::t('Choose the disclosed optional protection','انتخاب پوشش اختیاری اعلام‌شده')).' · '.esc_html(number_format_i18n($f['protection_irr'])).' IRR</label>';
+            $html.='</details><label><input type="checkbox" name="protection" data-atlas-booking-option data-value-type="bool">'.esc_html(self::t('Choose the disclosed optional protection','انتخاب پوشش اختیاری اعلام‌شده')).' · <span data-resource-protection-amount>'.esc_html(number_format_i18n($f['protection_irr'])).'</span> IRR</label>';
         }
-        $html.='<p>'.esc_html(self::t($f['terms_en'],$f['terms_fa'])).'</p><p>'.esc_html(self::t('Local allotment only; supplier acceptance and agency confirmation remain separate. No deposit instrument is secured by this checkout.','فقط سهمیه محلی؛ پذیرش تأمین‌کننده و تأیید آژانس جداگانه است. این پرداخت هیچ ابزار ودیعه‌ای را تضمین نمی‌کند.')).'</p><label><input type="checkbox" name="terms_accepted" data-atlas-booking-option data-value-type="bool" required>'.esc_html(self::t('I accept this dated rate and the disclosed terms','قیمت تاریخ‌دار و شرایط اعلام‌شده را می‌پذیرم')).'</label><output data-resource-estimate></output></fieldset>';
+        $html.='<p data-resource-plan-terms>'.esc_html($multiple?self::t('Choose a rate plan to view its full terms.','برای مشاهده شرایط کامل، طرح قیمت را انتخاب کنید.'):self::t($f['terms_en'],$f['terms_fa'])).'</p><p>'.esc_html(self::t('Local allotment only; supplier acceptance and agency confirmation remain separate. No deposit instrument is secured by this checkout.','فقط سهمیه محلی؛ پذیرش تأمین‌کننده و تأیید آژانس جداگانه است. این پرداخت هیچ ابزار ودیعه‌ای را تضمین نمی‌کند.')).'</p><output data-resource-estimate></output><label class="atlas-dated-consent"><input type="checkbox" name="terms_accepted" data-atlas-booking-option data-value-type="bool" required>'.esc_html(self::t('I accept this dated rate and the disclosed terms','قیمت تاریخ‌دار و شرایط اعلام‌شده را می‌پذیرم')) .'</label></fieldset>';
         return $html;
     }
     public static function offer_details($html,$offer) {
         if (!in_array($offer['kind']??'',array('stay','rental'),true)) return $html;
         $row=self::current((int)$offer['id']); if (is_wp_error($row)) return $html;
-        $f=self::data($row); return $html.'<p>'.esc_html(self::t('Reviewed local rate: ','قیمت محلی بازبینی‌شده: ').number_format_i18n($f['unit_amount_irr']).' IRR · '.($f['kind']==='stay'?self::t('per local night','برای هر شب محلی'):self::t('per started 24 hours','برای هر ۲۴ ساعت شروع‌شده'))).'</p><p>'.esc_html(self::t('Quote valid until: ','اعتبار قیمت تا: ').$f['valid_until']).'</p>';
+        $f=self::data($row); return $html.'<p>'.esc_html(self::t('Advertised base rate from: ','قیمت پایه اعلام‌شده از: ').number_format_i18n($offer['amount_irr']).' IRR · '.($f['kind']==='stay'?self::t('per local night','برای هر شب محلی'):self::t('per started 24 hours','برای هر ۲۴ ساعت شروع‌شده'))).'</p><p>'.esc_html(self::t('Select a current dated plan for exact price and terms.','برای قیمت و شرایط دقیق، طرح تاریخ‌دار جاری را انتخاب کنید.')).'</p>';
     }
-    private static function script() { wp_enqueue_script('atlas-resource-booking',plugins_url('assets/resource-booking.js',__FILE__),array(),'0.1.0',true); wp_localize_script('atlas-resource-booking','atlasResources',array('base'=>esc_url_raw(rest_url('agency/v1/')),'nonce'=>is_user_logged_in()?wp_create_nonce('wp_rest'):'','lang'=>self::t('en','fa'),'loading'=>self::t('Loading…','در حال دریافت…'),'saved'=>self::t('Recorded.','ثبت شد.'),'error'=>self::t('Request failed.','درخواست انجام نشد.'))); }
+    private static function script() { wp_enqueue_script('atlas-resource-booking',plugins_url('assets/resource-booking.js',__FILE__),array(),ATLAS_CORE_VERSION.'-'.filemtime(__DIR__.'/assets/resource-booking.js'),true); wp_localize_script('atlas-resource-booking','atlasResources',array('base'=>esc_url_raw(rest_url('agency/v1/')),'nonce'=>is_user_logged_in()?wp_create_nonce('wp_rest'):'','lang'=>self::t('en','fa'),'loading'=>self::t('Loading…','در حال دریافت…'),'saved'=>self::t('Recorded.','ثبت شد.'),'error'=>self::t('Request failed.','درخواست انجام نشد.'))); }
     public static function panel($customer=false) {
         if (!self::ready() || !is_user_logged_in()) return ''; self::script();
         $html='<section data-resource-workspace><h2>'.esc_html(self::t('Stays and vehicle reservations','رزرو اقامت و وسیله')).'</h2><p role="status" aria-live="polite" data-resource-status></p><button type="button" data-resource-refresh>'.esc_html(self::t('Refresh my resource reservations','دریافت رزروهای منابع من')).'</button><div data-resource-queue></div>';
@@ -463,14 +511,14 @@ final class Atlas_Resource_Booking {
         global $wpdb; $offers=$wpdb->get_results('SELECT offer_id,kind,offer_snapshot FROM '.DB::table('inventory')." WHERE kind IN ('stay','rental') ORDER BY offer_id DESC LIMIT 101"); $resources=$wpdb->get_results('SELECT * FROM '.self::table('resources').' ORDER BY id LIMIT 501');
         $html.='<details><summary>'.esc_html(self::t('Review a dated allotment and rate','بررسی سهمیه و قیمت تاریخ‌دار')).'</summary><form data-resource-rate><label>'.esc_html(self::t('Offer','پیشنهاد')).'<select name="offer_id" required><option value="">—</option>';
         foreach ($offers as $offer) { $o=json_decode($offer->offer_snapshot,true); $html.='<option value="'.esc_attr($offer->offer_id).'" data-version="'.esc_attr($o['version']).'">'.esc_html($o['title_en'].' · '.$offer->kind).'</option>'; }
-        $html.='</select></label><label>'.esc_html(self::t('Registered resource','منبع ثبت‌شده')).'<select name="resource_id" required>';
+        $html.='</select></label><label>'.esc_html(self::t('Existing reviewed plan','طرح بازبینی‌شده موجود')).'<select data-resource-plan-editor></select></label><button type="button" data-resource-new-plan>'.esc_html(self::t('Create another named plan','ساخت طرح نام‌دار دیگر')).'</button><input name="plan_id" type="hidden"><label>'.esc_html(self::t('Plan name in English','نام انگلیسی طرح')).'<input name="name_en" required maxlength="180"></label><label>'.esc_html(self::t('Plan name in Persian','نام فارسی طرح')).'<input name="name_fa" required maxlength="180"></label><label>'.esc_html(self::t('Maximum guests per unit','حداکثر مهمان هر واحد')).'<input name="max_guests_per_unit" type="number" min="1" required></label><label>'.esc_html(self::t('Registered resource','منبع ثبت‌شده')).'<select name="resource_id" required>';
         foreach ($resources as $resource) { $source=self::row($resource->record_type,$resource->record_id); $s=self::data($source); $html.='<option value="'.esc_attr($resource->id).'">'.esc_html(($s['name']??$s['label']??$resource->id).' · '.$resource->kind).'</option>'; }
         $html.='</select></label><label>'.esc_html(self::t('Explicitly assigned supplier reviewers (optional; agency always reviews)','بازبینان صریح تأمین‌کننده (اختیاری؛ بررسی آژانس همواره برقرار است)')).'<select name="supplier_users" multiple size="4"></select></label>';
         $fields=array('version'=>array('Current rate version (0 for new)','نسخه قیمت جاری (صفر برای جدید)','number'),'start_date'=>array('Local rate start date','تاریخ محلی شروع قیمت','date'),'end_date'=>array('Local rate end date (exclusive)','تاریخ محلی پایان قیمت (انحصاری)','date'),'timezone'=>array('IANA time zone','منطقه زمانی IANA','text'),'valid_until'=>array('Quote expiry (UTC, ISO timestamp)','انقضای قیمت (زمان UTC به شکل ISO)','text'),'unit_amount_irr'=>array('Rate per night / started 24h (IRR)','قیمت هر شب / ۲۴ ساعت شروع‌شده (ریال)','number'),'tax_per_unit_irr'=>array('Disclosed tax per reserved unit (IRR)','مالیات اعلام‌شده هر واحد رزرو (ریال)','number'),'protection_irr'=>array('Optional rental protection (IRR; zero for stays)','پوشش اختیاری اجاره (ریال؛ صفر برای اقامت)','number'),'min_duration'=>array('Minimum nights / 24h units','حداقل شب / واحد ۲۴ ساعت','number'),'max_duration'=>array('Maximum nights / 24h units','حداکثر شب / واحد ۲۴ ساعت','number'),'terms_en'=>array('Reviewed terms in English','شرایط بازبینی‌شده انگلیسی','text'),'terms_fa'=>array('Reviewed terms in Persian','شرایط بازبینی‌شده فارسی','text'),'policy_reference'=>array('Approved policy reference','شناسه سیاست تأییدشده','text'),'supplier_reference'=>array('Private supplier allotment evidence reference','شناسه خصوصی شواهد سهمیه تأمین‌کننده','text'),'reason'=>array('Review reason','دلیل بررسی','text'));
         foreach ($fields as $name=>$label) $html.='<label>'.esc_html(self::t($label[0],$label[1])).'<input name="'.$name.'" type="'.$label[2].'" required'.($label[2]==='number'?' min="0"':'').'></label>';
         $html.='<p>'.esc_html(self::t('Only selected active supplier reviewers can record acceptance; an empty selection keeps this with the agency. No deposit charge is configured.','فقط بازبینان فعال انتخاب‌شده می‌توانند پذیرش را ثبت کنند؛ انتخاب خالی این اختیار را برای آژانس نگه می‌دارد. هزینه ودیعه تنظیم نشده است.')).'</p><label><input type="checkbox" name="published">'.esc_html(self::t('Publish this reviewed local rate','انتشار قیمت محلی بازبینی‌شده')).'</label><button>'.esc_html(self::t('Save reviewed rate','ذخیره قیمت بازبینی‌شده')).'</button></form>';
         $html.='<form data-resource-activate><p data-resource-activation-offer>'.esc_html(self::t('Select the reviewed offer above before enabling booking.','پیش از فعال‌سازی، پیشنهاد بازبینی‌شده را در بالا انتخاب کنید.')).'</p><input name="offer_id" type="hidden" required><input name="version" type="hidden" required><label>'.esc_html(self::t('Linked WooCommerce product','محصول مرتبط ووکامرس')).'<select name="product_id" required><option value="">—</option>';
-        if (function_exists('wc_get_products')) foreach (wc_get_products(array('limit'=>100,'status'=>'publish')) as $product) $html.='<option value="'.esc_attr($product->get_id()).'">'.esc_html($product->get_name()).'</option>';
+        if (function_exists('wc_get_products')) foreach (wc_get_products(array('limit'=>100,'status'=>'publish')) as $product) if ($product->is_virtual()) $html.='<option value="'.esc_attr($product->get_id()).'">'.esc_html($product->get_name()).'</option>';
         return $html.'</select></label><button>'.esc_html(self::t('Enable independently reviewed booking','فعال‌سازی رزرو با بررسی مستقل')).'</button></form></details></section>';
     }
 }

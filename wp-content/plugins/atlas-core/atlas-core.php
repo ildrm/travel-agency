@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Atlas Core
  * Description: Transactional booking, organization permissions, records, and WooCommerce bridge for Atlas.
- * Version: 0.2.0
+ * Version: 1.0.0-rc.1
  * Requires PHP: 8.2
  * WC tested up to: 11.3.0
  * Text Domain: atlas-core
@@ -15,7 +15,7 @@ add_action('before_woocommerce_init', static function (): void {
         \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
     }
 });
-define('ATLAS_CORE_VERSION', '0.2.0');
+define('ATLAS_CORE_VERSION', '1.0.0-rc.1');
 define('ATLAS_CORE_PATH', __DIR__);
 foreach (['DB', 'Auth', 'Records', 'Eligibility', 'Catalog', 'Offers', 'Money', 'Booking', 'Finance', 'Woo', 'Rest', 'Privacy'] as $file) {
     if (!is_readable(__DIR__ . '/src/' . $file . '.php')) {
@@ -41,5 +41,6 @@ add_action('init', static function (): void {
     do_action('atlas_core_ready');
 }, 20);
 if (defined('WP_CLI') && WP_CLI) {
+    require_once __DIR__ . '/src/Preflight.php';
     \WP_CLI::add_command('atlas', \Atlas\Core\CLI::class);
 }

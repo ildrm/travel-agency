@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Atlas Operations
  * Description: Scoped travel, partner and support workflows for Atlas.
- * Version: 0.2.0
+ * Version: 1.0.0-rc.1
  * Text Domain: atlas-operations
  * Requires Plugins: atlas-core
  */

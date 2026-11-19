@@ -31,6 +31,13 @@ $offers = [
     ['transfer', 'Arrive with a plan · transfer request', 'با برنامه برسید · درخواست ترانسفر', 'Share pickup, drop-off and passenger requirements. No live dispatch or tracking is promised.', 'مبدأ، مقصد و تعداد مسافر را مشخص کنید؛ اعزام یا رهگیری زنده‌ای وعده داده نمی‌شود.', 0],
     ['flight', 'Your next connection · passenger inquiry', 'مسیر بعدی شما · درخواست بلیت', 'Request information about a flight, train or bus. No live fare, seat, PNR or ticket issuance.', 'درخواست اطلاعات پرواز، قطار یا اتوبوس؛ قیمت یا صندلی زنده و صدور بلیت وجود ندارد.', 0],
 ];
+$cities = [
+    'event' => ['tehran', 'IR', 'Tehran', 'تهران'],
+    'cohort' => ['tehran', 'IR', 'Tehran', 'تهران'],
+    'stay' => ['shiraz', 'IR', 'Shiraz', 'شیراز'],
+    'rental' => ['isfahan', 'IR', 'Isfahan', 'اصفهان'],
+    'transfer' => ['tehran', 'IR', 'Tehran', 'تهران'],
+];
 foreach ($offers as [$kind, $en, $fa, $descriptionEn, $descriptionFa, $amount]) {
     if (!empty($fixtures[$kind]) && get_post($fixtures[$kind])) {
         continue; // Never overwrite a user's subsequent local edits or booked offer versions.
@@ -51,11 +58,16 @@ foreach ($offers as [$kind, $en, $fa, $descriptionEn, $descriptionFa, $amount]) 
         $product->set_tax_status('none');
         $productId = $product->save();
     }
+    $catalog = ['languages'=>['en','fa']];
+    if (isset($cities[$kind])) {
+        [$slug, $country, $cityEn, $cityFa] = $cities[$kind];
+        $catalog['destinations'] = [['id'=>$slug,'type'=>'city','country_code'=>$country,'name_en'=>$cityEn,'name_fa'=>$cityFa]];
+    }
     $id = Atlas\Core\Offers::save(0, [
         'kind' => $kind, 'org_id' => 0, 'title_en' => $en, 'title_fa' => $fa,
         'description_en' => $descriptionEn, 'description_fa' => $descriptionFa,
         'registration_open_at' => $amount ? $open : '', 'registration_close_at' => $amount ? $close : '',
-        'timezone' => 'Asia/Tehran', 'capacity' => $amount ? 30 : 0,
+        'catalog' => $catalog, 'timezone' => 'Asia/Tehran', 'capacity' => $amount ? 30 : 0,
         'amount_irr' => $amount, 'mode' => $amount ? 'local' : 'request_only',
         'status' => in_array($kind, ['tour','cohort'], true) ? 'draft' : 'published', 'product_id' => $productId,
     ], get_current_user_id());
@@ -66,6 +78,8 @@ foreach ($offers as [$kind, $en, $fa, $descriptionEn, $descriptionFa, $amount]) 
     $fixtures[$kind] = $id;
     update_option('atlas_demo_fixtures', $fixtures, false);
 }
+// Preserve editorial choices when the demo is seeded again.
+add_option('atlas_featured_offer_ids', array_map(static fn($offer) => (int)$fixtures[$offer[0]], $offers), '', false);
 if (empty($fixtures['merch_product'])) {
     $product = new WC_Product_Simple();
     $product->set_name('Paper trail journal · local demonstration');

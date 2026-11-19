@@ -13,7 +13,7 @@
     "orientationAngle": 0,
     "orientationType": "landscape-primary"
   },
-  "timestamp": "2026-11-18T07:10:29.104Z",
+  "timestamp": "2026-11-19T06:06:13.865Z",
   "url": "http://127.0.0.1:8840/checkout-2/?lang=fa",
   "toolOptions": {
     "runOnly": {
@@ -408,40 +408,6 @@
       "nodes": []
     },
     {
-      "id": "list",
-      "impact": null,
-      "tags": [
-        "cat.structure",
-        "wcag2a",
-        "wcag131",
-        "EN-301-549",
-        "EN-9.1.3.1",
-        "RGAAv4",
-        "RGAA-9.3.1"
-      ],
-      "description": "Ensure that lists are structured correctly",
-      "help": "<ul> and <ol> must only directly contain <li>, <script> or <template> elements",
-      "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/list?application=playwright",
-      "nodes": []
-    },
-    {
-      "id": "listitem",
-      "impact": null,
-      "tags": [
-        "cat.structure",
-        "wcag2a",
-        "wcag131",
-        "EN-301-549",
-        "EN-9.1.3.1",
-        "RGAAv4",
-        "RGAA-9.3.1"
-      ],
-      "description": "Ensure <li> elements are used semantically",
-      "help": "<li> elements must be contained in a <ul> or <ol>",
-      "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/listitem?application=playwright",
-      "nodes": []
-    },
-    {
       "id": "marquee",
       "impact": null,
       "tags": [
@@ -646,26 +612,6 @@
       "nodes": []
     },
     {
-      "id": "valid-lang",
-      "impact": null,
-      "tags": [
-        "cat.language",
-        "wcag2aa",
-        "wcag312",
-        "TTv5",
-        "TT11.b",
-        "EN-301-549",
-        "EN-9.3.1.2",
-        "ACT",
-        "RGAAv4",
-        "RGAA-8.8.1"
-      ],
-      "description": "Ensure lang attributes have valid values",
-      "help": "lang attribute must have a valid value",
-      "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/valid-lang?application=playwright",
-      "nodes": []
-    },
-    {
       "id": "video-caption",
       "impact": null,
       "tags": [
@@ -759,9 +705,129 @@
             }
           ],
           "impact": null,
-          "html": "<a class=\"wc-block-cart-link\" href=\"http://127.0.0.1:8840/cart-2/?lang=fa\" aria-label=\"سبد خرید\">",
+          "html": "<nav class=\"atlas-main-navigation\" aria-label=\"ناوبری اصلی\" id=\"atlas-header-nav-0-0\">",
           "target": [
-            ".wc-block-cart-link"
+            "#atlas-header-nav-0-0"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-allowed-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attributes are used correctly for the defined role"
+            },
+            {
+              "id": "aria-allowed-attr-elm",
+              "data": null,
+              "relatedNodes": [],
+              "message": "ARIA attributes are allowed for this element",
+              "impact": "critical"
+            },
+            {
+              "id": "aria-no-deprecated-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "No deprecated ARIA attributes are used"
+            }
+          ],
+          "none": [
+            {
+              "id": "aria-unsupported-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute is supported"
+            }
+          ],
+          "impact": null,
+          "html": "<nav class=\"atlas-utility\" aria-label=\"حساب کاربری و خرید\" id=\"atlas-header-nav-0-1\">",
+          "target": [
+            "#atlas-header-nav-0-1"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-allowed-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attributes are used correctly for the defined role"
+            },
+            {
+              "id": "aria-allowed-attr-elm",
+              "data": null,
+              "relatedNodes": [],
+              "message": "ARIA attributes are allowed for this element",
+              "impact": "critical"
+            },
+            {
+              "id": "aria-no-deprecated-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "No deprecated ARIA attributes are used"
+            }
+          ],
+          "none": [
+            {
+              "id": "aria-unsupported-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute is supported"
+            }
+          ],
+          "impact": null,
+          "html": "<nav class=\"atlas-language\" aria-label=\"زبان\"><a lang=\"en\" hreflang=\"en\" href=\"/checkout-2/?lang=en\">EN</a><span aria-hidden=\"true\">/</span><a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a></nav>",
+          "target": [
+            ".atlas-header-inner > .atlas-language[aria-label=\"زبان\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-allowed-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attributes are used correctly for the defined role"
+            },
+            {
+              "id": "aria-allowed-attr-elm",
+              "data": null,
+              "relatedNodes": [],
+              "message": "ARIA attributes are allowed for this element",
+              "impact": "critical"
+            },
+            {
+              "id": "aria-no-deprecated-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "No deprecated ARIA attributes are used"
+            }
+          ],
+          "none": [
+            {
+              "id": "aria-unsupported-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute is supported"
+            }
+          ],
+          "impact": null,
+          "html": "<a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a>",
+          "target": [
+            ".atlas-header-inner > .atlas-language[aria-label=\"زبان\"] > a[hreflang=\"fa\"][aria-current=\"true\"][href=\"/checkout-2/?lang=fa\"]"
           ]
         },
         {
@@ -1362,6 +1428,126 @@
           "html": "<div aria-expanded=\"false\" class=\"wc-block-components-panel__button\" tabindex=\"0\" role=\"button\">",
           "target": [
             ".wc-block-components-panel__button"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-allowed-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attributes are used correctly for the defined role"
+            },
+            {
+              "id": "aria-allowed-attr-elm",
+              "data": null,
+              "relatedNodes": [],
+              "message": "ARIA attributes are allowed for this element",
+              "impact": "critical"
+            },
+            {
+              "id": "aria-no-deprecated-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "No deprecated ARIA attributes are used"
+            }
+          ],
+          "none": [
+            {
+              "id": "aria-unsupported-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute is supported"
+            }
+          ],
+          "impact": null,
+          "html": "<nav class=\"atlas-main-navigation\" aria-label=\"پیوندهای پایین صفحه\">",
+          "target": [
+            "nav[aria-label=\"پیوندهای پایین صفحه\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-allowed-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attributes are used correctly for the defined role"
+            },
+            {
+              "id": "aria-allowed-attr-elm",
+              "data": null,
+              "relatedNodes": [],
+              "message": "ARIA attributes are allowed for this element",
+              "impact": "critical"
+            },
+            {
+              "id": "aria-no-deprecated-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "No deprecated ARIA attributes are used"
+            }
+          ],
+          "none": [
+            {
+              "id": "aria-unsupported-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute is supported"
+            }
+          ],
+          "impact": null,
+          "html": "<nav class=\"atlas-language\" aria-label=\"زبان\"><a lang=\"en\" hreflang=\"en\" href=\"/checkout-2/?lang=en\">EN</a><span aria-hidden=\"true\">/</span><a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a></nav>",
+          "target": [
+            ".atlas-footer-inner > .atlas-language[aria-label=\"زبان\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-allowed-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attributes are used correctly for the defined role"
+            },
+            {
+              "id": "aria-allowed-attr-elm",
+              "data": null,
+              "relatedNodes": [],
+              "message": "ARIA attributes are allowed for this element",
+              "impact": "critical"
+            },
+            {
+              "id": "aria-no-deprecated-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "No deprecated ARIA attributes are used"
+            }
+          ],
+          "none": [
+            {
+              "id": "aria-unsupported-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute is supported"
+            }
+          ],
+          "impact": null,
+          "html": "<a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a>",
+          "target": [
+            ".atlas-footer-inner > .atlas-language[aria-label=\"زبان\"] > a[hreflang=\"fa\"][aria-current=\"true\"][href=\"/checkout-2/?lang=fa\"]"
           ]
         },
         {
@@ -1532,9 +1718,63 @@
           ],
           "none": [],
           "impact": null,
-          "html": "<a class=\"wc-block-cart-link\" href=\"http://127.0.0.1:8840/cart-2/?lang=fa\" aria-label=\"سبد خرید\">",
+          "html": "<nav class=\"atlas-main-navigation\" aria-label=\"ناوبری اصلی\" id=\"atlas-header-nav-0-0\">",
           "target": [
-            ".wc-block-cart-link"
+            "#atlas-header-nav-0-0"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-conditional-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<nav class=\"atlas-utility\" aria-label=\"حساب کاربری و خرید\" id=\"atlas-header-nav-0-1\">",
+          "target": [
+            "#atlas-header-nav-0-1"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-conditional-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<nav class=\"atlas-language\" aria-label=\"زبان\"><a lang=\"en\" hreflang=\"en\" href=\"/checkout-2/?lang=en\">EN</a><span aria-hidden=\"true\">/</span><a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a></nav>",
+          "target": [
+            ".atlas-header-inner > .atlas-language[aria-label=\"زبان\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-conditional-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a>",
+          "target": [
+            ".atlas-header-inner > .atlas-language[aria-label=\"زبان\"] > a[hreflang=\"fa\"][aria-current=\"true\"][href=\"/checkout-2/?lang=fa\"]"
           ]
         },
         {
@@ -1805,6 +2045,60 @@
           "html": "<div aria-expanded=\"false\" class=\"wc-block-components-panel__button\" tabindex=\"0\" role=\"button\">",
           "target": [
             ".wc-block-components-panel__button"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-conditional-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<nav class=\"atlas-main-navigation\" aria-label=\"پیوندهای پایین صفحه\">",
+          "target": [
+            "nav[aria-label=\"پیوندهای پایین صفحه\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-conditional-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<nav class=\"atlas-language\" aria-label=\"زبان\"><a lang=\"en\" hreflang=\"en\" href=\"/checkout-2/?lang=en\">EN</a><span aria-hidden=\"true\">/</span><a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a></nav>",
+          "target": [
+            ".atlas-footer-inner > .atlas-language[aria-label=\"زبان\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-conditional-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a>",
+          "target": [
+            ".atlas-footer-inner > .atlas-language[aria-label=\"زبان\"] > a[hreflang=\"fa\"][aria-current=\"true\"][href=\"/checkout-2/?lang=fa\"]"
           ]
         },
         {
@@ -2009,6 +2303,38 @@
       "help": "ARIA hidden element must not be focusable or contain focusable elements",
       "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/aria-hidden-focus?application=playwright",
       "nodes": [
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "focusable-modal-open",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements while a modal is open"
+            },
+            {
+              "id": "focusable-disabled",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements contained within element"
+            },
+            {
+              "id": "focusable-not-tabbable",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements contained within element"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<span aria-hidden=\"true\">/</span>",
+          "target": [
+            ".atlas-header-inner > .atlas-language[aria-label=\"زبان\"] > span[aria-hidden=\"true\"]"
+          ]
+        },
         {
           "any": [],
           "all": [
@@ -2294,7 +2620,7 @@
           "impact": null,
           "html": "<span aria-hidden=\"true\">1</span>",
           "target": [
-            "span[aria-hidden=\"true\"]"
+            ".wc-block-components-order-summary-item__quantity > span[aria-hidden=\"true\"]"
           ]
         },
         {
@@ -2360,6 +2686,38 @@
           "target": [
             ".wc-block-components-panel__button-icon"
           ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "focusable-modal-open",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements while a modal is open"
+            },
+            {
+              "id": "focusable-disabled",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements contained within element"
+            },
+            {
+              "id": "focusable-not-tabbable",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements contained within element"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<span aria-hidden=\"true\">/</span>",
+          "target": [
+            ".atlas-footer-inner > .atlas-language[aria-label=\"زبان\"] > span[aria-hidden=\"true\"]"
+          ]
         }
       ]
     },
@@ -2392,9 +2750,63 @@
             }
           ],
           "impact": null,
-          "html": "<a class=\"wc-block-cart-link\" href=\"http://127.0.0.1:8840/cart-2/?lang=fa\" aria-label=\"سبد خرید\">",
+          "html": "<nav class=\"atlas-main-navigation\" aria-label=\"ناوبری اصلی\" id=\"atlas-header-nav-0-0\">",
           "target": [
-            ".wc-block-cart-link"
+            "#atlas-header-nav-0-0"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "aria-prohibited-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "impact": null,
+          "html": "<nav class=\"atlas-utility\" aria-label=\"حساب کاربری و خرید\" id=\"atlas-header-nav-0-1\">",
+          "target": [
+            "#atlas-header-nav-0-1"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "aria-prohibited-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "impact": null,
+          "html": "<nav class=\"atlas-language\" aria-label=\"زبان\"><a lang=\"en\" hreflang=\"en\" href=\"/checkout-2/?lang=en\">EN</a><span aria-hidden=\"true\">/</span><a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a></nav>",
+          "target": [
+            ".atlas-header-inner > .atlas-language[aria-label=\"زبان\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "aria-prohibited-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "impact": null,
+          "html": "<a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a>",
+          "target": [
+            ".atlas-header-inner > .atlas-language[aria-label=\"زبان\"] > a[hreflang=\"fa\"][aria-current=\"true\"][href=\"/checkout-2/?lang=fa\"]"
           ]
         },
         {
@@ -2665,6 +3077,60 @@
           "html": "<div aria-expanded=\"false\" class=\"wc-block-components-panel__button\" tabindex=\"0\" role=\"button\">",
           "target": [
             ".wc-block-components-panel__button"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "aria-prohibited-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "impact": null,
+          "html": "<nav class=\"atlas-main-navigation\" aria-label=\"پیوندهای پایین صفحه\">",
+          "target": [
+            "nav[aria-label=\"پیوندهای پایین صفحه\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "aria-prohibited-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "impact": null,
+          "html": "<nav class=\"atlas-language\" aria-label=\"زبان\"><a lang=\"en\" hreflang=\"en\" href=\"/checkout-2/?lang=en\">EN</a><span aria-hidden=\"true\">/</span><a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a></nav>",
+          "target": [
+            ".atlas-footer-inner > .atlas-language[aria-label=\"زبان\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "aria-prohibited-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "impact": null,
+          "html": "<a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a>",
+          "target": [
+            ".atlas-footer-inner > .atlas-language[aria-label=\"زبان\"] > a[hreflang=\"fa\"][aria-current=\"true\"][href=\"/checkout-2/?lang=fa\"]"
           ]
         },
         {
@@ -3034,9 +3500,105 @@
           ],
           "none": [],
           "impact": null,
-          "html": "<a class=\"wc-block-cart-link\" href=\"http://127.0.0.1:8840/cart-2/?lang=fa\" aria-label=\"سبد خرید\">",
+          "html": "<nav class=\"atlas-main-navigation\" aria-label=\"ناوبری اصلی\" id=\"atlas-header-nav-0-0\">",
           "target": [
-            ".wc-block-cart-link"
+            "#atlas-header-nav-0-0"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-valid-attr-value",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute values are valid"
+            },
+            {
+              "id": "aria-errormessage",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-errormessage exists and references elements visible to screen readers that use a supported aria-errormessage technique"
+            },
+            {
+              "id": "aria-level",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-level values are valid"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<nav class=\"atlas-utility\" aria-label=\"حساب کاربری و خرید\" id=\"atlas-header-nav-0-1\">",
+          "target": [
+            "#atlas-header-nav-0-1"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-valid-attr-value",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute values are valid"
+            },
+            {
+              "id": "aria-errormessage",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-errormessage exists and references elements visible to screen readers that use a supported aria-errormessage technique"
+            },
+            {
+              "id": "aria-level",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-level values are valid"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<nav class=\"atlas-language\" aria-label=\"زبان\"><a lang=\"en\" hreflang=\"en\" href=\"/checkout-2/?lang=en\">EN</a><span aria-hidden=\"true\">/</span><a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a></nav>",
+          "target": [
+            ".atlas-header-inner > .atlas-language[aria-label=\"زبان\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-valid-attr-value",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute values are valid"
+            },
+            {
+              "id": "aria-errormessage",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-errormessage exists and references elements visible to screen readers that use a supported aria-errormessage technique"
+            },
+            {
+              "id": "aria-level",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-level values are valid"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a>",
+          "target": [
+            ".atlas-header-inner > .atlas-language[aria-label=\"زبان\"] > a[hreflang=\"fa\"][aria-current=\"true\"][href=\"/checkout-2/?lang=fa\"]"
           ]
         },
         {
@@ -3517,6 +4079,102 @@
           "html": "<div aria-expanded=\"false\" class=\"wc-block-components-panel__button\" tabindex=\"0\" role=\"button\">",
           "target": [
             ".wc-block-components-panel__button"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-valid-attr-value",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute values are valid"
+            },
+            {
+              "id": "aria-errormessage",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-errormessage exists and references elements visible to screen readers that use a supported aria-errormessage technique"
+            },
+            {
+              "id": "aria-level",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-level values are valid"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<nav class=\"atlas-main-navigation\" aria-label=\"پیوندهای پایین صفحه\">",
+          "target": [
+            "nav[aria-label=\"پیوندهای پایین صفحه\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-valid-attr-value",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute values are valid"
+            },
+            {
+              "id": "aria-errormessage",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-errormessage exists and references elements visible to screen readers that use a supported aria-errormessage technique"
+            },
+            {
+              "id": "aria-level",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-level values are valid"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<nav class=\"atlas-language\" aria-label=\"زبان\"><a lang=\"en\" hreflang=\"en\" href=\"/checkout-2/?lang=en\">EN</a><span aria-hidden=\"true\">/</span><a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a></nav>",
+          "target": [
+            ".atlas-footer-inner > .atlas-language[aria-label=\"زبان\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-valid-attr-value",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute values are valid"
+            },
+            {
+              "id": "aria-errormessage",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-errormessage exists and references elements visible to screen readers that use a supported aria-errormessage technique"
+            },
+            {
+              "id": "aria-level",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-level values are valid"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a>",
+          "target": [
+            ".atlas-footer-inner > .atlas-language[aria-label=\"زبان\"] > a[hreflang=\"fa\"][aria-current=\"true\"][href=\"/checkout-2/?lang=fa\"]"
           ]
         },
         {
@@ -3614,9 +4272,63 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a class=\"wc-block-cart-link\" href=\"http://127.0.0.1:8840/cart-2/?lang=fa\" aria-label=\"سبد خرید\">",
+          "html": "<nav class=\"atlas-main-navigation\" aria-label=\"ناوبری اصلی\" id=\"atlas-header-nav-0-0\">",
           "target": [
-            ".wc-block-cart-link"
+            "#atlas-header-nav-0-0"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-valid-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute name is valid"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<nav class=\"atlas-utility\" aria-label=\"حساب کاربری و خرید\" id=\"atlas-header-nav-0-1\">",
+          "target": [
+            "#atlas-header-nav-0-1"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-valid-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute name is valid"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<nav class=\"atlas-language\" aria-label=\"زبان\"><a lang=\"en\" hreflang=\"en\" href=\"/checkout-2/?lang=en\">EN</a><span aria-hidden=\"true\">/</span><a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a></nav>",
+          "target": [
+            ".atlas-header-inner > .atlas-language[aria-label=\"زبان\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-valid-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute name is valid"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a>",
+          "target": [
+            ".atlas-header-inner > .atlas-language[aria-label=\"زبان\"] > a[hreflang=\"fa\"][aria-current=\"true\"][href=\"/checkout-2/?lang=fa\"]"
           ]
         },
         {
@@ -3887,6 +4599,60 @@
           "html": "<div aria-expanded=\"false\" class=\"wc-block-components-panel__button\" tabindex=\"0\" role=\"button\">",
           "target": [
             ".wc-block-components-panel__button"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-valid-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute name is valid"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<nav class=\"atlas-main-navigation\" aria-label=\"پیوندهای پایین صفحه\">",
+          "target": [
+            "nav[aria-label=\"پیوندهای پایین صفحه\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-valid-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute name is valid"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<nav class=\"atlas-language\" aria-label=\"زبان\"><a lang=\"en\" hreflang=\"en\" href=\"/checkout-2/?lang=en\">EN</a><span aria-hidden=\"true\">/</span><a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a></nav>",
+          "target": [
+            ".atlas-footer-inner > .atlas-language[aria-label=\"زبان\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-valid-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute name is valid"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a>",
+          "target": [
+            ".atlas-footer-inner > .atlas-language[aria-label=\"زبان\"] > a[hreflang=\"fa\"][aria-current=\"true\"][href=\"/checkout-2/?lang=fa\"]"
           ]
         },
         {
@@ -4150,41 +4916,9 @@
           ],
           "none": [],
           "impact": null,
-          "html": "<div class=\"wp-block-group alignwide is-content-justification-space-between is-layout-flex wp-container-core-group-is-layout-2b3f698d wp-block-group-is-layout-flex\" style=\"padding-top:var(--wp--preset--spacing--20);padding-bottom:var(--wp--preset--spacing--20)\">",
-          "target": [
-            ".is-content-justification-space-between"
-          ]
-        },
-        {
-          "any": [],
-          "all": [
-            {
-              "id": "important-letter-spacing",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Letter-spacing in the style attribute is not set to !important, or meets the minimum"
-            },
-            {
-              "id": "important-word-spacing",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "word-spacing in the style attribute is not set to !important, or meets the minimum"
-            },
-            {
-              "id": "important-line-height",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "line-height in the style attribute is not set to !important, or meets the minimum"
-            }
-          ],
-          "none": [],
-          "impact": null,
           "html": "<button class=\"wc-block-components-button wp-element-button wc-block-components-checkout-place-order-button wc-block-components-checkout-place-order-button--full-width contained\" style=\"\" type=\"button\">",
           "target": [
-            "button"
+            ".wc-block-components-button"
           ]
         }
       ]
@@ -4225,7 +4959,7 @@
           "impact": null,
           "html": "<button class=\"wc-block-components-button wp-element-button wc-block-components-checkout-place-order-button wc-block-components-checkout-place-order-button--full-width contained\" style=\"\" type=\"button\">",
           "target": [
-            "button"
+            ".wc-block-components-button"
           ]
         }
       ]
@@ -4264,6 +4998,12 @@
               "data": null,
               "relatedNodes": [
                 {
+                  "html": "<h1 class=\"alignwide wp-block-post-title\">تسویه حساب</h1>",
+                  "target": [
+                    "h1"
+                  ]
+                },
+                {
                   "html": "<h2 class=\"wc-block-components-title wc-block-components-checkout-step__title\">اطلاعات تماس</h2>",
                   "target": [
                     "#contact-fields > .wc-block-components-checkout-step__heading-container > .wc-block-components-checkout-step__heading > h2"
@@ -4288,7 +5028,7 @@
                   ]
                 },
                 {
-                  "html": "<h3 class=\"wc-block-components-product-name\">A morning in nature · local demonstration</h3>",
+                  "html": "<h3 class=\"wc-block-components-product-name\">صبحی در طبیعت · آزمایش ثبت سفارش</h3>",
                   "target": [
                     "h3"
                   ]
@@ -4308,9 +5048,9 @@
               "data": null,
               "relatedNodes": [
                 {
-                  "html": "<main data-block-name=\"woocommerce/page-content-wrapper\" data-page=\"checkout\" class=\"wp-block-group is-layout-constrained wp-block-group-is-layout-constrained\">",
+                  "html": "<main data-block-name=\"woocommerce/page-content-wrapper\" data-page=\"checkout\" id=\"atlas-main-content\" class=\"wp-block-group atlas-shell atlas-content is-layout-constrained wp-block-group-is-layout-constrained\">",
                   "target": [
-                    "main"
+                    "#atlas-main-content"
                   ]
                 }
               ],
@@ -4355,9 +5095,9 @@
                 "fgColor": "#132638",
                 "bgColor": "#ffffff",
                 "contrastRatio": 15.41,
-                "fontSize": "12.0pt (16px)",
-                "fontWeight": "normal",
-                "expectedContrastRatio": "4.5:1"
+                "fontSize": "18.6pt (24.8px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "3:1"
               },
               "relatedNodes": [],
               "impact": "serious",
@@ -4369,7 +5109,107 @@
           "impact": null,
           "html": "<a href=\"http://127.0.0.1:8840\" target=\"_self\" rel=\"home\">Atlas Leisure — Local demonstration</a>",
           "target": [
-            "a[href=\"http://127.0.0.1:8840\"]"
+            ".atlas-header-inner > .atlas-wordmark.wp-block-site-title > a[href=\"http://127.0.0.1:8840\"][target=\"_self\"][rel=\"home\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#005f73",
+                "bgColor": "#ffffff",
+                "contrastRatio": 7.28,
+                "fontSize": "10.8pt (14.4px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 7.28"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?atlas_kind=event&amp;lang=fa#atlas-offers\">رویدادها</a>",
+          "target": [
+            "#atlas-header-nav-0-0 > ul > li:nth-child(3) > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#005f73",
+                "bgColor": "#ffffff",
+                "contrastRatio": 7.28,
+                "fontSize": "9.8pt (13.12px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 7.28"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?atlas_area=account&amp;lang=fa\">حساب من</a>",
+          "target": [
+            "#atlas-header-nav-0-1 > a:nth-child(1)"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#005f73",
+                "bgColor": "#ffffff",
+                "contrastRatio": 7.28,
+                "fontSize": "9.8pt (13.12px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 7.28"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a lang=\"en\" hreflang=\"en\" href=\"/checkout-2/?lang=en\">EN</a>",
+          "target": [
+            ".atlas-header-inner > .atlas-language[aria-label=\"زبان\"] > a[lang=\"en\"][hreflang=\"en\"][href=\"/checkout-2/?lang=en\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#132638",
+                "bgColor": "#ffffff",
+                "contrastRatio": 15.41,
+                "fontSize": "24.0pt (32px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "3:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 15.41"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<h1 class=\"alignwide wp-block-post-title\">تسویه حساب</h1>",
+          "target": [
+            "h1"
           ]
         },
         {
@@ -4652,16 +5492,11 @@
             {
               "id": "color-contrast",
               "data": {
-                "fgColor": "#000000",
-                "bgColor": "#ffffff",
-                "contrastRatio": 21,
-                "fontSize": "12.0pt (16px)",
-                "fontWeight": "normal",
-                "expectedContrastRatio": "4.5:1"
+                "messageKey": "hidden"
               },
               "relatedNodes": [],
               "impact": "serious",
-              "message": "Element has sufficient color contrast of 21"
+              "message": "Element is hidden"
             }
           ],
           "all": [],
@@ -4819,7 +5654,7 @@
           "impact": null,
           "html": "<span aria-hidden=\"true\">1</span>",
           "target": [
-            "span[aria-hidden=\"true\"]"
+            ".wc-block-components-order-summary-item__quantity > span[aria-hidden=\"true\"]"
           ]
         },
         {
@@ -4842,7 +5677,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<h3 class=\"wc-block-components-product-name\">A morning in nature · local demonstration</h3>",
+          "html": "<h3 class=\"wc-block-components-product-name\">صبحی در طبیعت · آزمایش ثبت سفارش</h3>",
           "target": [
             "h3"
           ]
@@ -4895,6 +5730,56 @@
           "html": "<span class=\"wc-block-components-formatted-money-amount__currency-symbol\" dir=\"auto\">﷼</span>",
           "target": [
             ".wc-block-components-order-summary-item__individual-price > bdi > .wc-block-components-formatted-money-amount__currency-symbol[dir=\"auto\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#132638",
+                "bgColor": "#ffffff",
+                "contrastRatio": 15.41,
+                "fontSize": "8.5pt (11.375px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 15.41"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<span class=\"wc-block-components-product-details__name\">مهلت پرداخت:</span>",
+          "target": [
+            ".wc-block-components-product-details__name"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#132638",
+                "bgColor": "#ffffff",
+                "contrastRatio": 15.41,
+                "fontSize": "8.5pt (11.375px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 15.41"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<span class=\"wc-block-components-product-details__value\">⁦2026-11-19 09:46:12 (Asia/Tehran)⁩</span>",
+          "target": [
+            ".wc-block-components-product-details__value"
           ]
         },
         {
@@ -5121,6 +6006,81 @@
           "target": [
             ".wc-block-components-totals-footer-item-tax-value > bdi > .wc-block-components-formatted-money-amount__currency-symbol[dir=\"auto\"]"
           ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#ffffff",
+                "bgColor": "#102f36",
+                "contrastRatio": 14.17,
+                "fontSize": "18.6pt (24.8px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "3:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 14.17"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840\" target=\"_self\" rel=\"home\">Atlas Leisure — Local demonstration</a>",
+          "target": [
+            ".atlas-footer-inner > .atlas-wordmark.wp-block-site-title > a[href=\"http://127.0.0.1:8840\"][target=\"_self\"][rel=\"home\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#ffffff",
+                "bgColor": "#102f36",
+                "contrastRatio": 14.17,
+                "fontSize": "10.8pt (14.4px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 14.17"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?atlas_kind=event&amp;lang=fa#atlas-offers\">رویدادها</a>",
+          "target": [
+            "nav[aria-label=\"پیوندهای پایین صفحه\"] > ul > li:nth-child(3) > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#ffffff",
+                "bgColor": "#102f36",
+                "contrastRatio": 14.17,
+                "fontSize": "9.8pt (13.12px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 14.17"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a lang=\"en\" hreflang=\"en\" href=\"/checkout-2/?lang=en\">EN</a>",
+          "target": [
+            ".atlas-footer-inner > .atlas-language[aria-label=\"زبان\"] > a[lang=\"en\"][hreflang=\"en\"][href=\"/checkout-2/?lang=en\"]"
+          ]
         }
       ]
     },
@@ -5179,6 +6139,42 @@
       "help": "IDs used in ARIA and labels must be unique",
       "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/duplicate-id-aria?application=playwright",
       "nodes": [
+        {
+          "any": [
+            {
+              "id": "duplicate-id-aria",
+              "data": "atlas-header-nav-0-0",
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "Document has no elements referenced with ARIA or labels that share the same id attribute"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<nav class=\"atlas-main-navigation\" aria-label=\"ناوبری اصلی\" id=\"atlas-header-nav-0-0\">",
+          "target": [
+            "#atlas-header-nav-0-0"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "duplicate-id-aria",
+              "data": "atlas-header-nav-0-1",
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "Document has no elements referenced with ARIA or labels that share the same id attribute"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<nav class=\"atlas-utility\" aria-label=\"حساب کاربری و خرید\" id=\"atlas-header-nav-0-1\">",
+          "target": [
+            "#atlas-header-nav-0-1"
+          ]
+        },
         {
           "any": [
             {
@@ -6356,17 +7352,17 @@
           "impact": null,
           "html": "<a href=\"http://127.0.0.1:8840\" target=\"_self\" rel=\"home\">Atlas Leisure — Local demonstration</a>",
           "target": [
-            "a[href=\"http://127.0.0.1:8840\"]"
+            ".atlas-header-inner > .atlas-wordmark.wp-block-site-title > a[href=\"http://127.0.0.1:8840\"][target=\"_self\"][rel=\"home\"]"
           ]
         },
         {
           "any": [
             {
-              "id": "aria-label",
+              "id": "has-visible-text",
               "data": null,
               "relatedNodes": [],
               "impact": "serious",
-              "message": "aria-label attribute exists and is not empty"
+              "message": "Element has text that is visible to screen readers"
             }
           ],
           "all": [],
@@ -6380,9 +7376,641 @@
             }
           ],
           "impact": null,
-          "html": "<a class=\"wc-block-cart-link\" href=\"http://127.0.0.1:8840/cart-2/?lang=fa\" aria-label=\"سبد خرید\">",
+          "html": "<a href=\"http://127.0.0.1:8840/?lang=fa#atlas-discover\">کاوش</a>",
           "target": [
-            ".wc-block-cart-link"
+            "#atlas-header-nav-0-0 > ul > li:nth-child(1) > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "has-visible-text",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has text that is visible to screen readers"
+            }
+          ],
+          "all": [],
+          "none": [
+            {
+              "id": "focusable-no-name",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element is not in tab order or has accessible text"
+            }
+          ],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?atlas_kind=tour&amp;lang=fa#atlas-offers\">تورها</a>",
+          "target": [
+            "#atlas-header-nav-0-0 > ul > li:nth-child(2) > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "has-visible-text",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has text that is visible to screen readers"
+            }
+          ],
+          "all": [],
+          "none": [
+            {
+              "id": "focusable-no-name",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element is not in tab order or has accessible text"
+            }
+          ],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?atlas_kind=event&amp;lang=fa#atlas-offers\">رویدادها</a>",
+          "target": [
+            "#atlas-header-nav-0-0 > ul > li:nth-child(3) > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "has-visible-text",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has text that is visible to screen readers"
+            }
+          ],
+          "all": [],
+          "none": [
+            {
+              "id": "focusable-no-name",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element is not in tab order or has accessible text"
+            }
+          ],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?atlas_kind=cohort&amp;lang=fa#atlas-offers\">آموزشگاه</a>",
+          "target": [
+            "#atlas-header-nav-0-0 > ul > li:nth-child(4) > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "has-visible-text",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has text that is visible to screen readers"
+            }
+          ],
+          "all": [],
+          "none": [
+            {
+              "id": "focusable-no-name",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element is not in tab order or has accessible text"
+            }
+          ],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?atlas_area=account&amp;lang=fa\">حساب من</a>",
+          "target": [
+            "#atlas-header-nav-0-1 > a:nth-child(1)"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "has-visible-text",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has text that is visible to screen readers"
+            }
+          ],
+          "all": [],
+          "none": [
+            {
+              "id": "focusable-no-name",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element is not in tab order or has accessible text"
+            }
+          ],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?atlas_area=portal&amp;lang=fa\">پنل همکاران</a>",
+          "target": [
+            "a:nth-child(2)"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "has-visible-text",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has text that is visible to screen readers"
+            }
+          ],
+          "all": [],
+          "none": [
+            {
+              "id": "focusable-no-name",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element is not in tab order or has accessible text"
+            }
+          ],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/cart-2/?lang=fa\">سبد خرید</a>",
+          "target": [
+            "#atlas-header-nav-0-1 > a:nth-child(3)"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "has-visible-text",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has text that is visible to screen readers"
+            }
+          ],
+          "all": [],
+          "none": [
+            {
+              "id": "focusable-no-name",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element is not in tab order or has accessible text"
+            }
+          ],
+          "impact": null,
+          "html": "<a lang=\"en\" hreflang=\"en\" href=\"/checkout-2/?lang=en\">EN</a>",
+          "target": [
+            ".atlas-header-inner > .atlas-language[aria-label=\"زبان\"] > a[lang=\"en\"][hreflang=\"en\"][href=\"/checkout-2/?lang=en\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "has-visible-text",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has text that is visible to screen readers"
+            }
+          ],
+          "all": [],
+          "none": [
+            {
+              "id": "focusable-no-name",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element is not in tab order or has accessible text"
+            }
+          ],
+          "impact": null,
+          "html": "<a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a>",
+          "target": [
+            ".atlas-header-inner > .atlas-language[aria-label=\"زبان\"] > a[hreflang=\"fa\"][aria-current=\"true\"][href=\"/checkout-2/?lang=fa\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "has-visible-text",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has text that is visible to screen readers"
+            }
+          ],
+          "all": [],
+          "none": [
+            {
+              "id": "focusable-no-name",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element is not in tab order or has accessible text"
+            }
+          ],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840\" target=\"_self\" rel=\"home\">Atlas Leisure — Local demonstration</a>",
+          "target": [
+            ".atlas-footer-inner > .atlas-wordmark.wp-block-site-title > a[href=\"http://127.0.0.1:8840\"][target=\"_self\"][rel=\"home\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "has-visible-text",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has text that is visible to screen readers"
+            }
+          ],
+          "all": [],
+          "none": [
+            {
+              "id": "focusable-no-name",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element is not in tab order or has accessible text"
+            }
+          ],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?lang=fa#atlas-discover\">کاوش</a>",
+          "target": [
+            "nav[aria-label=\"پیوندهای پایین صفحه\"] > ul > li:nth-child(1) > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "has-visible-text",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has text that is visible to screen readers"
+            }
+          ],
+          "all": [],
+          "none": [
+            {
+              "id": "focusable-no-name",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element is not in tab order or has accessible text"
+            }
+          ],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?atlas_kind=tour&amp;lang=fa#atlas-offers\">تورها</a>",
+          "target": [
+            "nav[aria-label=\"پیوندهای پایین صفحه\"] > ul > li:nth-child(2) > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "has-visible-text",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has text that is visible to screen readers"
+            }
+          ],
+          "all": [],
+          "none": [
+            {
+              "id": "focusable-no-name",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element is not in tab order or has accessible text"
+            }
+          ],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?atlas_kind=event&amp;lang=fa#atlas-offers\">رویدادها</a>",
+          "target": [
+            "nav[aria-label=\"پیوندهای پایین صفحه\"] > ul > li:nth-child(3) > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "has-visible-text",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has text that is visible to screen readers"
+            }
+          ],
+          "all": [],
+          "none": [
+            {
+              "id": "focusable-no-name",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element is not in tab order or has accessible text"
+            }
+          ],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?atlas_kind=cohort&amp;lang=fa#atlas-offers\">آموزشگاه</a>",
+          "target": [
+            "nav[aria-label=\"پیوندهای پایین صفحه\"] > ul > li:nth-child(4) > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "has-visible-text",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has text that is visible to screen readers"
+            }
+          ],
+          "all": [],
+          "none": [
+            {
+              "id": "focusable-no-name",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element is not in tab order or has accessible text"
+            }
+          ],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?atlas_area=account&amp;atlas_task=support_case&amp;lang=fa#atlas-task-support_case\">پشتیبانی مشتریان</a>",
+          "target": [
+            "nav[aria-label=\"پیوندهای پایین صفحه\"] > p > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "has-visible-text",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has text that is visible to screen readers"
+            }
+          ],
+          "all": [],
+          "none": [
+            {
+              "id": "focusable-no-name",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element is not in tab order or has accessible text"
+            }
+          ],
+          "impact": null,
+          "html": "<a lang=\"en\" hreflang=\"en\" href=\"/checkout-2/?lang=en\">EN</a>",
+          "target": [
+            ".atlas-footer-inner > .atlas-language[aria-label=\"زبان\"] > a[lang=\"en\"][hreflang=\"en\"][href=\"/checkout-2/?lang=en\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "has-visible-text",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has text that is visible to screen readers"
+            }
+          ],
+          "all": [],
+          "none": [
+            {
+              "id": "focusable-no-name",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element is not in tab order or has accessible text"
+            }
+          ],
+          "impact": null,
+          "html": "<a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a>",
+          "target": [
+            ".atlas-footer-inner > .atlas-language[aria-label=\"زبان\"] > a[hreflang=\"fa\"][aria-current=\"true\"][href=\"/checkout-2/?lang=fa\"]"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list",
+      "impact": null,
+      "tags": [
+        "cat.structure",
+        "wcag2a",
+        "wcag131",
+        "EN-301-549",
+        "EN-9.1.3.1",
+        "RGAAv4",
+        "RGAA-9.3.1"
+      ],
+      "description": "Ensure that lists are structured correctly",
+      "help": "<ul> and <ol> must only directly contain <li>, <script> or <template> elements",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/list?application=playwright",
+      "nodes": [
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "only-listitems",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "List element only has direct children that are allowed inside <li> elements"
+            }
+          ],
+          "impact": null,
+          "html": "<ul class=\"atlas-nav-list\">",
+          "target": [
+            "#atlas-header-nav-0-0 > ul"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "only-listitems",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "List element only has direct children that are allowed inside <li> elements"
+            }
+          ],
+          "impact": null,
+          "html": "<ul class=\"atlas-nav-list\">",
+          "target": [
+            "nav[aria-label=\"پیوندهای پایین صفحه\"] > ul"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "listitem",
+      "impact": null,
+      "tags": [
+        "cat.structure",
+        "wcag2a",
+        "wcag131",
+        "EN-301-549",
+        "EN-9.1.3.1",
+        "RGAAv4",
+        "RGAA-9.3.1"
+      ],
+      "description": "Ensure <li> elements are used semantically",
+      "help": "<li> elements must be contained in a <ul> or <ol>",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/listitem?application=playwright",
+      "nodes": [
+        {
+          "any": [
+            {
+              "id": "listitem",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "List item has a <ul>, <ol> or role=\"list\" parent element"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<li><a href=\"http://127.0.0.1:8840/?lang=fa#atlas-discover\">کاوش</a></li>",
+          "target": [
+            "#atlas-header-nav-0-0 > ul > li:nth-child(1)"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "listitem",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "List item has a <ul>, <ol> or role=\"list\" parent element"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<li><a href=\"http://127.0.0.1:8840/?atlas_kind=tour&amp;lang=fa#atlas-offers\">تورها</a></li>",
+          "target": [
+            "#atlas-header-nav-0-0 > ul > li:nth-child(2)"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "listitem",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "List item has a <ul>, <ol> or role=\"list\" parent element"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<li><a href=\"http://127.0.0.1:8840/?atlas_kind=event&amp;lang=fa#atlas-offers\">رویدادها</a></li>",
+          "target": [
+            "#atlas-header-nav-0-0 > ul > li:nth-child(3)"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "listitem",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "List item has a <ul>, <ol> or role=\"list\" parent element"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<li><a href=\"http://127.0.0.1:8840/?atlas_kind=cohort&amp;lang=fa#atlas-offers\">آموزشگاه</a></li>",
+          "target": [
+            "#atlas-header-nav-0-0 > ul > li:nth-child(4)"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "listitem",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "List item has a <ul>, <ol> or role=\"list\" parent element"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<li><a href=\"http://127.0.0.1:8840/?lang=fa#atlas-discover\">کاوش</a></li>",
+          "target": [
+            "nav[aria-label=\"پیوندهای پایین صفحه\"] > ul > li:nth-child(1)"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "listitem",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "List item has a <ul>, <ol> or role=\"list\" parent element"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<li><a href=\"http://127.0.0.1:8840/?atlas_kind=tour&amp;lang=fa#atlas-offers\">تورها</a></li>",
+          "target": [
+            "nav[aria-label=\"پیوندهای پایین صفحه\"] > ul > li:nth-child(2)"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "listitem",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "List item has a <ul>, <ol> or role=\"list\" parent element"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<li><a href=\"http://127.0.0.1:8840/?atlas_kind=event&amp;lang=fa#atlas-offers\">رویدادها</a></li>",
+          "target": [
+            "nav[aria-label=\"پیوندهای پایین صفحه\"] > ul > li:nth-child(3)"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "listitem",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "List item has a <ul>, <ol> or role=\"list\" parent element"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<li><a href=\"http://127.0.0.1:8840/?atlas_kind=cohort&amp;lang=fa#atlas-offers\">آموزشگاه</a></li>",
+          "target": [
+            "nav[aria-label=\"پیوندهای پایین صفحه\"] > ul > li:nth-child(4)"
           ]
         }
       ]
@@ -11605,7 +13233,7 @@
           "impact": null,
           "html": "<button class=\"wc-block-components-button wp-element-button wc-block-components-checkout-place-order-button wc-block-components-checkout-place-order-button--full-width contained\" style=\"\" type=\"button\">",
           "target": [
-            "button"
+            ".wc-block-components-button"
           ]
         },
         {
@@ -11770,36 +13398,15 @@
         {
           "any": [
             {
-              "id": "target-offset",
-              "data": {
-                "closestOffset": 24,
-                "minOffset": 24
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<a href=\"http://127.0.0.1:8840\" target=\"_self\" rel=\"home\">Atlas Leisure — Local demonstration</a>",
-          "target": [
-            "a[href=\"http://127.0.0.1:8840\"]"
-          ]
-        },
-        {
-          "any": [
-            {
               "id": "target-size",
               "data": {
                 "minSize": 24,
-                "width": 24,
-                "height": 24
+                "width": 469.1,
+                "height": 28
               },
               "relatedNodes": [],
               "impact": "serious",
-              "message": "Control has sufficient size (24px by 24px, should be at least 24px by 24px)"
+              "message": "Control has sufficient size (469.1px by 28px, should be at least 24px by 24px)"
             },
             {
               "id": "target-offset",
@@ -11815,9 +13422,286 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<a class=\"wc-block-cart-link\" href=\"http://127.0.0.1:8840/cart-2/?lang=fa\" aria-label=\"سبد خرید\">",
+          "html": "<a href=\"http://127.0.0.1:8840\" target=\"_self\" rel=\"home\">Atlas Leisure — Local demonstration</a>",
           "target": [
-            ".wc-block-cart-link"
+            ".atlas-header-inner > .atlas-wordmark.wp-block-site-title > a[href=\"http://127.0.0.1:8840\"][target=\"_self\"][rel=\"home\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "target-size",
+              "data": {
+                "minSize": 24,
+                "width": 34.3,
+                "height": 44
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Control has sufficient size (34.3px by 44px, should be at least 24px by 24px)"
+            },
+            {
+              "id": "target-offset",
+              "data": {
+                "closestOffset": 24,
+                "minOffset": 24
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?lang=fa#atlas-discover\">کاوش</a>",
+          "target": [
+            "#atlas-header-nav-0-0 > ul > li:nth-child(1) > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "target-size",
+              "data": {
+                "minSize": 24,
+                "width": 30.1,
+                "height": 44
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Control has sufficient size (30.1px by 44px, should be at least 24px by 24px)"
+            },
+            {
+              "id": "target-offset",
+              "data": {
+                "closestOffset": 24,
+                "minOffset": 24
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?atlas_kind=tour&amp;lang=fa#atlas-offers\">تورها</a>",
+          "target": [
+            "#atlas-header-nav-0-0 > ul > li:nth-child(2) > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "target-size",
+              "data": {
+                "minSize": 24,
+                "width": 50.5,
+                "height": 44
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Control has sufficient size (50.5px by 44px, should be at least 24px by 24px)"
+            },
+            {
+              "id": "target-offset",
+              "data": {
+                "closestOffset": 24,
+                "minOffset": 24
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?atlas_kind=event&amp;lang=fa#atlas-offers\">رویدادها</a>",
+          "target": [
+            "#atlas-header-nav-0-0 > ul > li:nth-child(3) > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "target-size",
+              "data": {
+                "minSize": 24,
+                "width": 53,
+                "height": 44
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Control has sufficient size (53px by 44px, should be at least 24px by 24px)"
+            },
+            {
+              "id": "target-offset",
+              "data": {
+                "closestOffset": 24,
+                "minOffset": 24
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?atlas_kind=cohort&amp;lang=fa#atlas-offers\">آموزشگاه</a>",
+          "target": [
+            "#atlas-header-nav-0-0 > ul > li:nth-child(4) > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "target-size",
+              "data": {
+                "minSize": 24,
+                "width": 57.2,
+                "height": 44
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Control has sufficient size (57.2px by 44px, should be at least 24px by 24px)"
+            },
+            {
+              "id": "target-offset",
+              "data": {
+                "closestOffset": 24,
+                "minOffset": 24
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?atlas_area=account&amp;lang=fa\">حساب من</a>",
+          "target": [
+            "#atlas-header-nav-0-1 > a:nth-child(1)"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "target-size",
+              "data": {
+                "minSize": 24,
+                "width": 65.9,
+                "height": 44
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Control has sufficient size (65.9px by 44px, should be at least 24px by 24px)"
+            },
+            {
+              "id": "target-offset",
+              "data": {
+                "closestOffset": 24,
+                "minOffset": 24
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?atlas_area=portal&amp;lang=fa\">پنل همکاران</a>",
+          "target": [
+            "a:nth-child(2)"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "target-size",
+              "data": {
+                "minSize": 24,
+                "width": 54.9,
+                "height": 44
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Control has sufficient size (54.9px by 44px, should be at least 24px by 24px)"
+            },
+            {
+              "id": "target-offset",
+              "data": {
+                "closestOffset": 24,
+                "minOffset": 24
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/cart-2/?lang=fa\">سبد خرید</a>",
+          "target": [
+            "#atlas-header-nav-0-1 > a:nth-child(3)"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "target-offset",
+              "data": {
+                "closestOffset": 24,
+                "minOffset": 24
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a lang=\"en\" hreflang=\"en\" href=\"/checkout-2/?lang=en\">EN</a>",
+          "target": [
+            ".atlas-header-inner > .atlas-language[aria-label=\"زبان\"] > a[lang=\"en\"][hreflang=\"en\"][href=\"/checkout-2/?lang=en\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "target-size",
+              "data": {
+                "minSize": 24,
+                "width": 35.3,
+                "height": 44
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Control has sufficient size (35.3px by 44px, should be at least 24px by 24px)"
+            },
+            {
+              "id": "target-offset",
+              "data": {
+                "closestOffset": 24,
+                "minOffset": 24
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a>",
+          "target": [
+            ".atlas-header-inner > .atlas-language[aria-label=\"زبان\"] > a[hreflang=\"fa\"][aria-current=\"true\"][href=\"/checkout-2/?lang=fa\"]"
           ]
         },
         {
@@ -12200,7 +14084,7 @@
           "impact": null,
           "html": "<button class=\"wc-block-components-button wp-element-button wc-block-components-checkout-place-order-button wc-block-components-checkout-place-order-button--full-width contained\" style=\"\" type=\"button\">",
           "target": [
-            "button"
+            ".wc-block-components-button"
           ]
         },
         {
@@ -12222,6 +14106,333 @@
           "html": "<div aria-expanded=\"false\" class=\"wc-block-components-panel__button\" tabindex=\"0\" role=\"button\">",
           "target": [
             ".wc-block-components-panel__button"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "target-size",
+              "data": {
+                "minSize": 24,
+                "width": 469.1,
+                "height": 28
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Control has sufficient size (469.1px by 28px, should be at least 24px by 24px)"
+            },
+            {
+              "id": "target-offset",
+              "data": {
+                "closestOffset": 24,
+                "minOffset": 24
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840\" target=\"_self\" rel=\"home\">Atlas Leisure — Local demonstration</a>",
+          "target": [
+            ".atlas-footer-inner > .atlas-wordmark.wp-block-site-title > a[href=\"http://127.0.0.1:8840\"][target=\"_self\"][rel=\"home\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "target-size",
+              "data": {
+                "minSize": 24,
+                "width": 34.3,
+                "height": 44
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Control has sufficient size (34.3px by 44px, should be at least 24px by 24px)"
+            },
+            {
+              "id": "target-offset",
+              "data": {
+                "closestOffset": 24,
+                "minOffset": 24
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?lang=fa#atlas-discover\">کاوش</a>",
+          "target": [
+            "nav[aria-label=\"پیوندهای پایین صفحه\"] > ul > li:nth-child(1) > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "target-size",
+              "data": {
+                "minSize": 24,
+                "width": 30.1,
+                "height": 44
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Control has sufficient size (30.1px by 44px, should be at least 24px by 24px)"
+            },
+            {
+              "id": "target-offset",
+              "data": {
+                "closestOffset": 24,
+                "minOffset": 24
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?atlas_kind=tour&amp;lang=fa#atlas-offers\">تورها</a>",
+          "target": [
+            "nav[aria-label=\"پیوندهای پایین صفحه\"] > ul > li:nth-child(2) > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "target-size",
+              "data": {
+                "minSize": 24,
+                "width": 50.5,
+                "height": 44
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Control has sufficient size (50.5px by 44px, should be at least 24px by 24px)"
+            },
+            {
+              "id": "target-offset",
+              "data": {
+                "closestOffset": 24,
+                "minOffset": 24
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?atlas_kind=event&amp;lang=fa#atlas-offers\">رویدادها</a>",
+          "target": [
+            "nav[aria-label=\"پیوندهای پایین صفحه\"] > ul > li:nth-child(3) > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "target-size",
+              "data": {
+                "minSize": 24,
+                "width": 53,
+                "height": 44
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Control has sufficient size (53px by 44px, should be at least 24px by 24px)"
+            },
+            {
+              "id": "target-offset",
+              "data": {
+                "closestOffset": 24,
+                "minOffset": 24
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?atlas_kind=cohort&amp;lang=fa#atlas-offers\">آموزشگاه</a>",
+          "target": [
+            "nav[aria-label=\"پیوندهای پایین صفحه\"] > ul > li:nth-child(4) > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "target-offset",
+              "data": {
+                "closestOffset": 24,
+                "minOffset": 24
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a href=\"http://127.0.0.1:8840/?atlas_area=account&amp;atlas_task=support_case&amp;lang=fa#atlas-task-support_case\">پشتیبانی مشتریان</a>",
+          "target": [
+            "nav[aria-label=\"پیوندهای پایین صفحه\"] > p > a"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "target-offset",
+              "data": {
+                "closestOffset": 24,
+                "minOffset": 24
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a lang=\"en\" hreflang=\"en\" href=\"/checkout-2/?lang=en\">EN</a>",
+          "target": [
+            ".atlas-footer-inner > .atlas-language[aria-label=\"زبان\"] > a[lang=\"en\"][hreflang=\"en\"][href=\"/checkout-2/?lang=en\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "target-size",
+              "data": {
+                "minSize": 24,
+                "width": 35.3,
+                "height": 44
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Control has sufficient size (35.3px by 44px, should be at least 24px by 24px)"
+            },
+            {
+              "id": "target-offset",
+              "data": {
+                "closestOffset": 24,
+                "minOffset": 24
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Target has sufficient space from its closest neighbors. Safe clickable space has a diameter of 24px which is at least 24px."
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a>",
+          "target": [
+            ".atlas-footer-inner > .atlas-language[aria-label=\"زبان\"] > a[hreflang=\"fa\"][aria-current=\"true\"][href=\"/checkout-2/?lang=fa\"]"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "valid-lang",
+      "impact": null,
+      "tags": [
+        "cat.language",
+        "wcag2aa",
+        "wcag312",
+        "TTv5",
+        "TT11.b",
+        "EN-301-549",
+        "EN-9.3.1.2",
+        "ACT",
+        "RGAAv4",
+        "RGAA-8.8.1"
+      ],
+      "description": "Ensure lang attributes have valid values",
+      "help": "lang attribute must have a valid value",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/valid-lang?application=playwright",
+      "nodes": [
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "valid-lang",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Value of lang attribute is included in the list of valid languages"
+            }
+          ],
+          "impact": null,
+          "html": "<a lang=\"en\" hreflang=\"en\" href=\"/checkout-2/?lang=en\">EN</a>",
+          "target": [
+            ".atlas-header-inner > .atlas-language[aria-label=\"زبان\"] > a[lang=\"en\"][hreflang=\"en\"][href=\"/checkout-2/?lang=en\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "valid-lang",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Value of lang attribute is included in the list of valid languages"
+            }
+          ],
+          "impact": null,
+          "html": "<a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a>",
+          "target": [
+            ".atlas-header-inner > .atlas-language[aria-label=\"زبان\"] > a[hreflang=\"fa\"][aria-current=\"true\"][href=\"/checkout-2/?lang=fa\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "valid-lang",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Value of lang attribute is included in the list of valid languages"
+            }
+          ],
+          "impact": null,
+          "html": "<a lang=\"en\" hreflang=\"en\" href=\"/checkout-2/?lang=en\">EN</a>",
+          "target": [
+            ".atlas-footer-inner > .atlas-language[aria-label=\"زبان\"] > a[lang=\"en\"][hreflang=\"en\"][href=\"/checkout-2/?lang=en\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "valid-lang",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Value of lang attribute is included in the list of valid languages"
+            }
+          ],
+          "impact": null,
+          "html": "<a lang=\"fa\" hreflang=\"fa\" aria-current=\"true\" href=\"/checkout-2/?lang=fa\">فارسی</a>",
+          "target": [
+            ".atlas-footer-inner > .atlas-language[aria-label=\"زبان\"] > a[hreflang=\"fa\"][aria-current=\"true\"][href=\"/checkout-2/?lang=fa\"]"
           ]
         }
       ]

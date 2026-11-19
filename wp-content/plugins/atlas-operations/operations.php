@@ -18,6 +18,7 @@ final class Atlas_Operations {
         Atlas_Finance_UI::register();
         add_action('rest_api_init', array('Atlas_Event_Checkins','routes'));
         add_action('rest_api_init', array(__CLASS__, 'routes'));
+        add_action('template_redirect', array(__CLASS__, 'private_workspace_headers'), 0);
         add_action('admin_post_atlas_operation_save', array(__CLASS__, 'form_save'));
         add_action('admin_post_atlas_operation_transition', array(__CLASS__, 'form_transition'));
         add_action('admin_post_atlas_operation_edit', array(__CLASS__, 'form_edit'));
@@ -37,6 +38,18 @@ final class Atlas_Operations {
         add_shortcode('atlas_portal', array(__CLASS__, 'portal'));
         add_shortcode('atlas_account', array(__CLASS__, 'account'));
         do_action('atlas_operations_ready');
+    }
+    public static function private_workspace_headers(): void {
+        $workspace=in_array($_GET['atlas_area']??'', ['account','portal'], true);
+        $page=is_singular()?get_queried_object():null;
+        $hasWorkspace=$page instanceof WP_Post && (has_shortcode($page->post_content,'atlas_account')
+            || has_shortcode($page->post_content,'atlas_portal'));
+        $commerce=function_exists('is_checkout') && (is_checkout() || is_cart() || is_account_page());
+        if (!$workspace && !$hasWorkspace && !$commerce) return;
+        if (!defined('DONOTCACHEPAGE')) define('DONOTCACHEPAGE',true);
+        nocache_headers();
+        header('Cache-Control: private, no-store, max-age=0');
+        header('X-Robots-Tag: noindex');
     }
     public static function routes() {
         foreach (array('stay-requests'=>'stay_request','ticket-requests'=>'ticket_request','transfer-requests'=>'transfer_request','rental-requests'=>'rental_request','support-cases'=>'support_case','rfqs'=>'rfq') as $route=>$type) {
@@ -279,11 +292,13 @@ final class Atlas_Operations {
     }
     public static function offer($attributes=array()) {
         $atts=shortcode_atts(array('id'=>0),$attributes,'atlas_offer'); $id=(int)$atts['id']; if (!$id && isset($_GET['offer_id'])) $id=absint($_GET['offer_id']);
-        $offer=Offers::get($id,true); if (is_wp_error($offer) || !$offer) return '<p>'.esc_html(self::t('Offer unavailable.','پیشنهاد در دسترس نیست.')).'</p>';
+        $offer=Offers::get($id,true); if (is_wp_error($offer) || !$offer) return '<h1>'.esc_html(self::t('Offer unavailable','پیشنهاد در دسترس نیست')).'</h1>';
         $fa=self::language()==='fa'; $title=$fa && !empty($offer['title_fa'])?$offer['title_fa']:$offer['title_en']; $desc=$fa && !empty($offer['description_fa'])?$offer['description_fa']:$offer['description_en'];
         $price=$offer['mode']==='request_only' ? self::t('Request a quote; availability unconfirmed.','درخواست قیمت؛ موجودی تأیید نشده است.') : number_format_i18n((int)$offer['amount_irr']).' IRR'; $html='<article><h1>'.esc_html($title).'</h1><p>'.esc_html($desc).'</p><p>'.esc_html($price).'</p>';
         if (class_exists('Atlas_Catalog_UI')) $html.=Atlas_Catalog_UI::details($offer);
-        if ($offer['mode']==='request_only') { $request_url=add_query_arg(array('atlas_area'=>'account','lang'=>self::language()),home_url('/')); $html.='<p>'.esc_html(self::t('Request only; availability is not confirmed.','فقط درخواست؛ موجودی تأیید نشده است.')).'</p><p><a href="'.esc_url($request_url).'">'.esc_html(self::t('Open request forms','باز کردن فرم‌های درخواست')).'</a></p>'; }
+        if ($offer['mode']==='request_only') { $request_types=['flight'=>'ticket_request','rail'=>'ticket_request','bus'=>'ticket_request','stay'=>'stay_request','transfer'=>'transfer_request','rental'=>'rental_request'];
+            $task=$request_types[$offer['kind']]??'support_case';
+            $request_url=add_query_arg(['atlas_area'=>'account','lang'=>self::language(),'atlas_task'=>$task,'atlas_service'=>$offer['kind']],home_url('/')).'#atlas-task-'.$task; $html.='<p>'.esc_html(self::t('Request only; availability is not confirmed.','فقط درخواست؛ موجودی تأیید نشده است.')).'</p><p><a href="'.esc_url($request_url).'">'.esc_html(self::t('Start an inquiry','ثبت درخواست')).'</a></p>'; }
         elseif (!is_user_logged_in()) $html.='<p><a href="'.esc_url(add_query_arg(array('atlas_area'=>'account','lang'=>self::language(),'atlas_return'=>self::offer_url($id)),home_url('/'))).'">'.esc_html(self::t('Sign in or register to reserve.','برای رزرو وارد شوید یا حساب بسازید.')).'</a></p>';
         elseif (empty($offer['product_id']) || !function_exists('wc_get_checkout_url')) $html.='<p>'.esc_html(self::t('Reservation is temporarily unavailable.','رزرو موقتاً در دسترس نیست.')).'</p>';
         elseif ($offer['kind']==='cohort' && !(class_exists('Atlas_Academy') && Atlas_Academy::enabled() ? Atlas_Academy::cohort_for_offer($id,(int)$offer['org_id']) : Atlas_Operation_Workflows::cohort_for_offer($id,(int)$offer['org_id']))) $html.='<p>'.esc_html(self::t('Enrollment is temporarily unavailable.','ثبت‌نام موقتاً در دسترس نیست.')).'</p>';
@@ -431,8 +446,9 @@ final class Atlas_Operations {
             if ($customer && shortcode_exists('woocommerce_my_account')) { self::$rendering_auth=true; try { return do_shortcode('[woocommerce_my_account]'); } finally { self::$rendering_auth=false; } }
             return '<p><a href="'.esc_url(wp_login_url(get_permalink())).'">'.esc_html(self::t('Sign in to continue.','برای ادامه وارد شوید.')).'</a></p>';
         }
+        wp_enqueue_script('atlas-workspace',plugins_url('assets/workspace.js',__FILE__),[],ATLAS_CORE_VERSION,true);
         wp_enqueue_script('atlas-itinerary',plugins_url('assets/itinerary.js',__FILE__),array(),'0.1.0',true);
-        $schemas=atlas_operation_schemas(); $html='<section class="atlas-dashboard"><h2>'.esc_html($customer?self::t('My support','پشتیبانی من'):self::t('Operations','عملیات')).'</h2>';
+        $schemas=atlas_operation_schemas(); $html='<section class="atlas-dashboard"><h2>'.esc_html($customer?self::t('Reservations and requests','رزروها و درخواست‌ها'):self::t('Operations','عملیات')).'</h2>';
         if (isset($_GET['atlas_saved'])) $html.='<p role="status">'.esc_html(self::t('Saved as draft.','پیش‌نویس ذخیره شد.')).'</p>';
         if (!$customer) { $html.=Atlas_Partner_Workflow::panel(); $html.=Atlas_Booking_Queue::panel(); $html.=Atlas_Finance_UI::panel(); $html.=self::offer_admin(); $html.=self::invited_list(); $html.=self::inventory_panel(); $html.=self::checkin_panel(); $html.=Atlas_Support_Workflow::queue(); } else {
             $html.=Atlas_Reservation_Status::customer_panel();
@@ -445,7 +461,10 @@ final class Atlas_Operations {
             if (!$customer && in_array($type,self::CUSTOMER,true) && !($type==='ticket_request' && Auth::agency())) continue;
             if (is_wp_error(self::authorize_type($type))) continue;
             $names=array('stay_request'=>array('Stay request','درخواست اقامت'),'ticket_request'=>array('Passenger ticket request','درخواست بلیت مسافر'),'transfer_request'=>array('Transfer request','درخواست ترانسفر'),'rental_request'=>array('Vehicle rental request','درخواست اجاره خودرو'),'support_case'=>array('Support case','درخواست پشتیبانی'),'enrollment'=>array('My enrollments','ثبت‌نام‌های من'),'partner_application'=>array('Apply as a partner','درخواست همکاری'));
-            $label=isset($names[$type]) ? self::t($names[$type][0],$names[$type][1]) : ucwords(str_replace('_',' ',$type)); $html.='<details><summary>'.esc_html($label).'</summary>';
+            $label=isset($names[$type]) ? self::t($names[$type][0],$names[$type][1]) : ucwords(str_replace('_',' ',$type));
+            $opened=$customer && (($_GET['atlas_task']??'')===$type
+                || ($type==='support_case' && isset($_GET['support_cases_page'])));
+            $html.='<details id="atlas-task-'.esc_attr($type).'"'.($opened?' open':'').'><summary>'.esc_html($label).'</summary>';
             if ($type==='ticket_request') $html.='<p>'.esc_html(self::t('Ask about a flight, train or bus. Availability must be confirmed by the agency. Submit service needs without identity or medical documents.','درباره پرواز، قطار یا اتوبوس درخواست بفرستید. موجودی باید توسط آژانس تأیید شود. نیازهای سفر را بدون اسناد هویتی یا پزشکی وارد کنید.')).'</p>';
             $cases=null;
             if ($type==='support_case') {
@@ -481,10 +500,15 @@ final class Atlas_Operations {
                 if ($type==='ticket_request') $field_names+=array('origin'=>array('Departure location','مبدأ'),'destination'=>array('Arrival location','مقصد'),'travel_date'=>array('Local travel date','تاریخ محلی سفر'),'transport_mode'=>array('Mode','شیوه سفر'),'origin_zone'=>array('Departure time zone (IANA)','منطقه زمانی مبدأ (IANA)'),'destination_zone'=>array('Arrival time zone (IANA)','منطقه زمانی مقصد (IANA)'),'fare_class'=>array('Fare preference','ترجیح کلاس سفر'),'baggage'=>array('Bags','تعداد بار'),'accessibility'=>array('Practical accessibility needs','نیازهای عملی دسترس‌پذیری'));
                 $label=isset($field_names[$name])?self::t($field_names[$name][0],$field_names[$name][1]):ucwords(str_replace('_',' ',$name)); $required=!empty($field['required'])?' required':'';
                 $html.='<label for="'.$id.'">'.esc_html($label).'</label>';
-                if ($type==='ticket_request' && isset($field['enum'])) { $choices=array('flight'=>self::t('Flight','پرواز'),'rail'=>self::t('Rail','قطار'),'bus'=>self::t('Bus','اتوبوس'),'standard'=>self::t('Standard','معمولی'),'premium'=>self::t('Premium','ویژه'),'flexible'=>self::t('Flexible','انعطاف‌پذیر'),'any'=>self::t('Any','همه')); $html.='<select id="'.$id.'" name="fields['.esc_attr($name).']"><option value="">—</option>'; foreach($field['enum'] as $value) $html.='<option value="'.esc_attr($value).'">'.esc_html($choices[$value]).'</option>'; $html.='</select>'; }
+                if ($type==='ticket_request' && isset($field['enum'])) { $choices=array('flight'=>self::t('Flight','پرواز'),'rail'=>self::t('Rail','قطار'),'bus'=>self::t('Bus','اتوبوس'),'standard'=>self::t('Standard','معمولی'),'premium'=>self::t('Premium','ویژه'),'flexible'=>self::t('Flexible','انعطاف‌پذیر'),'any'=>self::t('Any','همه')); $preferred=$opened && $name==='transport_mode' ? ($_GET['atlas_service']??'') : '';
+                    $html.='<select id="'.$id.'" name="fields['.esc_attr($name).']"'.$required.'><option value="">—</option>'; foreach($field['enum'] as $value) $html.='<option value="'.esc_attr($value).'"'.selected($preferred===$value,true,false).'>'.esc_html($choices[$value]).'</option>'; $html.='</select>'; }
                 elseif ($field['type']==='array') $html.='<textarea id="'.$id.'" name="fields['.esc_attr($name).']" '.($type==='tour_version' && in_array($name,array('stops','legs','days'),true)?'data-atlas-structure="'.esc_attr($name).'"':'').' placeholder="[]"></textarea>';
                 elseif ($field['type']==='bool') $html.='<select id="'.$id.'" name="fields['.esc_attr($name).']"><option value="">—</option><option value="1">Yes / بله</option><option value="0">No / خیر</option></select>';
-                else $html.='<input id="'.$id.'" name="fields['.esc_attr($name).']" type="'.($field['type']==='int'?'number':'text').'"'.$required.'>';
+                elseif (in_array($name,['message','notes'],true)) $html.='<textarea id="'.$id.'" name="fields['.esc_attr($name).']" rows="4"'.$required.'></textarea>';
+                else {
+                    $input_type=in_array($name,['check_in','check_out','travel_date'],true)?'date':($field['type']==='int'?'number':'text');
+                    $html.='<input id="'.$id.'" name="fields['.esc_attr($name).']" type="'.$input_type.'"'.$required.'>';
+                }
             }
             $html.='<button type="submit">'.esc_html(self::t('Save draft','ذخیره پیش‌نویس')).'</button></form></details>';
         }
@@ -494,11 +518,20 @@ final class Atlas_Operations {
     public static function account() { return self::dashboard(true); }
     private static function auth_intent_url() {
         $fallback=add_query_arg(array('atlas_area'=>'account','lang'=>self::language()),home_url('/'));
+        $task_url=static function($query) use ($fallback) {
+            $task=$query['atlas_task']??'';
+            if (!in_array($task,['support_case','ticket_request','stay_request','transfer_request','rental_request'],true)) return $fallback;
+            $args=['atlas_task'=>$task];
+            $service=$query['atlas_service']??'';
+            if ($task==='ticket_request' && in_array($service,['flight','rail','bus'],true)) $args['atlas_service']=$service;
+            return add_query_arg($args,$fallback).'#atlas-task-'.$task;
+        };
         $candidate=isset($_REQUEST['atlas_return']) && is_string($_REQUEST['atlas_return']) ? wp_unslash($_REQUEST['atlas_return']) : '';
-        if (!$candidate) return $fallback;
+        if (!$candidate) return $task_url($_GET);
         $parts=wp_parse_url($candidate); $home=wp_parse_url(home_url('/'));
         if (!$parts || !$home || ($parts['scheme']??'')!==($home['scheme']??'') || strtolower($parts['host']??'')!==strtolower($home['host']??'') || ($parts['port']??null)!==($home['port']??null)) return $fallback;
         parse_str($parts['query']??'',$query); $offer_id=isset($query['offer_id']) && is_scalar($query['offer_id'])?absint($query['offer_id']):0;
+        if (!$offer_id && ($query['atlas_area']??'')==='account') return $task_url($query);
         if (!$offer_id || is_wp_error(Offers::get($offer_id,true))) return $fallback;
         return self::offer_url($offer_id);
     }

@@ -2,68 +2,55 @@
 
 Atlas Leisure is a WordPress block theme and four companion plugins for a bilingual travel, leisure, education and retail agency. The theme provides an editable English and Persian storefront. The plugins connect approved offers, dated inventory, customer accounts, bookings, partner workspaces and agency operations to WooCommerce orders and checkout.
 
-**0.2.0 · `VERIFIED_LOCAL` · 18 November 2026.** The frozen build passed verification on WordPress 7.1.4 and WooCommerce 11.3.0. The repository contains installable package sources, original specifications and source-linked local evidence. Production acceptance, live provider use and external delivery still require the gates documented below. [Release decision](implementation/RELEASE-READINESS.md) · [Project review](implementation/PROJECT-REVIEW.md) · [Changelog](implementation/IMPLEMENTATION-CHANGELOG.md)
+**1.0.0-rc.1 · `VERIFIED_LOCAL` · 19 November 2026.** The frozen build passed verification on WordPress 7.1.4 and WooCommerce 11.3.0. The repository contains installable package sources, original specifications and source-linked local evidence. Production acceptance, live provider use and external delivery still require the gates documented below. [Release decision](implementation/RELEASE-READINESS.md) · [Project review](implementation/PROJECT-REVIEW.md) · [Changelog](implementation/IMPLEMENTATION-CHANGELOG.md)
 
-> **راهنمای سریع فارسی:** از ریشهٔ مخزن ابتدا `npm ci --ignore-scripts` و سپس `npm run demo` را اجرا کنید. پس از راه‌اندازی، [فروشگاه فارسی](http://127.0.0.1:8840/?lang=fa)، [حساب مشتری](http://127.0.0.1:8840/?atlas_area=account&lang=fa) و [پنل آژانس و همکاران](http://127.0.0.1:8840/?atlas_area=portal&lang=fa) در دسترس‌اند. اطلاعات ورود آزمایشی در `.runtime/credentials.json` قرار دارد. دستور `npm run package` فایل‌های ZIP نصب را در `dist/` می‌سازد.
+[Screenshots](#screenshots) · [Quick start](#quick-start) · [Install the WordPress packages](#install-the-wordpress-packages) · [Documentation](#documentation)
 
-## Contents
+## Table of contents
 
-- [Quick start](#quick-start)
-- [Product scope and workflows](#product-scope-and-workflows)
-- [Architecture and repository layout](#architecture-and-repository-layout)
-- [Storefront, localization and accessibility](#storefront-localization-and-accessibility)
-- [REST API and extension points](#rest-api-and-extension-points)
-- [Packages, installation and upgrades](#packages-installation-and-upgrades)
-- [Configuration and operating procedures](#configuration-and-operating-procedures)
-- [Verification and release evidence](#verification-and-release-evidence)
-- [Production acceptance](#production-acceptance)
-- [Documentation and specification index](#documentation-and-specification-index)
-- [License and attribution](#license-and-attribution)
+- [Screenshots](#screenshots)
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [Architecture](#architecture)
+- [Development](#development)
+- [Deployment and operations](#deployment-and-operations)
+- [Documentation](#documentation)
+- [License](#license)
 
-## Quick start
+## Screenshots
 
-Run from the repository root in a POSIX shell. Install Python 3, WP-CLI, PHP CLI with the WordPress/WooCommerce extensions including `mysqli`, and the MariaDB tools `mariadbd`, `mariadb-admin`, `mariadb-install-db`, `mariadb` and `mariadb-dump`. Private document flows require PHP Sodium and Fileinfo. Install Node.js and npm for the project scripts and browser checks. Fresh setup downloads the versions in the runtime lock and the Persian language packs. Setup reuses an existing local installation and refreshes the lock's observed environment. [Runtime lock](deploy/runtime.lock.json) · [Setup implementation](deploy/local.py)
+Screenshots from the local demo use fictional offers and payments. Select a preview to open it at full size.
 
-| Component | Recorded verification version |
+| English storefront | WooCommerce checkout with the demo payment simulator |
 | --- | --- |
-| WordPress / WooCommerce | 7.1.4 / 11.3.0 |
-| PHP / MariaDB | 8.5.8 / 13.0.2 |
-| Node.js / WP-CLI | 26.12.0 / 2.12.0 |
-| PHP declarations | Theme 8.0+ when installed alone. Full platform 8.2+. |
+| [![Atlas Leisure home page with English navigation and an illustrated landscape](wp-content/themes/atlas-leisure/screenshot.png)](wp-content/themes/atlas-leisure/screenshot.png) | [![WooCommerce checkout showing the billing form, demo payment option and order summary](implementation/evidence/checkout-en.png)](implementation/evidence/checkout-en.png) |
 
-The version declarations are package requirements. The local compatibility evidence applies to the recorded stack. [Theme header](wp-content/themes/atlas-leisure/style.css) · [Composer definition](composer.json) · [Test environment](implementation/TEST-EVIDENCE.md)
+<details>
+<summary>Persian storefront, mobile layouts and dated reservations</summary>
 
-```sh
-npm ci --ignore-scripts
-npm run demo
-```
+- Desktop storefronts · [English full page](implementation/evidence/home-en-desktop.png) · [فارسی، راست‌به‌چپ](implementation/evidence/home-fa-desktop.png)
+- Checkout · [English](implementation/evidence/checkout-en.png) · [فارسی](implementation/evidence/checkout-fa.png)
+- Mobile storefronts · [English](implementation/evidence/home-en-mobile.png) · [فارسی](implementation/evidence/home-fa-mobile.png)
 
-The demo prepares WordPress, activates the five Atlas packages, migrates their local schemas, seeds fictional records and starts the web server. It uses a project-owned MariaDB socket and a 32 MB InnoDB buffer. PHP serves loopback only on port 8840. The runtime runs at low process priority. Browser tests run headlessly and use one worker.
+![Dated stay form with arrival and departure fields and a quoted amount in Iranian rials](implementation/evidence/resource-stay-dates-en.png)
 
-| Open after startup | English | فارسی |
-| --- | --- | --- |
-| Storefront | [Browse](http://127.0.0.1:8840/?lang=en) | [فروشگاه](http://127.0.0.1:8840/?lang=fa) |
-| Customer account | [My account](http://127.0.0.1:8840/?atlas_area=account&lang=en) | [حساب من](http://127.0.0.1:8840/?atlas_area=account&lang=fa) |
-| Agency and partner workspace | [Partner portal](http://127.0.0.1:8840/?atlas_area=portal&lang=en) | [پنل همکاران](http://127.0.0.1:8840/?atlas_area=portal&lang=fa) |
-| WordPress administration | [Dashboard](http://127.0.0.1:8840/wp-admin/) | [پیشخوان](http://127.0.0.1:8840/wp-admin/) |
+*Accommodation date selection and quote in the local demo.*
 
-Use the generated agency or fictional customer credentials in `.runtime/credentials.json`. The demo uses whole Iranian rials (IRR), the `Asia/Tehran` site timezone, High-Performance Order Storage (HPOS) and signed-in checkout. The simulator moves no funds. The local mail guard blocks outbound WordPress email, including password resets. New local accounts can register with a chosen password. Keep credentials and dumps private. [Demo fixtures](deploy/seed.php) · [Local mail guard](deploy/local-mail.php)
+</details>
 
-| Command | Result |
-| --- | --- |
-| `npm run setup` | Prepare WordPress, link the working sources, activate the five packages and apply local migrations. The DB starts. Demo seeding and the HTTP server are separate. |
-| `npm run demo` | Prepare, seed and serve the fictional demo. Some tour and cohort examples start in draft for review. |
-| `npm run start` | Serve an existing runtime with its saved data. |
-| `python3 deploy/local.py health` | Report database reachability, the WordPress installation check and the configured URL. Check HTTP separately. |
-| `npm run stop` | Stop this project's web and DB processes and preserve local data. |
+## Features
 
-**Try a service booking.** Sign in as the fictional customer, filter the catalog to Events and open the published demo event. Reserve and pay with the test simulator, then check the pending reservation in My account. In a separate agency session, open the confirmation queue, record a reason and confirm the service. Back in the customer's account, refresh and open the printable voucher. To try normal WooCommerce fulfillment, use the seeded physical product and fictional offline checkout.
+- Bilingual storefront with editable WordPress blocks, Persian RTL layouts, localized search and reviewed guides.
+- Reservations for tours, events, courses, stays and rentals, with dated capacity, WooCommerce checkout and a separate workflow for manual transfer dispatch.
+- Separate customer, partner and agency workspaces for reservations, approvals, fulfillment, procurement, finance and support.
+- Standard WooCommerce product sales alongside bookings, with a local payment simulator and documented provider integration gates.
 
-## Product scope and workflows
+<details>
+<summary>Full module coverage and remaining scope</summary>
 
 The intended operating model is one agency per WordPress site, with separately scoped partner organizations. Agency staff review public content, confirm services, manage finance and coordinate fulfillment. Partners include tour leaders, instructors and venues, properties, fleet and dispatch operators, and makers. The specifications describe package margin and commission, admissions and tuition, retail and wholesale, and contracted services as business models. Each commercial arrangement depends on the agency's approved terms. [Vision and business model](docs/DOC-01_VISION-BUSINESS-MODEL.md) · [Personas and journeys](docs/DOC-03_PERSONAS-JTBD-JOURNEYS.md) · [Scope and roadmap](docs/DOC-05_SCOPE-MVP-ROADMAP.md)
-
-### Module coverage
 
 | Module | Available in the local release | Remaining scope or acceptance |
 | --- | --- | --- |
@@ -71,7 +58,7 @@ The intended operating model is one agency per WordPress site, with separately s
 | Tours | Reusable itinerary versions, reviewed departures and timezones, rooming and private manifests, assigned operations and booked-change consent | Real suppliers, final itineraries and staffed rehearsal |
 | Events | Tier and session quotas, reviewed recurrence, waitlists, attendee forms with eligibility rules, QR tickets and an offline scan queue with authorized sync | Physical-device rehearsal and venue/catering operations |
 | Academy | Reviewed courses and cohorts, group learners linked to a payer, restricted materials, attendance, assessments, appeals and certificate verification/revocation | Instructor and learner acceptance, accreditation or external LMS agreements where chosen |
-| Accommodation | Dated quotes, room-night and villa capacity, WooCommerce checkout, independent supplier and agency review, cancellation and refund review | Multiple rates and allotments, PMS or approved channel reconciliation |
+| Accommodation | Named dated rate plans, room-night and villa capacity, WooCommerce checkout, independent supplier and agency review, cancellation and refund review | Allotments and mixed-rate itineraries, PMS or approved channel reconciliation |
 | Rentals | Dated fleet allocation and prices, eligibility, blackout/maintenance and turnaround, pickup, return and disputes | Inspection procedures, insurer verification and external deposit handling |
 | Transfers | Scoped manual dispatch, driver assignment and state through waiting and no-show, schedule conflict guards | Staffed field operations and any approved tracking provider |
 | Flights, rail and buses | Signed-in private inquiry and agency review | Licensed supplier shopping, holds, ticket issue, changes and refunds |
@@ -84,6 +71,73 @@ The intended operating model is one agency per WordPress site, with separately s
 
 The specification roadmap runs from R0 through MVP, P2, P3 and future work. The local release includes selected later-phase flows, including dated resources, procurement and certificates. Use the feature-by-feature evidence for implementation status and the original roadmap for planned scope. Requirements and acceptance criteria are indexed below. [Feature coverage and gaps](implementation/FEATURE-GAPS.md) · [Local release coverage](implementation/RELEASE-READINESS.md)
 
+</details>
+
+## Installation
+
+### Requirements
+
+Run from the repository root in a POSIX shell. Install Python 3, WP-CLI, PHP CLI with the WordPress/WooCommerce extensions including `mysqli`, and the MariaDB tools `mariadbd`, `mariadb-admin`, `mariadb-install-db`, `mariadb` and `mariadb-dump`. Private document flows require PHP Sodium and Fileinfo. Install Node.js and npm for the project scripts and browser checks. Fresh setup downloads the versions in the runtime lock and the Persian language packs. Setup reuses an existing local installation and refreshes the lock's observed environment. [Runtime lock](deploy/runtime.lock.json) · [Setup implementation](deploy/local.py)
+
+| Component | Recorded verification version |
+| --- | --- |
+| WordPress / WooCommerce | 7.1.4 / 11.3.0 |
+| PHP / MariaDB | 8.5.8 / 13.0.2 |
+| Node.js / WP-CLI | 26.12.0 / 2.12.0 |
+| PHP declarations | Theme 8.0+ when installed alone. Full platform 8.2+. |
+
+The version declarations are package requirements. The local compatibility evidence applies to the recorded stack. [Theme header](wp-content/themes/atlas-leisure/style.css) · [Composer definition](composer.json) · [Test environment](implementation/TEST-EVIDENCE.md)
+
+### Quick start
+
+```sh
+npm ci --ignore-scripts
+npm run demo
+```
+
+The demo prepares WordPress, activates the five Atlas packages, migrates their local schemas, seeds fictional records and starts the web server. It uses a project-owned MariaDB socket and a 32 MB InnoDB buffer. PHP serves loopback only on port 8840. The runtime runs at low process priority. Browser tests run headlessly and use one worker.
+
+> **راهنمای سریع فارسی:** از ریشهٔ مخزن ابتدا `npm ci --ignore-scripts` و سپس `npm run demo` را اجرا کنید. پس از راه‌اندازی، [فروشگاه فارسی](http://127.0.0.1:8840/?lang=fa)، [حساب مشتری](http://127.0.0.1:8840/?atlas_area=account&lang=fa) و [پنل آژانس و همکاران](http://127.0.0.1:8840/?atlas_area=portal&lang=fa) در دسترس‌اند. اطلاعات ورود آزمایشی در `.runtime/credentials.json` قرار دارد. دستور `npm run package` فایل‌های ZIP نصب را در `dist/` می‌سازد.
+
+### Install the WordPress packages
+
+```sh
+npm run package
+(cd dist && shasum -a 256 -c SHA256SUMS)
+```
+
+The ZIPs contain one WordPress package folder each. The build also writes `manifest.json`, `SHA256SUMS` and `SBOM.json`. Git tracks the metadata and ignores ZIP files. Build from the release source to recreate the recorded artifacts. WordPress, WooCommerce, demo data and credentials are supplied separately. [Manifest](dist/manifest.json) · [Checksums](dist/SHA256SUMS) · [SBOM](dist/SBOM.json)
+
+| 1.0.0-rc.1 artifact | Install as |
+| --- | --- |
+| `atlas-leisure-1.0.0-rc.1.zip` | Block theme |
+| `atlas-core-1.0.0-rc.1.zip` | Core plugin |
+| `atlas-operations-1.0.0-rc.1.zip` | Operations plugin |
+| `atlas-inventory-1.0.0-rc.1.zip` | Inventory plugin |
+| `atlas-gateways-1.0.0-rc.1.zip` | Gateways plugin |
+
+1. Prepare a staging WordPress installation and activate WooCommerce. Configure the store's native shop, cart, checkout and account pages. For the verified baseline use Checkout Blocks, HPOS and IRR with zero decimals.
+2. Upload and activate Core under **Plugins → Add New → Upload Plugin**. Run `wp atlas migrate` with WP-CLI targeting the staging installation. Upload and activate Operations, Inventory and Gateways. Check Core schema 7, Inventory schema 3 and check-in readiness against the release and staging database.
+3. Upload and activate Atlas Leisure under **Appearance → Themes → Add New → Upload Theme**. Set navigation, homepage, site identity, timezone and language packs. Review the EN/FA content and permissions before publishing. Package activation uses the site's own data. The repository's separate guarded demo command seeds fictional examples.
+4. Smoke-test approved catalog, owned booking and account access, WooCommerce checkout, health, payment defaults and private storage behavior. Validate provider and feature settings against the acceptance gates before any live use.
+
+## Usage
+
+### Open the demo
+
+| Open after startup | English | فارسی |
+| --- | --- | --- |
+| Storefront | [Browse](http://127.0.0.1:8840/?lang=en) | [فروشگاه](http://127.0.0.1:8840/?lang=fa) |
+| Customer account | [My account](http://127.0.0.1:8840/?atlas_area=account&lang=en) | [حساب من](http://127.0.0.1:8840/?atlas_area=account&lang=fa) |
+| Agency and partner workspace | [Partner portal](http://127.0.0.1:8840/?atlas_area=portal&lang=en) | [پنل همکاران](http://127.0.0.1:8840/?atlas_area=portal&lang=fa) |
+| WordPress administration | [Dashboard](http://127.0.0.1:8840/wp-admin/) | [پیشخوان](http://127.0.0.1:8840/wp-admin/) |
+
+Use the generated agency or fictional customer credentials in `.runtime/credentials.json`. The demo uses whole Iranian rials (IRR), the `Asia/Tehran` site timezone, High-Performance Order Storage (HPOS) and signed-in checkout. The simulator moves no funds. The local mail guard blocks outbound WordPress email, including password resets. New local accounts can register with a chosen password. Keep credentials and dumps private. [Demo fixtures](deploy/seed.php) · [Local mail guard](deploy/local-mail.php)
+
+### Try a service booking
+
+Sign in as the fictional customer, filter the catalog to Events and open the published demo event. Reserve and pay with the test simulator, then check the pending reservation in My account. In a separate agency session, open the confirmation queue, record a reason and confirm the service. Back in the customer's account, refresh and open the printable voucher. To try normal WooCommerce fulfillment, use the seeded physical product and fictional offline checkout.
+
 ### Customer reservation and purchase
 
 1. Browse published offers and guides in English or Persian. Sign in, select eligible travelers or learners where required and accept the versioned offer or dated quote. The purchaser, learner, traveler and guardian may have different roles.
@@ -95,7 +149,7 @@ The specification roadmap runs from R0 through MVP, P2, P3 and future work. The 
 | Booking state | Meaning |
 | --- | --- |
 | `held` / `pending_payment` | Temporary capacity or payment awaiting verification. Observe the hold deadline. |
-| `paid_pending_confirmation` | Verified money linked to an allocation awaiting confirmation. |
+| `paid_pending_confirmation` | The linked order has verified payment or requires no payment. Agency confirmation is pending. |
 | `confirmed` / `fulfilled` | Confirmed entitlement or recorded fulfillment. |
 | `expired` / `canceled` | Allocation expired or reservation was canceled. |
 | `exception` | Review the payment and booking separately. A late verified payment after release cannot reacquire capacity. |
@@ -116,11 +170,57 @@ Partner approval creates an organization and active membership. Expiring invitat
 
 In the **Partner portal**, use the **Booking confirmation queue** to find a paid reservation, review fulfillment evidence and record the confirmation reason. Use the finance queue to inspect verified references and ledger entries, then record and review any refund request in whole IRR. A verified refund debit requires reconciled server proof. Use **Customer support queue** for case state, a shared reply or an explicitly private internal note. Use partner workspaces to submit offers, manage scoped availability or report fulfillment. [Agency and customer procedures](implementation/PARTNER-USER-MANUALS/README.md) · [Current module coverage](implementation/FEATURE-GAPS.md)
 
-- **Dated stay or rental.** Configure a reviewed resource and its availability, request a quote for local dates and have the customer accept it at checkout. For a stay, the assigned supplier reviews before the agency confirms. Rental pickup and return use the assigned vehicle and eligibility record.
+- **Dated stay or rental.** Configure a reviewed resource and its date bands. When the customer selects a different rate plan, they review the new quote and terms before checkout. The selected plan and exact price stay attached to the reservation. For a stay, the assigned supplier reviews before the agency confirms. Rental pickup and return use the assigned vehicle and eligibility record.
 - **Event or cohort.** Review the schedule and allocation before publication. Use the assigned check-in scope for event admissions and sync offline scans for server acceptance. Use the cohort workspace for enrollment eligibility, attendance and issued credentials.
 - **Procurement.** Invite scoped makers to an RFQ, review bid validity and record awards and approved artwork or proofs. Check sample approval and QC before closing milestones. Record payable and settlement evidence through the separate finance process.
 
-## Architecture and repository layout
+### Storefront, localization and accessibility
+
+Search by destination on the home page or select a category to jump to the catalog. The storefront shows six offers per page. **More filters** reveals dates, price, language, accessibility and sorting. **Featured first** follows the order of published offer IDs in the WordPress option `atlas_featured_offer_ids`. The local seed sets the initial selection. Editors with WP-CLI access can update the option as a JSON array of existing offer IDs. Other matching offers follow in newest-first order.
+
+On service checkout, the order summary displays the payment deadline in the site timezone. In the agency portal, **Jump to a task** opens a permitted panel and moves keyboard focus to it. The confirmation queue displays the payment record separately from the reservation state.
+
+Customize header and footer navigation, page and archive templates, search, the home pattern and style tokens under **Appearance → Editor**. The theme can activate by itself and renders fallback content when companion shortcodes are unavailable. Core WooCommerce pages retain their own behavior. Test changes with companion packages active and with the standalone theme. [Theme notes](wp-content/themes/atlas-leisure/README.txt) · [Theme tokens](wp-content/themes/atlas-leisure/theme.json)
+
+The language selector uses validated `?lang=en` and `?lang=fa` with WordPress locale fallback. The theme sets semantic language and RTL direction and carries the choice through same-origin navigation and supported WooCommerce links. The demo installs Persian WordPress and WooCommerce translations. Keep mixed-direction identifiers and amounts readable, use whole IRR accounting values, and test timezone-sensitive copy in both languages. Reviewed guides have locale-specific canonical URLs and reciprocal alternatives. Keep private account, portal and payment content out of public indexing. [Localization specification](docs/DOC-17_I18N-EN-FA-RTL.md) · [Editorial and SEO specification](docs/DOC-18_CONTENT-SEO-GROWTH.md)
+
+The theme includes responsive layouts, keyboard landmarks and a skip link. The release checked EN/FA home and checkout with four desktop axe scans, all with zero reported violations or incomplete findings. Native Persian editing, manual assistive-technology coverage, real devices and the wider theme/WooCommerce version matrix remain acceptance tasks. The art ships as original SVGs, with 3D in the optional design scope. [Accessibility evidence](implementation/ACCESSIBILITY-REPORT.md) · [Design assets](implementation/DESIGN-ASSETS-MANIFEST.md) · [Optional 3D specification](docs/DOC-15_3D-FANTASY-CHARACTERS.md)
+
+## Configuration
+
+### Runtime settings
+
+The local wrapper generates WordPress configuration in `.runtime/wordpress`. It uses `WP_ENVIRONMENT_TYPE=local`, boolean `ATLAS_DEMO_MODE=true` and `DISABLE_WP_CRON=true`. `.env.example` is illustrative. Set WordPress constants in server configuration and process variables in the invoking environment. Keep merchant settings, actual user data and keys out of Git and evidence files. [Local configuration](deploy/local.py) · [Configuration example](.env.example)
+
+| Setting | Purpose |
+| --- | --- |
+| `WP_ENVIRONMENT_TYPE` and `ATLAS_DEMO_MODE` | Guard demo-only fixtures, simulation and local mail behavior. |
+| `ATLAS_ACADEMY_ENABLED` and `ATLAS_RESOURCE_BOOKING_ENABLED` | Explicit boolean controls outside local demo. Local demo already exposes these workflows. Review acceptance before enabling on a deployment. |
+| `ATLAS_PRIVATE_FILE_ROOT` and `ATLAS_PRIVATE_FILE_KEY` | Absolute, owner-only directory outside WordPress and all served paths, and a separately managed base64 key that decodes to 32 bytes. Sodium and Fileinfo are required. |
+| `ATLAS_CLAMSCAN_BINARY` and `ATLAS_SENSITIVE_DOCUMENTS_ENABLED` | Trusted absolute scanner executable and separate sensitive-document approval switch. Files remain quarantined until scan evidence matches. |
+| `ATLAS_ZARINPAL_MODE`, `ATLAS_ZARINPAL_MERCHANT_ID`, `ATLAS_ZARINPAL_MERCHANT_CONFIRMED` | Server-selected mode, merchant identity and explicit merchant confirmation. |
+| `ATLAS_ZARINPAL_SANDBOX_ENABLED`, `ATLAS_ZARINPAL_LIVE_ENABLED`, `ATLAS_ZARINPAL_LIVE_APPROVED`, `ATLAS_ZARINPAL_MERCHANT_EVIDENCE` | Additional sandbox/live gates. The adapter requires the allowed WordPress environment, HTTPS callback and the applicable authorization evidence. |
+| `ATLAS_CHROME` | Process environment override for the installed Chrome or Chromium executable used by automated browser checks. |
+| `ATLAS_TEST_DB` | Runner-controlled CLI selection of `atlas_integration`. Browser requests continue to use `atlas_local`. |
+
+Private uploads accept PDF, PNG and JPEG up to 5 MiB under an approved bilingual purpose policy. Current context/ownership, consent, retention and independent review apply. Downloads require scoped authorization and matching authenticated content. Portability, erasure, legal hold and purge have separate controls, including recovery when tombstoning succeeded but physical deletion needs follow-up. [Private document settings and lifecycle](implementation/API-CONTRACTS/PRIVATE-DOCUMENTS.md)
+
+### Payment modes
+
+| Channel | Release behavior |
+| --- | --- |
+| Atlas simulator | Local demo only, with fictional payments through WooCommerce checkout. |
+| ZarinPal | Prepared V4 request, server verification, inquiry and reconciliation of existing attempts. Fictional HTTP fixtures passed 38 checks. Sandbox and live start disabled. |
+| SEP/Saman and Behpardakht Mellat | Unavailable until merchant-issued contracts, credentials and authorization exist. |
+| Digital assets | Hard-disabled. The specification records a separate legal and provider decision gate. |
+| Ordinary physical WooCommerce orders | Native WooCommerce checkout and shipping. The local fixture enables offline bank transfer for this flow. |
+| Refunds, settlements and payouts | Reviewed local workflows and ledger evidence. External actions and verified completion require approved finance/provider procedures. |
+
+ZarinPal uses the persisted Woo/booking amount and authority for server-side verification. A browser callback or uncertain inquiry alone leaves the attempt for review. Recovery replays the recorded proof and preserves the booking deadline. Use the protected reconciliation queue when a request or payment outcome is uncertain. [ZarinPal contract and deployment gates](implementation/API-CONTRACTS/ZARINPAL-V4.md) · [Domestic gateway specification](docs/DOC-37_PAYMENTS-DOMESTIC-GATEWAYS.md)
+
+## Architecture
+
+### Repository layout
 
 ```mermaid
 flowchart LR
@@ -160,15 +260,7 @@ The local installation and logs live in Git-ignored `.runtime/` and selected fil
 
 [Architecture and ADRs](docs/DOC-19_SYSTEM-ARCHITECTURE-ADRS.md) · [Data dictionary](docs/DOC-22_DATA-MODEL-ERD-DICTIONARY.md) · [Shared plugin contract](implementation/SHARED-CONTRACT.md) · [Inventory documentation](wp-content/plugins/atlas-inventory/README.md)
 
-## Storefront, localization and accessibility
-
-Customize header and footer navigation, page and archive templates, search, the home pattern and style tokens under **Appearance → Editor**. The theme can activate by itself and renders fallback content when companion shortcodes are unavailable. Core WooCommerce pages retain their own behavior. Test changes with companion packages active and with the standalone theme. [Theme notes](wp-content/themes/atlas-leisure/README.txt) · [Theme tokens](wp-content/themes/atlas-leisure/theme.json)
-
-The language selector uses validated `?lang=en` and `?lang=fa` with WordPress locale fallback. The theme sets semantic language and RTL direction and carries the choice through same-origin navigation and supported WooCommerce links. The demo installs Persian WordPress and WooCommerce translations. Keep mixed-direction identifiers and amounts readable, use whole IRR accounting values, and test timezone-sensitive copy in both languages. Reviewed guides have locale-specific canonical URLs and reciprocal alternatives. Keep private account, portal and payment content out of public indexing. [Localization specification](docs/DOC-17_I18N-EN-FA-RTL.md) · [Editorial and SEO specification](docs/DOC-18_CONTENT-SEO-GROWTH.md)
-
-The theme includes responsive layouts, keyboard landmarks and a skip link. The release checked EN/FA home and checkout with four desktop axe scans, all with zero reported violations or incomplete findings. Native Persian editing, manual assistive-technology coverage, real devices and the wider theme/WooCommerce version matrix remain acceptance tasks. The art ships as original SVGs, with 3D in the optional design scope. [Accessibility evidence](implementation/ACCESSIBILITY-REPORT.md) · [Design assets](implementation/DESIGN-ASSETS-MANIFEST.md) · [Optional 3D specification](docs/DOC-15_3D-FANTASY-CHARACTERS.md)
-
-## REST API and extension points
+### REST API and extension points
 
 Atlas routes use WordPress REST under `/wp-json/agency/v1` and `/wp-json/atlas-inventory/v1` on a site with pretty permalinks. The captured registry contains 187 route entries, including separate method registrations and namespace indexes. Use the versioned registry for the exact regex paths and methods and the handlers for payload and access rules. Cookie-authenticated browser clients send the WordPress REST nonce in `X-WP-Nonce`. Public catalog calls do not require sign-in. Mutations also enforce object scope, route-specific fields and, where required, a current revision, reason and `Idempotency-Key`. Signed-in identity comes from WordPress. [Registered routes](implementation/API-CONTRACTS/registered-routes.json) · [REST handlers](wp-content/plugins/atlas-core/src/Rest.php)
 
@@ -186,61 +278,58 @@ Atlas routes use WordPress REST under `/wp-json/agency/v1` and `/wp-json/atlas-i
 
 Operations provides `[atlas_catalog]` (optional `kind`), `[atlas_offer]` (attribute `id` or query `offer_id`), `[atlas_account]` and `[atlas_portal]`. Core signals `atlas_core_ready` for dependent registrations and exposes scoped APIs under `Atlas\Core`. Integrations should use these APIs and supported domain actions to preserve transactional, audit and authorization checks. Route metadata can be regenerated from an initialized local WordPress runtime with `python3 deploy/local.py wp eval-file deploy/export-contracts.php`. This rewrites the tracked route snapshot. [API notes](implementation/API-CONTRACTS/) · [Private file contract](implementation/API-CONTRACTS/PRIVATE-DOCUMENTS.md) · [Partner notice contract](implementation/API-CONTRACTS/PARTNER-NOTICES.md)
 
-## Packages, installation and upgrades
+## Development
+
+### Local runtime commands
+
+| Command | Result |
+| --- | --- |
+| `npm run setup` | Prepare WordPress, link the working sources, activate the five packages and apply local migrations. The DB starts. Demo seeding and the HTTP server are separate. |
+| `npm run demo` | Prepare, seed and serve the fictional demo. Some tour and cohort examples start in draft for review. |
+| `npm run start` | Serve an existing runtime with its saved data. |
+| `python3 deploy/local.py health` | Report database reachability, the WordPress installation check and the configured URL. Check HTTP separately. |
+| `npm run stop` | Stop this project's web and DB processes and preserve local data. |
+
+### Contributing
+
+Use the specifications and [requirements traceability matrix](implementation/01-requirements-traceability.csv) to identify the expected behavior. Edit the theme or its owning plugin under `wp-content/` and run the relevant checks below. Update the matching documentation and evidence when a change affects a contract or verified workflow.
+
+### Testing and release evidence
+
+Use a local demo and run the stages sequentially. Integration prepares a separate `atlas_integration` database. Browser tests use fictional data in `atlas_local`. On macOS the runner defaults to the installed Google Chrome executable, and `ATLAS_CHROME` selects another installed Chrome/Chromium. [Browser configuration](playwright.config.cjs) · [Test records](implementation/TEST-EVIDENCE.md)
 
 ```sh
-npm run package
-(cd dist && shasum -a 256 -c SHA256SUMS)
+npm run test:static
+npm run test:integration
+npm run test:browser
+python3 deploy/verify-packages.py
+python3 deploy/clean-install-check.py
+python3 deploy/recovery-check.py
+python3 tests/verify-release-evidence.py
+npm run stop
 ```
 
-The ZIPs contain one WordPress package folder each. The build also writes `manifest.json`, `SHA256SUMS` and `SBOM.json`. Git tracks the metadata and ignores ZIP files. Build from the release source to recreate the recorded artifacts. WordPress, WooCommerce, demo data and credentials are supplied separately. [Manifest](dist/manifest.json) · [Checksums](dist/SHA256SUMS) · [SBOM](dist/SBOM.json)
-
-| 0.2.0 artifact | Install as |
+| Check | Recorded 1.0.0-rc.1 result |
 | --- | --- |
-| `atlas-leisure-0.2.0.zip` | Block theme |
-| `atlas-core-0.2.0.zip` | Core plugin |
-| `atlas-operations-0.2.0.zip` | Operations plugin |
-| `atlas-inventory-0.2.0.zip` | Inventory plugin |
-| `atlas-gateways-0.2.0.zip` | Gateways plugin |
+| Static | 172 checks passed, covering source and package constraints. |
+| Integration | 24 suites passed. The numeric summaries report 1,063 passing assertions across 21 suites and three suites report by exit status. Coverage includes Core/WooCommerce and dated-booking paths, domain policies, privacy, fictional ZarinPal transport and the vendored QR decoder. |
+| Browser | 13 headless tests passed. Evidence includes EN/FA account/checkout/confirmation, guides, physical checkout, QR image decoding and a dated stay through supplier and agency approval. |
+| Packaging | Five ZIPs and integrity metadata matched across two builds. |
+| Fresh install | Actual ZIPs extracted and activated on a disposable WordPress database. Theme fallback, plugin migrations, catalog and safe payment/private-file defaults were checked. |
+| Restore | 102 tables and 6,541 rows matched by counts and logical checksums in a separate restore database. |
+| Accessibility and dependencies | Four scoped EN/FA axe scans reported zero violations and zero incomplete findings. The recorded npm advisory checks found zero matches for the development lock and bundled QR package. |
 
-1. Prepare a staging WordPress installation and activate WooCommerce. Configure the store's native shop, cart, checkout and account pages. For the verified baseline use Checkout Blocks, HPOS and IRR with zero decimals.
-2. Upload and activate Core under **Plugins → Add New → Upload Plugin**. Run `wp atlas migrate` with WP-CLI targeting the staging installation. Upload and activate Operations, Inventory and Gateways. Check Core schema 7, Inventory schema 3 and check-in readiness against the release and staging database.
-3. Upload and activate Atlas Leisure under **Appearance → Themes → Add New → Upload Theme**. Set navigation, homepage, site identity, timezone and language packs. Review the EN/FA content and permissions before publishing. Package activation uses the site's own data. The repository's separate guarded demo command seeds fictional examples.
-4. Smoke-test approved catalog, owned booking and account access, WooCommerce checkout, health, payment defaults and private storage behavior. Validate provider and feature settings against the acceptance gates before any live use.
+The evidence verifier ties the recorded tests, fresh install, recovery and package contents to product SHA-256 `f2f24511220fbb5ef50c8f61762f9ab1ff302f191dc35cec2cefb750c2da7109`. Tracked JSON and screenshots support review in a fresh clone. Text logs are generated locally. GitHub Actions defines verification on Ubuntu 24.04 and Node 24 with headless Chromium, archive checks and artifact upload. The counts above come from the recorded local run. [Release JSON](implementation/evidence/development-release.json) · [Full verification report](implementation/TEST-EVIDENCE.md) · [CI workflow](.github/workflows/verify.yml)
+
+The release reports include one local navigation sample per language and scoped security checks. Production traffic, load, field performance, penetration testing and real-device acceptance need their own evidence. [Performance evidence](implementation/PERFORMANCE-REPORT.md) · [Security evidence](implementation/SECURITY-REPORT.md)
+
+## Deployment and operations
+
+Run `wp atlas preflight --production` on the target installation after migration and the first scheduled worker run. Add `--service-payments` when ZarinPal payments are part of the launch scope. The command checks configuration and reports failed checks without printing credentials. [Production acceptance](implementation/RELEASE-READINESS.md#production-launch-decision)
+
+### Upgrades and rollback
 
 For upgrades, back up the current database, packages, WordPress uploads and protected files, with encryption keys under separate recovery controls. Rehearse the complete version-aligned upgrade and rollback on a restored staging copy. Capture schema and queue state, check allocation and ledger totals and test the complete order-to-fulfillment path before changing live traffic. Switching the theme preserves plugin-owned bookings and Woo orders. Reconcile new bookings and payments before rolling live data back to a snapshot. [Clean install check](deploy/clean-install-check.py) · [Operations runbook](implementation/OPERATIONAL-RUNBOOK.md) · [Current release record](implementation/STATUS.md)
-
-## Configuration and operating procedures
-
-### Runtime settings
-
-The local wrapper generates WordPress configuration in `.runtime/wordpress`. It uses `WP_ENVIRONMENT_TYPE=local`, boolean `ATLAS_DEMO_MODE=true` and `DISABLE_WP_CRON=true`. `.env.example` is illustrative. Set WordPress constants in server configuration and process variables in the invoking environment. Keep merchant settings, actual user data and keys out of Git and evidence files. [Local configuration](deploy/local.py) · [Configuration example](.env.example)
-
-| Setting | Purpose |
-| --- | --- |
-| `WP_ENVIRONMENT_TYPE` and `ATLAS_DEMO_MODE` | Guard demo-only fixtures, simulation and local mail behavior. |
-| `ATLAS_ACADEMY_ENABLED` and `ATLAS_RESOURCE_BOOKING_ENABLED` | Explicit boolean controls outside local demo. Local demo already exposes these workflows. Review acceptance before enabling on a deployment. |
-| `ATLAS_PRIVATE_FILE_ROOT` and `ATLAS_PRIVATE_FILE_KEY` | Absolute, owner-only directory outside WordPress and all served paths, and a separately managed base64 key that decodes to 32 bytes. Sodium and Fileinfo are required. |
-| `ATLAS_CLAMSCAN_BINARY` and `ATLAS_SENSITIVE_DOCUMENTS_ENABLED` | Trusted absolute scanner executable and separate sensitive-document approval switch. Files remain quarantined until scan evidence matches. |
-| `ATLAS_ZARINPAL_MODE`, `ATLAS_ZARINPAL_MERCHANT_ID`, `ATLAS_ZARINPAL_MERCHANT_CONFIRMED` | Server-selected mode, merchant identity and explicit merchant confirmation. |
-| `ATLAS_ZARINPAL_SANDBOX_ENABLED`, `ATLAS_ZARINPAL_LIVE_ENABLED`, `ATLAS_ZARINPAL_LIVE_APPROVED`, `ATLAS_ZARINPAL_MERCHANT_EVIDENCE` | Additional sandbox/live gates. The adapter requires the allowed WordPress environment, HTTPS callback and the applicable authorization evidence. |
-| `ATLAS_CHROME` | Process environment override for the installed Chrome or Chromium executable used by automated browser checks. |
-| `ATLAS_TEST_DB` | Runner-controlled CLI selection of `atlas_integration`. Browser requests continue to use `atlas_local`. |
-
-Private uploads accept PDF, PNG and JPEG up to 5 MiB under an approved bilingual purpose policy. Current context/ownership, consent, retention and independent review apply. Downloads require scoped authorization and matching authenticated content. Portability, erasure, legal hold and purge have separate controls, including recovery when tombstoning succeeded but physical deletion needs follow-up. [Private document settings and lifecycle](implementation/API-CONTRACTS/PRIVATE-DOCUMENTS.md)
-
-### Payment modes
-
-| Channel | Release behavior |
-| --- | --- |
-| Atlas simulator | Local demo only, with fictional payments through WooCommerce checkout. |
-| ZarinPal | Prepared V4 request, server verification, inquiry and reconciliation of existing attempts. Fictional HTTP fixtures passed 38 checks. Sandbox and live start disabled. |
-| SEP/Saman and Behpardakht Mellat | Unavailable until merchant-issued contracts, credentials and authorization exist. |
-| Digital assets | Hard-disabled. The specification records a separate legal and provider decision gate. |
-| Ordinary physical WooCommerce orders | Native WooCommerce checkout and shipping. The local fixture enables offline bank transfer for this flow. |
-| Refunds, settlements and payouts | Reviewed local workflows and ledger evidence. External actions and verified completion require approved finance/provider procedures. |
-
-ZarinPal uses the persisted Woo/booking amount and authority for server-side verification. A browser callback or uncertain inquiry alone leaves the attempt for review. Recovery replays the recorded proof and preserves the booking deadline. Use the protected reconciliation queue when a request or payment outcome is uncertain. [ZarinPal contract and deployment gates](implementation/API-CONTRACTS/ZARINPAL-V4.md) · [Domestic gateway specification](docs/DOC-37_PAYMENTS-DOMESTIC-GATEWAYS.md)
 
 ### Routine local operations and recovery
 
@@ -248,6 +337,7 @@ ZarinPal uses the persisted Woo/booking amount and authority for server-side ver
 | --- | --- |
 | Check DB and configured site | `python3 deploy/local.py health` |
 | Check loopback HTTP | `curl --fail --silent --output /dev/null http://127.0.0.1:8840/` |
+| Check the installed theme and companions | `wp atlas preflight` from the WordPress installation |
 | Run Core migration | `python3 deploy/local.py wp atlas migrate` |
 | Reapply local Core, inventory and check-in migrations | `python3 deploy/local.py wp eval-file deploy/migrate-all.php` |
 | Expire due holds and deliver ready outbox entries | `python3 deploy/local.py wp atlas run_due` |
@@ -266,36 +356,7 @@ The WP-CLI wrapper logs its output to `implementation/evidence/setup.log`. For i
 | A payment is verified but the voucher is unavailable | Inspect booking and supplier/agency confirmation, payment exception and allocation state in the portal. Preserve the receipt and ledger evidence. |
 | A private file cannot be opened | Check policy approval and scope, root/key readiness, quarantine and scanner evidence. Use the authorized workflow for review or erasure. |
 
-## Verification and release evidence
-
-Use a local demo and run the stages sequentially. Integration prepares a separate `atlas_integration` database. Browser tests use fictional data in `atlas_local`. On macOS the runner defaults to the installed Google Chrome executable, and `ATLAS_CHROME` selects another installed Chrome/Chromium. [Browser configuration](playwright.config.cjs) · [Test records](implementation/TEST-EVIDENCE.md)
-
-```sh
-npm run test:static
-npm run test:integration
-npm run test:browser
-python3 deploy/verify-packages.py
-python3 deploy/clean-install-check.py
-python3 deploy/recovery-check.py
-python3 tests/verify-release-evidence.py
-npm run stop
-```
-
-| Check | Recorded 0.2.0 result |
-| --- | --- |
-| Static | 165 checks passed, covering source and package constraints. |
-| Integration | 24 suites passed. The numeric summaries report 1,063 passing assertions across 21 suites and three suites report by exit status. Coverage includes Core/WooCommerce and dated-booking paths, domain policies, privacy, fictional ZarinPal transport and the vendored QR decoder. |
-| Browser | 13 headless tests passed. Evidence includes EN/FA account/checkout/confirmation, guides, physical checkout, QR image decoding and a dated stay through supplier and agency approval. |
-| Packaging | Five ZIPs and integrity metadata matched across two builds. |
-| Fresh install | Actual ZIPs extracted and activated on a disposable WordPress database. Theme fallback, plugin migrations, catalog and safe payment/private-file defaults were checked. |
-| Restore | 102 tables and 2,727 rows matched by counts and logical checksums in a separate restore database. |
-| Accessibility and dependencies | Four scoped EN/FA axe scans reported zero violations and zero incomplete findings. The recorded npm advisory checks found zero matches for the development lock and bundled QR package. |
-
-The evidence verifier ties the recorded tests, fresh install, recovery and package contents to product SHA-256 `d022d55075978b95aa3f02d69d158067f8f049fd58b0519750398868c7138a1c`. Tracked JSON and screenshots support review in a fresh clone. Text logs are generated locally. GitHub Actions defines verification on Ubuntu 24.04 and Node 24 with headless Chromium, archive checks and artifact upload. The counts above come from the recorded local run. [Release JSON](implementation/evidence/development-release.json) · [Full verification report](implementation/TEST-EVIDENCE.md) · [CI workflow](.github/workflows/verify.yml)
-
-The release reports include one local navigation sample per language and scoped security checks. Production traffic, load, field performance, penetration testing and real-device acceptance need their own evidence. [Performance evidence](implementation/PERFORMANCE-REPORT.md) · [Security evidence](implementation/SECURITY-REPORT.md)
-
-## Production acceptance
+### Production acceptance
 
 | Owner or workstream | Evidence needed before live use |
 | --- | --- |
@@ -307,9 +368,9 @@ The release reports include one local navigation sample per language and scoped 
 
 Local verification covers development evidence. Final content and brand approval, broader shipping/tax/refund scenarios and provider-backed inventory remain recorded in the feature gaps. Ownership and launch sign-off belong in the release records. [Release readiness](implementation/RELEASE-READINESS.md) · [External dependencies and owners](implementation/EXTERNAL-DEPENDENCIES.md) · [Continuation plan](implementation/NEXT_ACTIONS.md) · [UAT and handover](docs/DOC-48_LAUNCH-UAT-HANDOVER.md)
 
-## Documentation and specification index
+## Documentation
 
-The documentation intake records 49 numbered specifications, 56 documentation files and 811 evidence entries. The requirements matrix connects 31 canonical functional and nonfunctional requirements to implementation and evidence. Use the master index for intended requirements and the release decision for the behavior verified in 0.2.0. Some API and operator notes predate Core schema 7, ZarinPal V4, partner invitations and later booking workflows. Use the current release and captured route registry for those details. [Documentation inventory](implementation/00-docs-inventory.md) · [Traceability CSV](implementation/01-requirements-traceability.csv) · [Evidence index](implementation/documentation-evidence-index.json) · [Current project review](implementation/PROJECT-REVIEW.md)
+The documentation intake records 49 numbered specifications, 56 documentation files and 811 evidence entries. The requirements matrix connects 31 canonical functional and nonfunctional requirements to implementation and evidence. Use the master index for intended requirements and the release decision for the behavior verified in 1.0.0-rc.1. Some API and operator notes predate Core schema 7, ZarinPal V4, partner invitations and later booking workflows. Use the current release and captured route registry for those details. [Documentation inventory](implementation/00-docs-inventory.md) · [Traceability CSV](implementation/01-requirements-traceability.csv) · [Evidence index](implementation/documentation-evidence-index.json) · [Current project review](implementation/PROJECT-REVIEW.md)
 
 | Find | Reference |
 | --- | --- |
@@ -406,6 +467,6 @@ The documentation intake records 49 numbered specifications, 56 documentation fi
 
 </details>
 
-## License and attribution
+## License
 
 The repository carries GPL-2.0. The npm and Composer metadata declare GPL-2.0-only, and the theme header declares GPL-2.0-or-later. The bundled `qr` 0.7.0 decoder carries its separate MIT notice. WordPress and WooCommerce are installed separately. The scoped SBOM inventories the project and locked components included in its release checks. The original SVG artwork and the remaining creative approvals are recorded in the asset manifest. [Repository license](LICENSE) · [Theme license declaration](wp-content/themes/atlas-leisure/style.css) · [QR notice](wp-content/plugins/atlas-operations/assets/third-party/qr-0.7.0/NOTICE.md) · [SBOM](dist/SBOM.json) · [Design and artwork provenance](implementation/DESIGN-ASSETS-MANIFEST.md)

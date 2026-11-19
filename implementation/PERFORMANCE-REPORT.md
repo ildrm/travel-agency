@@ -1,14 +1,14 @@
 # Performance evidence
 
-The 18 November 2026 run recorded one loopback homepage navigation per language in headless Chrome. These values describe the sampled desktop pages. [Browser build](evidence/browser-build.json)
+The 19 November 2026 run recorded one loopback homepage navigation per language in headless Chrome. These values describe the sampled desktop pages. [Browser build](evidence/browser-build.json)
 
 | Measure | English | Persian |
 | --- | ---: | ---: |
-| Navigation interval | 119.3 ms | 245.5 ms |
-| Largest contentful paint | 128 ms | 272 ms |
+| Navigation interval | 133.8 ms | 175.6 ms |
+| Largest contentful paint | 140 ms | 200 ms |
 | Cumulative layout shift | 0 | 0 |
-| Resource timing entries | 19 | 19 |
-| Encoded bytes represented in those entries | 325,826 | 325,826 |
+| Resource timing entries | 20 | 20 |
+| Encoded bytes represented in those entries | 336,134 | 336,134 |
 
 Raw samples report their own measurement scope. [English](evidence/performance-en.json) · [Persian](evidence/performance-fa.json)
 

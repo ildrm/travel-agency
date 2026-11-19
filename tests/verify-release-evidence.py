@@ -5,6 +5,7 @@ from pathlib import Path
 import hashlib
 import json
 import zipfile
+from build_inputs import build_hash, browser_hash, integration_hash
 
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE = ROOT / 'implementation/evidence'
@@ -19,14 +20,6 @@ def sha(data):
     return hashlib.sha256(data).hexdigest()
 
 
-def product_hash():
-    digest = hashlib.sha256()
-    for path in sorted((ROOT / 'wp-content').rglob('*')):
-        if path.is_file():
-            digest.update(str(path.relative_to(ROOT)).encode() + b'\0' + path.read_bytes() + b'\0')
-    return digest.hexdigest()
-
-
 def verify():
     static = load(EVIDENCE / 'static-results.json')
     integration = load(EVIDENCE / 'integration-results.json')
@@ -36,21 +29,25 @@ def verify():
     install = load(EVIDENCE / 'clean-install-results.json')
     recovery = load(EVIDENCE / 'recovery-results.json')
     manifest = load(DIST / 'manifest.json')
-    current = product_hash()
+    current = build_hash()
     artifact_hashes = {item['file']: item['sha256'] for item in manifest['artifacts']}
 
     checks = {
         'same_product_hash': current == static['source_sha256'] == integration['product_sha256'] == browser['source_sha256'],
         'static_all_passed': static['failed'] == 0,
+        'same_test_inputs': integration['source_sha256']==integration_hash()
+        and browser['browser_inputs_sha256']==browser_hash()
+        and browser['results_sha256']==sha((EVIDENCE/'browser-results.json').read_bytes()),
         'each_integration_suite_passed': integration['source_unchanged_during_run'] and integration['database'] == 'atlas_integration'
         and bool(integration['results']) and all(item['status'] == 'PASSED' for item in integration['results']),
         'full_headless_browser_run_passed': browser['source_unchanged_during_run'] and browser['headless'] and browser['workers'] == 1
-        and browser['exit_code'] == 0 and browser_stats['expected'] >= 13
+        and browser['full_run'] and browser['exit_code'] == 0 and browser_stats['expected'] >= 13
         and not any(browser_stats.get(key, 0) for key in ('unexpected', 'flaky', 'skipped')),
         'reproducible_archive_set': rebuild['passed'] and rebuild['files_compared'] == len(artifact_hashes) + 3
         and all(rebuild['second_sha256'].get(name) == digest for name, digest in artifact_hashes.items()),
         'actual_archive_install': install['passed'] and install['artifacts_sha256'] == artifact_hashes,
-        'isolated_database_recovery': recovery['passed'] and recovery['restored_counts_match'] and recovery['restored_logical_checksums_match'],
+        'isolated_database_recovery': recovery['passed'] and recovery['restored_counts_match'] and recovery['restored_logical_checksums_match']
+        and recovery['package_manifest_sha256']==sha((DIST/'manifest.json').read_bytes()),
     }
 
     source_files_match = True
@@ -68,6 +65,7 @@ def verify():
         'release_version': manifest['version'],
         'product_sha256': current,
         'integration_sha256': integration['source_sha256'],
+        'browser_inputs_sha256': browser['browser_inputs_sha256'],
         'checks': checks,
         'passed': all(checks.values()),
         'static_checks': static['passed'],

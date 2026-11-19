@@ -52,8 +52,23 @@ try {
     $offer=Atlas\Core\Offers::save(0,array('kind'=>'stay','org_id'=>$org,'title_en'=>$title,'title_fa'=>'اقامت سه‌شب فرضی مرورگر','description_en'=>'A fictional local-only browser journey. Two-person room, three local nights, explicit reviewed tax and separate supplier acceptance. No real room or supplier is represented.','description_fa'=>'نمایش فرضی و فقط محلی: اتاق دونفره، سه شب محلی، مالیات صریح و پذیرش جداگانه تأمین‌کننده. هیچ ملک واقعی معرفی نمی‌شود.','registration_open_at'=>$now->modify('-1 day')->format('Y-m-d\TH:i:s\Z'),'registration_close_at'=>$now->modify('+30 days')->format('Y-m-d\TH:i:s\Z'),'timezone'=>'Asia/Tehran','capacity'=>0,'amount_irr'=>0,'mode'=>'request_only','status'=>'draft','product_id'=>0),$users['supplier']);
     $require(!is_wp_error($offer),'Could not create the fictional request-only accommodation offer.'); $offers[]=$offer;
     wp_set_current_user($users['agency']);
-    $rate=$call('POST','/agency/v1/resource-offers/'.$offer,array('version'=>0,'resource_id'=>$resource['id'],'start_date'=>$local->format('Y-m-d'),'end_date'=>$local->modify('+60 days')->format('Y-m-d'),'timezone'=>'Asia/Tehran','valid_until'=>$now->modify('+30 days')->format('Y-m-d\TH:i:s\Z'),'unit_amount_irr'=>$nightly,'tax_per_unit_irr'=>$tax,'protection_irr'=>0,'min_duration'=>1,'max_duration'=>30,'terms_en'=>'Fictional reviewed rate: 8,000,000 IRR per local night plus 100,000 IRR per reserved room in disclosed tax. Checkout date is exclusive. Payment does not confirm supplier acceptance. No deposit is collected.','terms_fa'=>'قیمت فرضی بازبینی‌شده: هر شب محلی ۸٬۰۰۰٬۰۰۰ ریال به‌علاوه ۱۰۰٬۰۰۰ ریال مالیات هر اتاق. روز خروج محاسبه نمی‌شود. پرداخت به معنی پذیرش تأمین‌کننده نیست. ودیعه دریافت نمی‌شود.','policy_reference'=>'fictional-browser-stay-policy-v1','supplier_reference'=>'fictional-browser-allotment-'.$tag,'supplier_users'=>array($users['supplier']),'published'=>true,'reason'=>'Fictional independent review for one hidden local browser journey.'));
-    $require($rate->get_status()===200,'Normal agency rate review failed.'); $records[]=$rate->get_data()['id'];
+    $rateFields=array('version'=>0,'name_en'=>'Standard stay','name_fa'=>'اقامت استاندارد','resource_id'=>$resource['id'],'start_date'=>$local->format('Y-m-d'),'end_date'=>$local->modify('+60 days')->format('Y-m-d'),'timezone'=>'Asia/Tehran','valid_until'=>$now->modify('+30 days')->format('Y-m-d\TH:i:s\Z'),'unit_amount_irr'=>$nightly,'tax_per_unit_irr'=>$tax,'protection_irr'=>0,'min_duration'=>1,'max_duration'=>30,'terms_en'=>'Fictional reviewed rate: 8,000,000 IRR per local night plus 100,000 IRR per reserved room in disclosed tax. Checkout date is exclusive. Payment does not confirm supplier acceptance. No deposit is collected.','terms_fa'=>'قیمت فرضی بازبینی‌شده: هر شب محلی ۸٬۰۰۰٬۰۰۰ ریال به‌علاوه ۱۰۰٬۰۰۰ ریال مالیات هر اتاق. روز خروج محاسبه نمی‌شود. پرداخت به معنی پذیرش تأمین‌کننده نیست. ودیعه دریافت نمی‌شود.','policy_reference'=>'fictional-browser-stay-policy-v1','supplier_reference'=>'fictional-browser-allotment-'.$tag,'supplier_users'=>array($users['supplier']),'published'=>true,'reason'=>'Fictional independent review for one hidden local browser journey.');
+    $rate=$call('POST','/agency/v1/resource-offers/'.$offer,$rateFields);
+    $require($rate->get_status()===200,'Normal agency rate review failed.');
+    $plan=$rate->get_data()['id'];
+    $records[]=$plan;
+    $alternateNightly=$nightly+1000000;
+    $alternate=$call('POST','/agency/v1/resource-offers/'.$offer,array_replace($rateFields,[
+        'plan_id'=>wp_generate_uuid4(),
+        'name_en'=>'Flexible stay',
+        'name_fa'=>'اقامت انعطاف‌پذیر',
+        'unit_amount_irr'=>$alternateNightly,
+        'terms_en'=>'Fictional flexible plan at 9,000,000 IRR per night plus 100,000 IRR per reserved room.',
+        'terms_fa'=>'طرح فرضی انعطاف‌پذیر با قیمت ۹٬۰۰۰٬۰۰۰ ریال برای هر شب و ۱۰۰٬۰۰۰ ریال برای هر اتاق.',
+    ]));
+    $require($alternate->get_status()===200,'Second reviewed rate plan failed.');
+    $alternatePlan=$alternate->get_data()['id'];
+    $records[]=$alternatePlan;
     $product=new WC_Product_Simple(); $product->set_name($title); $product->set_status('publish'); $product->set_virtual(true); $product->set_catalog_visibility('hidden'); $product->set_tax_status('none');
     $product->set_regular_price('1'); // The browser must observe persisted dated quote pricing, never this placeholder.
     $product_id=$product->save(); $require($product_id>0,'Could not create the fictional virtual checkout product.'); $products[]=$product_id;
@@ -61,7 +76,37 @@ try {
     $require($activated->get_status()===200,'Normal reviewed resource activation failed.');
     // Do not seed this reverse marker manually: the normal agency activation must establish both directions.
     $require((int)get_post_meta($product_id,'_atlas_offer_id',true)===(int)$offer,'Reviewed activation did not create the reciprocal Woo product link. Fix the activation path before this browser proof.');
-    $fixture=array('fixture_run'=>$tag,'scope'=>'fresh fictional local browser stay; no live supplier or payment capability','base_url'=>home_url('/'),'offer_id'=>$offer,'product_id'=>$product_id,'resource_id'=>$resource['id'],'title'=>$title,'timezone'=>'Asia/Tehran','check_in'=>$check_in,'check_out'=>$check_out,'nights'=>3,'quantity'=>1,'guests_per_unit'=>2,'nightly_irr'=>$nightly,'tax_per_unit_irr'=>$tax,'expected_amount_irr'=>$total,'placeholder_product_price_irr'=>1,'customer_email'=>'stay-customer-'.$tag.'@example.test','checkout_url'=>add_query_arg('lang','en',wc_get_checkout_url()),'created_at'=>$now->format('Y-m-d\TH:i:s\Z'));
+    // Dedicated test stock avoids consuming or replenishing the storefront demo offer.
+    $eventProduct = new WC_Product_Simple();
+    $eventProduct->set_name('A morning in nature · browser checkout');
+    $eventProduct->set_virtual(true);
+    $eventProduct->set_catalog_visibility('hidden');
+    $eventProduct->set_regular_price('11800000');
+    $eventProduct->set_tax_status('none');
+    $eventProductId = $eventProduct->save();
+    $require($eventProductId>0,'Could not create the fictional event checkout product.');
+    $products[]=$eventProductId;
+    $event = Atlas\Core\Offers::save(0,[
+        'kind'=>'event','org_id'=>0,'title_en'=>'A morning in nature · browser checkout',
+        'title_fa'=>'صبحی در طبیعت · آزمایش ثبت سفارش','description_en'=>'Fictional booking test.',
+        'description_fa'=>'آزمایش رزرو فرضی.','registration_open_at'=>$now->modify('-1 day')->format('Y-m-d\TH:i:s\Z'),
+        'registration_close_at'=>$now->modify('+1 day')->format('Y-m-d\TH:i:s\Z'),
+        'timezone'=>'Asia/Tehran','capacity'=>4,'amount_irr'=>11800000,'mode'=>'local',
+        'status'=>'published','product_id'=>$eventProductId,
+    ],$users['agency']);
+    $require(!is_wp_error($event),'Could not prepare fresh fictional event capacity.');
+    $offers[]=$event;
+    update_post_meta($eventProductId,'_atlas_offer_id',$event);
+    $merch = new WC_Product_Simple();
+    $merch->set_name('Paper trail journal · fictional shipping check');
+    $merch->set_catalog_visibility('hidden');
+    $merch->set_regular_price('2500000');
+    $merch->set_manage_stock(true);
+    $merch->set_stock_quantity(2);
+    $merchId=$merch->save();
+    $require($merchId>0,'Could not create the fictional physical checkout product.');
+    $products[]=$merchId;
+    $fixture=array('fixture_run'=>$tag,'event_offer_id'=>$event,'merch_product_id'=>$merchId,'scope'=>'fresh fictional local browser stay and event','base_url'=>home_url('/'),'offer_id'=>$offer,'product_id'=>$product_id,'resource_id'=>$resource['id'],'title'=>$title,'timezone'=>'Asia/Tehran','check_in'=>$check_in,'check_out'=>$check_out,'nights'=>3,'quantity'=>1,'guests_per_unit'=>2,'nightly_irr'=>$nightly,'rate_plan_id'=>$plan,'alternate_rate_plan_id'=>$alternatePlan,'alternate_amount_irr'=>3*$alternateNightly+$tax,'tax_per_unit_irr'=>$tax,'expected_amount_irr'=>$total,'placeholder_product_price_irr'=>1,'customer_email'=>'stay-customer-'.$tag.'@example.test','checkout_url'=>add_query_arg('lang','en',wc_get_checkout_url()),'created_at'=>$now->format('Y-m-d\TH:i:s\Z'));
     $previous_mask=umask(0077);
     try { foreach (array('resource-browser-credentials.json'=>$credentials,'resource-browser-fixtures.json'=>$fixture) as $name=>$data) { $path=$runtime.'/'.$name; $require(file_put_contents($path,wp_json_encode($data,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE))!==false,'Could not save private resource browser fixture data.'); chmod($path,0600); } }
     finally { umask($previous_mask); }

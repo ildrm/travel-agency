@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Atlas Gateways
  * Description: Prepared ZarinPal V4, disabled provider boundaries and local-only simulation.
- * Version: 0.2.0
+ * Version: 1.0.0-rc.1
  * WC tested up to: 11.3.0
  * Text Domain: atlas-gateways
  * Requires Plugins: woocommerce, atlas-core

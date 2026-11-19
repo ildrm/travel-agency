@@ -31,6 +31,7 @@ for (const lang of ['en', 'fa']) {
     await expect(page.locator('html')).toHaveAttribute('dir', lang === 'fa' ? 'rtl' : 'ltr');
     await expect(page.locator('#atlas-home-title')).toBeVisible();
     await expect(page.locator('#atlas-discover')).toBeAttached();
+    await expect(page.locator('.atlas-hero-search input[name=cat_destination]')).toBeVisible();
     await expect(page.locator('body')).not.toContainText('[atlas_');
     const metrics = await page.evaluate(() => ({
       navigation_ms: performance.getEntriesByType('navigation')[0]?.duration,
@@ -41,12 +42,19 @@ for (const lang of ['en', 'fa']) {
     fs.writeFileSync(path.join(root, `implementation/evidence/performance-${lang}.json`), JSON.stringify({
       scope: 'one local headless desktop navigation; not field p75, load capacity, INP or a production benchmark', ...metrics
     }, null, 2));
-    await page.keyboard.press('Tab');
-    await expect(page.locator('.atlas-skip')).toBeFocused();
     await page.screenshot({ path: `implementation/evidence/home-${lang}-desktop.png`, fullPage: true, animations: 'disabled' });
     await page.setViewportSize({ width: 320, height: 800 });
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBeTruthy();
     await page.screenshot({ path: `implementation/evidence/home-${lang}-mobile.png`, fullPage: true, animations: 'disabled' });
+    await page.keyboard.press('Tab');
+    await expect(page.locator('.atlas-skip')).toBeFocused();
+    const menu = page.locator('header .atlas-menu-toggle');
+    await menu.click();
+    await expect(menu).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('header .atlas-utility')).toBeVisible();
+    await menu.press('Escape');
+    await expect(menu).toBeFocused();
+    await expect(page.locator('header .atlas-utility')).toBeHidden();
     expect(errors).toEqual([]);
   });
   test(`axe public discovery: ${lang}`, async ({ page }) => {
@@ -57,6 +65,9 @@ for (const lang of ['en', 'fa']) {
   });
 }
 test('authentication, customer account and scoped partner portal', async ({ page }) => {
+  const loginPage = await page.goto('/?atlas_area=account&lang=fa');
+  expect(loginPage.headers()['cache-control']).toContain('no-store');
+  expect(loginPage.headers()['x-robots-tag']).toContain('noindex');
   const credentials = JSON.parse(fs.readFileSync(path.join(root, '.runtime/credentials.json')));
   await page.goto('/wp-login.php?redirect_to=' + encodeURIComponent('http://127.0.0.1:8840/?atlas_area=account&lang=fa'));
   // WordPress schedules its initial username focus after page load; wait for that
@@ -75,6 +86,10 @@ test('authentication, customer account and scoped partner portal', async ({ page
   await page.goto('/?atlas_area=portal&lang=en', { waitUntil: 'networkidle' });
   await expect(page.locator('body')).not.toContainText('[atlas_portal]');
   await expect(page.locator('h1').last()).toContainText('Partner');
+  const jump = page.locator('.atlas-workspace-jump');
+  await jump.locator('select').selectOption({label: 'Booking confirmation queue'});
+  await jump.locator('button').click();
+  await expect(page.locator('summary').filter({hasText: /^Booking confirmation queue$/})).toBeFocused();
 });
 test('public APIs reject forced crypto and unauthenticated private access', async ({ request }) => {
   const catalog = await request.get('/wp-json/agency/v1/catalog');
@@ -87,8 +102,15 @@ test('public APIs reject forced crypto and unauthenticated private access', asyn
 
 test('catalog filters narrow results and keep the Farsi locale', async ({ page }) => {
   await page.goto('/?lang=fa');
+  const destination = page.locator('#atlas-home-destination');
+  await destination.fill('atlas-no-matching-city');
+  await destination.press('Enter');
+  await expect(page).toHaveURL(/cat_destination=atlas-no-matching-city.*#atlas-offers/);
+  await expect(page.locator('[data-atlas-catalog]')).toContainText('پیشنهادی با این فیلترها یافت نشد');
+  await page.locator('[data-catalog-filter] a').click();
   const filter = page.locator('form[data-catalog-filter]');
   await expect(filter).toBeVisible();
+  await expect(filter.locator('details')).not.toHaveAttribute('open', '');
   await filter.locator('[name="cat_kind"]').selectOption('event');
   await filter.locator('button[type="submit"], button:not([type])').first().click();
   await expect(page).toHaveURL(/cat_kind=event/);
@@ -130,10 +152,11 @@ test('physical product checkout calculates native shipping and keeps offline mon
   const fixtures = JSON.parse(fs.readFileSync(path.join(root, '.runtime/browser-fixtures.json')));
   expect(Boolean(fixtures.merch_product && fixtures.merch_shipping_zone)).toBe(true);
   await signIn(page, credentials, 'customer', '?atlas_area=account&lang=en');
-  await page.goto('/?offer_id=' + fixtures.event + '&lang=en');
+  const runFixture = JSON.parse(fs.readFileSync(path.join(root, '.runtime/resource-browser-fixtures.json')));
+  await page.goto('/?offer_id=' + runFixture.event_offer_id + '&lang=en');
   const nonces = await page.evaluate(() => ({ Nonce: window.atlasBooking.storeNonce, 'X-WP-Nonce': window.atlasBooking.restNonce }));
   expect((await page.request.delete('/wp-json/wc/store/v1/cart/items', { headers: nonces })).status()).toBe(200);
-  const product = await page.request.post('/wp-json/wc/store/v1/cart/add-item', { headers: nonces, data: { id: fixtures.merch_product, quantity: 1 } });
+  const product = await page.request.post('/wp-json/wc/store/v1/cart/add-item', { headers: nonces, data: { id: runFixture.merch_product_id, quantity: 1 } });
   expect(product.ok()).toBe(true);
   await page.goto('/checkout/?lang=en');
   const edit = page.getByRole('button', { name: /Edit shipping address/ });
@@ -157,10 +180,21 @@ test('physical product checkout calculates native shipping and keeps offline mon
   const response = page.waitForResponse(r => r.url().includes('/wc/store/v1/checkout') && r.request().method() === 'POST');
   await page.locator('.wc-block-components-checkout-place-order-button').click();
   const result = await response;
-  const order = await result.json();
-  expect(result.ok(), order.message || 'Physical checkout must succeed').toBe(true);
-  expect(order.status).toBe('on-hold');
+  expect(result.ok(), 'Physical checkout must succeed').toBe(true);
   await page.waitForURL(url => url.pathname.includes('order-received'));
+  // Read the saved order after navigation. The checkout response body may have
+  // already been discarded by the browser when the receipt loaded.
+  const state = await page.evaluate(async headers => {
+    const receipt = new URL(location.href);
+    const orderId = receipt.pathname.match(/order-received\/(\d+)/)?.[1];
+    const key = receipt.searchParams.get('key');
+    if (!orderId || !key) return 'receipt-unavailable';
+    const url = new URL('/wp-json/wc/store/v1/order/' + orderId, receipt.origin);
+    url.searchParams.set('key', key);
+    const saved = await fetch(url, {headers, credentials: 'same-origin'});
+    return saved.ok ? (await saved.json()).status : 'order-unavailable';
+  }, nonces);
+  expect(state).toBe('on-hold');
   await expect(page.getByText(/Paper trail journal/).first()).toBeVisible();
   await expect(page.locator('[data-atlas-confirmation-status]')).toHaveCount(0);
 });
@@ -170,10 +204,10 @@ for (const lang of ['en', 'fa']) {
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     const credentials = JSON.parse(fs.readFileSync(path.join(root, '.runtime/credentials.json')));
-    const fixtures = JSON.parse(fs.readFileSync(path.join(root, '.runtime/browser-fixtures.json')));
-    expect(Boolean(credentials.customer_user && fixtures.event)).toBe(true);
+    const fixtures = JSON.parse(fs.readFileSync(path.join(root, '.runtime/resource-browser-fixtures.json')));
+    expect(Boolean(credentials.customer_user && fixtures.event_offer_id)).toBe(true);
     await signIn(page, credentials, 'customer', '?atlas_area=account&lang=' + lang);
-    await page.goto('/?offer_id=' + fixtures.event + '&lang=' + lang, { waitUntil: 'networkidle' });
+    await page.goto('/?offer_id=' + fixtures.event_offer_id + '&lang=' + lang, { waitUntil: 'networkidle' });
     const form = page.locator('form[data-atlas-booking]');
     await expect(form).toBeVisible();
     const restNonce = await page.evaluate(() => window.atlasBooking.restNonce);
@@ -210,6 +244,14 @@ for (const lang of ['en', 'fa']) {
     }
     const terms = page.locator('.wc-block-checkout__terms input[type="checkbox"]');
     for (const input of await terms.all()) await input.check();
+    await expect(page.locator('main h1')).toHaveCount(1);
+    for (const width of [320, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width + 1);
+    }
+    const summary = page.locator('.wc-block-components-order-summary');
+    await expect(summary).toContainText(lang === 'fa' ? 'مهلت پرداخت' : 'Payment deadline');
+    if (lang === 'fa') await expect(summary).toContainText('صبحی در طبیعت');
     await page.screenshot({ path: `implementation/evidence/checkout-${lang}.png`, fullPage: true, animations: 'disabled' });
     await expect(page.locator('#wc-guest-checkout-notice')).toHaveCount(1);
     await expect(page.locator('#email')).toHaveAttribute('aria-describedby', /wc-guest-checkout-notice/);
@@ -220,8 +262,7 @@ for (const lang of ['en', 'fa']) {
     const checkoutResponse = page.waitForResponse(r => r.url().includes('/wc/store/v1/checkout') && r.request().method() === 'POST');
     await page.locator('.wc-block-components-checkout-place-order-button').click();
     const checkout = await checkoutResponse;
-    const result = await checkout.json();
-    expect(checkout.ok(), result.message || 'Woo checkout must succeed').toBe(true);
+    expect(checkout.ok(), 'Woo checkout must succeed').toBe(true);
     await page.waitForURL(url => url.pathname.includes('order-received'));
     await expect(page.locator('html')).toHaveAttribute('lang', lang);
     await expect(page.locator('[data-atlas-confirmation-status="paid_pending_confirmation"]').first()).toBeVisible();
@@ -230,12 +271,14 @@ for (const lang of ['en', 'fa']) {
       { headers: { 'X-WP-Nonce': restNonce } });
     expect(state.status()).toBe(200);
     const record = await state.json();
+    expect(record.order_id).toBeGreaterThan(0);
+    expect(new URL(page.url()).pathname).toContain('/order-received/' + record.order_id + '/');
     expect(record.payment_status).toBe('verified');
     expect(record.status).toBe('paid_pending_confirmation');
     await page.screenshot({ path: `implementation/evidence/receipt-${lang}.png`, fullPage: true, animations: 'disabled' });
     // Opaque IDs only; no order keys, nonces, billing fields or credentials enter evidence.
     fs.writeFileSync(path.join(root, `.runtime/browser-order-${lang}.json`),
-      JSON.stringify({ booking_id: booking.booking_id, order_id: result.order_id, status: record.status }));
+      JSON.stringify({ booking_id: booking.booking_id, order_id: record.order_id, status: record.status }));
     const staffContext = await browser.newContext({ baseURL: 'http://127.0.0.1:8840', reducedMotion: 'reduce', viewport: { width: 1440, height: 1000 } });
     try {
       const staff = await staffContext.newPage();
@@ -251,11 +294,14 @@ for (const lang of ['en', 'fa']) {
         await next.click();
       }
       await expect(row).toBeVisible();
+      await staff.setViewportSize({width: 320, height: 800});
+      await expect.poll(() => staff.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(321);
+      await staff.setViewportSize({width: 1440, height: 1000});
       await row.locator('input[name="reason"]').fill('Fictional local service checked for automated demonstration.');
       const confirmedResponse = staff.waitForResponse(r => r.url().includes('/bookings/' + booking.booking_id + '/confirm') && r.request().method() === 'POST');
       await row.locator('button[type="submit"]').click();
       expect((await confirmedResponse).ok()).toBe(true);
-      await expect(row).toContainText('confirmed');
+      await expect(row).toHaveAttribute('data-booking-state', 'confirmed');
       const confirmed = await page.request.get('/wp-json/agency/v1/bookings/' + booking.booking_id,
         { headers: { 'X-WP-Nonce': restNonce } });
       expect((await confirmed.json()).status).toBe('confirmed');

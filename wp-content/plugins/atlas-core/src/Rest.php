@@ -60,45 +60,132 @@ final class CLI {
         $r=Booking::expire((string)$args[0]); if (is_wp_error($r)) { \WP_CLI::error($r->get_error_message()); }
         \WP_CLI::success('Hold state: '.$r['state']);
     }
-    public function run_due(): void { $result=Jobs::run(); \WP_CLI::success('Processed '.$result['due_holds'].' due holds and '.$result['delivered_events'].' events.'); }
+    /**
+     * Verify the installed Atlas stack and optionally production configuration.
+     *
+     * ## OPTIONS
+     *
+     * [--production]
+     * : Require production environment, HTTPS and a successful worker run.
+     *
+     * [--service-payments]
+     * : Require the configured ZarinPal gateway to pass its local readiness checks.
+     */
+    public function preflight(array $args, array $options): void {
+        $checks=Preflight::checks(isset($options['production']),isset($options['service-payments']));
+        \WP_CLI::line(wp_json_encode($checks,JSON_PRETTY_PRINT));
+        if (in_array(false,$checks,true)) \WP_CLI::halt(1);
+    }
+    public function run_due(): void {
+        $result=Jobs::run();
+        if (is_wp_error($result)) \WP_CLI::error($result->get_error_message());
+        if ($result['errors']>0) \WP_CLI::error('Atlas worker finished with '.$result['errors'].' errors. Inspect Operations health.');
+        \WP_CLI::success('Processed '.$result['due_holds'].' due holds and '.$result['delivered_events'].' events.');
+    }
 }
 final class Jobs {
-    public static function run(): array {
-        $started=DB::now();
-        $holds=self::expire_due();
-        $events=self::dispatch_outbox();
-        $heartbeat=['started_at'=>$started,'finished_at'=>DB::now(),'due_holds'=>$holds,'delivered_events'=>$events];
-        update_option('atlas_core_worker_heartbeat',$heartbeat,false);
-        return $heartbeat;
+    private const BATCH_SIZE = 25;
+
+    public static function run(): array|\WP_Error {
+        global $wpdb;
+        $ready=DB::ready();
+        if (is_wp_error($ready)) return $ready;
+        $key='atlas_worker_'.md5(DB_NAME.':'.$wpdb->prefix);
+        if ((string)$wpdb->get_var($wpdb->prepare('SELECT GET_LOCK(%s,0)',$key))!=='1') {
+            return new \WP_Error('atlas_worker_unavailable','An Atlas worker is active or the worker lock is unavailable.');
+        }
+        try {
+            $started=DB::now();
+            $holds=self::expire_due();
+            $events=self::dispatch_outbox();
+            $heartbeat=[
+                'started_at'=>$started,
+                'finished_at'=>DB::now(),
+                'due_holds'=>$holds['released'],
+                'delivered_events'=>is_wp_error($events)?0:$events,
+                'errors'=>$holds['errors']+(is_wp_error($events)?1:0),
+            ];
+            if (!update_option('atlas_core_worker_heartbeat',$heartbeat,false)
+                && get_option('atlas_core_worker_heartbeat')!==$heartbeat) {
+                return new \WP_Error('atlas_worker_heartbeat','Atlas could not record worker completion.');
+            }
+            return $heartbeat;
+        } finally {
+            $wpdb->get_var($wpdb->prepare('SELECT RELEASE_LOCK(%s)',$key));
+        }
     }
-    public static function dispatch_outbox(): int {
+
+    public static function dispatch_outbox(): int|\WP_Error {
         global $wpdb;
         if (!has_filter('atlas_core_deliver_outbox')) { return 0; }
-        $table=DB::table('outbox'); $now=DB::now();
+        $table=DB::table('outbox');
+        $now=DB::now();
+        $error=new \WP_Error('atlas_worker_storage','Atlas could not read or update the outbox.');
         $stale=(new \DateTimeImmutable($now,new \DateTimeZone('UTC')))->modify('-5 minutes')->format('Y-m-d H:i:s.u');
-        $wpdb->query($wpdb->prepare("UPDATE $table SET status=%s,claimed_at=NULL WHERE status=%s AND claimed_at<%s",'pending','processing',$stale));
-        $ids=$wpdb->get_col($wpdb->prepare("SELECT id FROM $table WHERE status=%s AND (available_at IS NULL OR available_at<=%s) ORDER BY created_at LIMIT 25",'pending',$now));
+        $reset=$wpdb->query($wpdb->prepare("UPDATE $table SET status=%s,claimed_at=NULL WHERE status=%s AND claimed_at<%s",'pending','processing',$stale));
+        if ($reset===false) return $error;
+        $ids=$wpdb->get_col($wpdb->prepare("SELECT id FROM $table WHERE status=%s AND (available_at IS NULL OR available_at<=%s) ORDER BY created_at,id LIMIT %d",'pending',$now,self::BATCH_SIZE));
+        if ($wpdb->last_error!=='') return $error;
         $delivered=0;
         foreach ($ids as $id) {
             $claimTime=DB::now();
             $claimed=$wpdb->query($wpdb->prepare("UPDATE $table SET status=%s,claimed_at=%s,attempts=attempts+1 WHERE id=%s AND status=%s AND (available_at IS NULL OR available_at<=%s)",'processing',$claimTime,$id,'pending',$claimTime));
-            if ($claimed!==1) { continue; }
-            $event=$wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id=%s",$id),ARRAY_A);
-            try { $ok=apply_filters('atlas_core_deliver_outbox',null,$event)===true; } catch (\Throwable $e) { $ok=false; }
-            $claim=['id'=>$id,'status'=>'processing','claimed_at'=>$claimTime,'attempts'=>(int)$event['attempts']];
-            if ($ok) { if ($wpdb->update($table,['status'=>'delivered','claimed_at'=>null],$claim)===1) $delivered++; }
-            else {
-                $attempt=(int)$event['attempts']; $status=$attempt>=5 ? 'failed' : 'pending';
-                $next=(new \DateTimeImmutable(DB::now(),new \DateTimeZone('UTC')))->modify('+'.min(3600,30*(2**min($attempt,7))).' seconds')->format('Y-m-d H:i:s.u');
-                $wpdb->update($table,['status'=>$status,'claimed_at'=>null,'available_at'=>$next],$claim);
+            if ($claimed===false) return $error;
+            if ($claimed!==1) continue;
+            $claim=['id'=>$id,'status'=>'processing','claimed_at'=>$claimTime];
+            $event=$wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id=%s AND status=%s AND claimed_at=%s",$id,'processing',$claimTime),ARRAY_A);
+            if (!$event) return $error;
+            try {
+                $ok=apply_filters('atlas_core_deliver_outbox',null,$event)===true;
+            } catch (\Throwable $failure) {
+                $ok=false;
             }
+            $claim['attempts']=(int)$event['attempts'];
+            if ($ok) {
+                $change=['status'=>'delivered','claimed_at'=>null];
+            } else {
+                $attempt=$claim['attempts'];
+                $delay=min(3600,30*(2**min($attempt,7)));
+                $next=(new \DateTimeImmutable(DB::now(),new \DateTimeZone('UTC')))->modify('+'.$delay.' seconds')->format('Y-m-d H:i:s.u');
+                $change=['status'=>$attempt>=5?'failed':'pending','claimed_at'=>null,'available_at'=>$next];
+            }
+            $saved=$wpdb->update($table,$change,$claim);
+            if ($saved!==1) return $error;
+            if ($ok) ++$delivered;
         }
         return $delivered;
     }
-    public static function expire_due(): int {
+
+    private static function expire_due(): array {
         global $wpdb;
-        $ids=$wpdb->get_col($wpdb->prepare('SELECT id FROM '.DB::table('holds').' WHERE state=%s AND expires_at<=%s ORDER BY expires_at LIMIT 25','active',DB::now()));
-        $n=0; foreach ($ids as $id) { if (!is_wp_error(Booking::expire($id))) { $n++; } }
-        return $n;
+        $table=DB::table('holds');
+        $now=DB::now();
+        $cursor=get_option('atlas_core_expiry_resume',[]);
+        $query="SELECT id,expires_at FROM $table WHERE state=%s AND expires_at<=%s";
+        $params=['active',$now];
+        if (is_array($cursor) && isset($cursor['expires_at'],$cursor['id'])) {
+            $query.=' AND (expires_at>%s OR (expires_at=%s AND id>%s))';
+            array_push($params,$cursor['expires_at'],$cursor['expires_at'],$cursor['id']);
+        }
+        $rows=$wpdb->get_results($wpdb->prepare($query.' ORDER BY expires_at,id LIMIT %d',array_merge($params,[self::BATCH_SIZE])),ARRAY_A);
+        if ($wpdb->last_error!=='') return ['released'=>0,'errors'=>1];
+        $released=0;
+        $errors=0;
+        foreach ($rows as $row) {
+            $result=Booking::expire($row['id']);
+            if (is_wp_error($result)) {
+                ++$errors;
+            } elseif ($result['state']==='released') {
+                ++$released;
+            }
+        }
+        // Rotate past a full page even when a bad hold keeps failing to release.
+        // When the tail is reached, retry older failures and new arrivals.
+        if (count($rows)===self::BATCH_SIZE && ($errors>0 || !empty($cursor))) {
+            update_option('atlas_core_expiry_resume',end($rows),false);
+        } else {
+            delete_option('atlas_core_expiry_resume');
+        }
+        return ['released'=>$released,'errors'=>$errors];
     }
 }

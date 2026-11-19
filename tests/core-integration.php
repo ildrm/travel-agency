@@ -12,6 +12,14 @@ use Atlas\Core\VerifiedRefund;
 global $wpdb;
 $passed=0; $failed=0;
 $check=static function(bool $ok,string $name) use (&$passed,&$failed): void { if ($ok) { $passed++; echo "PASS $name\n"; } else { $failed++; echo "FAIL $name\n"; } };
+// A single rejected SQL statement exercises the real rollback/retry path without
+// changing schema, network configuration, or any production fault-injection API.
+$withSqlFailure=static function(callable $match,callable $operation): array {
+    global $wpdb;$seen=false;$filter=static function($sql) use ($match,&$seen) { if (!$seen && $match($sql)) { $seen=true;return 'ATLAS_LOCAL_FIXTURE_REJECTED_STATEMENT'; }return $sql; };
+    $previous=$wpdb->suppress_errors(true);add_filter('query',$filter,PHP_INT_MAX);
+    try { $result=$operation(); } finally { remove_filter('query',$filter,PHP_INT_MAX);$wpdb->suppress_errors($previous); }
+    return [$result,$seen];
+};
 $users=get_users(['role'=>'administrator','number'=>1,'fields'=>'ID']);
 if (!$users) { WP_CLI::error('A local administrator fixture is required.'); }
 $admin=(int)$users[0]; wp_set_current_user($admin); $nonce=substr(wp_generate_password(12,false,false),0,12);
@@ -48,6 +56,17 @@ foreach (['2027-02-31T05:30:00Z','2027-06-01Z','2027-06-01T24:00:00Z'] as $inval
         'invalid/non-ISO registration date is rejected without silent normalization: '.$invalidDate);
 }
 $offer=$make(2); wp_set_current_user($user);
+DB::set_test_now('2027-06-01T05:30:00.000000Z');
+foreach (['START TRANSACTION','COMMIT'] as $statement) {
+    $faultKey='hold-control-'.str_replace(' ','-',$statement).'-'.$nonce;
+    [$fault,$injected]=$withSqlFailure(static fn($sql)=>trim($sql)===$statement,static fn()=>Booking::hold($offer,1,1,$user,$faultKey));
+    $allocated=(int)$wpdb->get_var($wpdb->prepare('SELECT allocated FROM '.DB::table('inventory').' WHERE offer_id=%d',$offer));
+    $intent=(int)$wpdb->get_var($wpdb->prepare('SELECT COUNT(*) FROM '.DB::table('idempotency').' WHERE scope=%s AND operation=%s AND idem_key=%s','user:'.$user,'hold',$faultKey));
+    $check($injected && is_wp_error($fault) && $allocated===0 && $intent===0,'failed '.$statement.' cannot create a partially committed hold or successful retry mapping');
+}
+foreach (['2027-02-31T05:30:00Z','2027-06-01Z','tomorrowZ','2027-06-01T24:00:00Z'] as $invalidPaidAt) {
+    $check(is_wp_error(VerifiedPayment::from_adapter('local_test','invalid-time-'.$nonce,1000000,$invalidPaidAt)),'provider payment time rejects invalid or normalized calendar input: '.$invalidPaidAt);
+}
 DB::set_test_now('2027-06-01T05:29:59.999000Z');
 $check(is_wp_error(Booking::hold($offer,1,1,$user,'before-open-'.$nonce)),'TC-REG-001 before open by 1ms denied');
 DB::set_test_now('2027-06-01T05:30:00.000000Z');
@@ -69,6 +88,10 @@ if (is_array($a)) {
     $wrong=VerifiedPayment::from_adapter('local_test','wrong-'.$nonce,999999);
     $check($wrong instanceof VerifiedPayment && is_wp_error(Booking::verify($a['booking_id'],$wrong)),'payment amount mismatch fails closed');
     $proof=VerifiedPayment::from_adapter('local_test','ok-'.$nonce,1000000);
+    [$uncommitted,$injected]=$withSqlFailure(static fn($sql)=>trim($sql)==='COMMIT',static fn()=>Booking::verify($a['booking_id'],$proof));
+    $uncommittedPayments=(int)$wpdb->get_var($wpdb->prepare('SELECT COUNT(*) FROM '.DB::table('payments').' WHERE booking_id=%s',$a['booking_id']));
+    $uncommittedHold=$wpdb->get_var($wpdb->prepare('SELECT state FROM '.DB::table('holds').' WHERE id=%s',$a['hold_id']));
+    $check($injected && is_wp_error($uncommitted) && $uncommittedPayments===0 && $uncommittedHold==='active','failed payment commit rolls back money evidence and hold consumption before safe proof retry');
     $paid=$proof instanceof VerifiedPayment ? Booking::verify($a['booking_id'],$proof) : $proof;
     $again=$proof instanceof VerifiedPayment ? Booking::verify($a['booking_id'],$proof) : $proof;
     $check(is_array($paid) && $paid['status']==='paid_pending_confirmation' && is_array($again) && $again['status']===$paid['status'],'timely proof without paid_at and duplicate replay');
@@ -90,6 +113,14 @@ if (is_array($a)) {
     $extraAudit=is_array($extra) ? (int)$wpdb->get_var($wpdb->prepare('SELECT COUNT(*) FROM '.DB::table('audit').' WHERE action=%s AND object_id=%s','payment.exception',$extra['payment_id'])) : 0;
     $check($extraEvent===1 && $extraAudit===1,'excess payment has one payment-specific exception outbox and audit record');
     if (is_array($extra)) {
+        (new WP_User($user))->add_cap('atlas_manage_finance');wp_set_current_user(0);wp_set_current_user($user);
+        $capLedger=Finance::ledger($extra['payment_id'],$user);$capQueue=Finance::payment_exceptions($user);
+        $capRefund=Finance::request_refund($extra['payment_id'],1000000,$user,'global-cap-refund-'.$nonce,'Global capability is not agency authority.');
+        $check(is_wp_error($capLedger) && is_wp_error($capQueue) && is_wp_error($capRefund) && $capRefund->get_error_data()['status']===403,'an unscoped finance capability cannot read agency money records or reserve another payment refund');
+        wp_set_current_user($admin);
+        [$readFault,$injected]=$withSqlFailure(static fn($sql)=>str_contains($sql,'COALESCE(SUM(amount_irr),0)') && str_contains($sql,DB::table('refunds')),static fn()=>Finance::request_refund($extra['payment_id'],1000000,$admin,'refund-read-fault-'.$nonce,'Refund total must be authoritative.'));
+        $refundCount=(int)$wpdb->get_var($wpdb->prepare('SELECT COUNT(*) FROM '.DB::table('refunds').' WHERE payment_id=%s',$extra['payment_id']));
+        $check($injected && is_wp_error($readFault) && $readFault->get_error_data()['status']===503 && $refundCount===0,'failed reserved-refund read cannot be interpreted as a zero balance or create a refund');
         $refund=Finance::request_refund($extra['payment_id'],1000000,$admin,'excess-refund-'.$nonce,'Fictional duplicate payment review');
         $approval=is_array($refund) ? Finance::approve($refund['refund_id'],$admin,'Fictional excess-payment refund approval') : $refund;
         $refundProof=VerifiedRefund::from_adapter('local_test','extra-refund-'.$nonce,1000000);
@@ -125,7 +156,7 @@ if (is_array($second)) {
     $check(is_array($paid) && $firstConfirm->get_status()===200 && $repeatConfirm->get_status()===200 && $firstConfirm->get_data()['status']==='confirmed' && $conflictingConfirm->get_status()===409 && $confirmEvents===1,'agency confirmation route is idempotent and emits one confirmation');
     $queueRequest=new WP_REST_Request('GET','/agency/v1/booking-queue'); $queueRequest->set_param('status','confirmed');
     $queue=rest_do_request($queueRequest); $queueData=$queue->get_data(); $safeQueue=$queue->get_status()===200 && is_array($queueData['items'] ?? null) && count($queueData['items'])<=25;
-    if ($safeQueue) { foreach ($queueData['items'] as $entry) { if (array_diff(array_keys($entry),['booking_id','offer_id','status','quantity','amount_irr','order_id','created_at','updated_at','currency'])) { $safeQueue=false; } } }
+    if ($safeQueue) { foreach ($queueData['items'] as $entry) { if (array_diff(array_keys($entry),['booking_id','offer_id','status','quantity','amount_irr','order_id','created_at','updated_at','currency','payment_status'])) { $safeQueue=false; } } }
     $check($safeQueue,'agency queue is bounded and excludes traveler, snapshot and provider fields');
 }
 $near=$make(); wp_set_current_user($user); DB::set_test_now('2027-06-15T14:29:59.999000Z');
@@ -134,6 +165,11 @@ $check(is_array($last) && str_starts_with($last['expires_at'],'2027-06-15T14:30:
 DB::set_test_now('2027-06-15T14:30:00.000000Z');
 $check(is_wp_error(Booking::hold($near,1,1,$user,'at-close-'.$nonce)),'TC-REG-001 exact close denied');
 if (is_array($last)) {
+    [$expiryFault,$injected]=$withSqlFailure(static fn($sql)=>str_starts_with($sql,'UPDATE `'.DB::table('bookings').'`') && str_contains($sql,"'expired'"),static fn()=>Booking::expire($last['hold_id']));
+    $expiryHold=$wpdb->get_var($wpdb->prepare('SELECT state FROM '.DB::table('holds').' WHERE id=%s',$last['hold_id']));
+    $expiryBooking=$wpdb->get_var($wpdb->prepare('SELECT status FROM '.DB::table('bookings').' WHERE id=%s',$last['booking_id']));
+    $expiryStock=(int)$wpdb->get_var($wpdb->prepare('SELECT allocated FROM '.DB::table('inventory').' WHERE offer_id=%d',$near));
+    $check($injected && is_wp_error($expiryFault) && $expiryHold==='active' && $expiryBooking==='held' && $expiryStock===1,'failed booking expiry write rolls back released capacity and hold state together');
     $released=Booking::expire($last['hold_id']); DB::set_test_now('2027-06-15T14:30:00.001000Z');
     $late=VerifiedPayment::from_adapter('local_test','late-'.$nonce,1000000,'2027-06-15T14:29:59.999000Z');
     $out=$late instanceof VerifiedPayment ? Booking::verify($last['booking_id'],$late) : $late;

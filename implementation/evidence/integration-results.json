@@ -1,7 +1,7 @@
 {
-  "executed_at": "2026-11-18T07:09:52.674074+00:00",
-  "source_sha256": "d07cba0a7bd23358b721811b6ed820d29121aa1b1fa35378f9ede44dc5143b7b",
-  "product_sha256": "d022d55075978b95aa3f02d69d158067f8f049fd58b0519750398868c7138a1c",
+  "executed_at": "2026-11-19T06:03:41.121285+00:00",
+  "source_sha256": "2b631460acce0659390d00d293db44cf72fb981e72583e2c2254f4b20fbc7fa9",
+  "product_sha256": "f2f24511220fbb5ef50c8f61762f9ab1ff302f191dc35cec2cefb750c2da7109",
   "database": "atlas_integration",
   "source_unchanged_during_run": true,
   "results": [
@@ -11,7 +11,7 @@
       "status": "PASSED",
       "command": "nice -n 19 wp --path=/Users/shahinilderemi/Documents/tmp/iranbroker/.runtime/wordpress eval-file /Users/shahinilderemi/Documents/tmp/iranbroker/tests/core-integration.php",
       "log": "implementation/evidence/core-integration.log",
-      "assertions_passed": 53,
+      "assertions_passed": 63,
       "assertions_failed": 0
     },
     {
@@ -20,7 +20,7 @@
       "status": "PASSED",
       "command": "nice -n 19 wp --path=/Users/shahinilderemi/Documents/tmp/iranbroker/.runtime/wordpress eval-file /Users/shahinilderemi/Documents/tmp/iranbroker/tests/core-woo-integration.php",
       "log": "implementation/evidence/core-woo-integration.log",
-      "assertions_passed": 39,
+      "assertions_passed": 54,
       "assertions_failed": 0
     },
     {
@@ -77,7 +77,7 @@
       "status": "PASSED",
       "command": "nice -n 19 wp --path=/Users/shahinilderemi/Documents/tmp/iranbroker/.runtime/wordpress eval-file /Users/shahinilderemi/Documents/tmp/iranbroker/tests/catalog-integration.php",
       "log": "implementation/evidence/catalog-integration.log",
-      "assertions_passed": 76,
+      "assertions_passed": 79,
       "assertions_failed": 0
     },
     {
@@ -131,7 +131,7 @@
       "status": "PASSED",
       "command": "nice -n 19 wp --path=/Users/shahinilderemi/Documents/tmp/iranbroker/.runtime/wordpress eval-file /Users/shahinilderemi/Documents/tmp/iranbroker/tests/notifications-support-integration.php",
       "log": "implementation/evidence/notifications-support-integration.log",
-      "assertions_passed": 22,
+      "assertions_passed": 23,
       "assertions_failed": 0
     },
     {
@@ -185,7 +185,16 @@
       "status": "PASSED",
       "command": "nice -n 19 wp --path=/Users/shahinilderemi/Documents/tmp/iranbroker/.runtime/wordpress eval-file /Users/shahinilderemi/Documents/tmp/iranbroker/tests/resource-booking-integration.php",
       "log": "implementation/evidence/resource-booking-integration.log",
-      "assertions_passed": 111,
+      "assertions_passed": 115,
+      "assertions_failed": 0
+    },
+    {
+      "suite": "resource-rate-plans-integration",
+      "exit_code": 0,
+      "status": "PASSED",
+      "command": "nice -n 19 wp --path=/Users/shahinilderemi/Documents/tmp/iranbroker/.runtime/wordpress eval-file /Users/shahinilderemi/Documents/tmp/iranbroker/tests/resource-rate-plans-integration.php",
+      "log": "implementation/evidence/resource-rate-plans-integration.log",
+      "assertions_passed": 42,
       "assertions_failed": 0
     },
     {

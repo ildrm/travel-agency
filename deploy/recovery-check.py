@@ -46,9 +46,12 @@ def checksums(database, tables):
 started=datetime.now(timezone.utc)
 report={'started_at':started.isoformat(),'source':SOURCE,'restore_target':TARGET,
         'scope':'isolated local restore; no production/provider reconciliation performed','passed':False}
+manifest=ROOT/'dist/manifest.json'
 dump=RUNTIME/'restore-rehearsal.sql'
 created=False
 try:
+    build=hashlib.sha256(manifest.read_bytes()).hexdigest()
+    report['package_manifest_sha256']=build
     before=counts(SOURCE)
     if not before: raise RuntimeError('Local source database is empty or unavailable')
     checksum_before=checksums(SOURCE, before)
@@ -70,7 +73,8 @@ try:
                    'restored_logical_checksums_match':checksum_before==checksum_restored,
                    'dump_sha256':hashlib.sha256(dump.read_bytes()).hexdigest(),
                    'dump_bytes':dump.stat().st_size,
-                   'passed':before==after==restored and checksum_before==checksum_after==checksum_restored})
+                   'passed':before==after==restored and checksum_before==checksum_after==checksum_restored
+                   and build==hashlib.sha256(manifest.read_bytes()).hexdigest()})
 except Exception as error:
     report['error']=str(error)
 finally:

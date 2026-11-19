@@ -5,7 +5,7 @@ use Atlas\Core\DB;
 
 /** Committed in-app notices. No email/SMS is sent or represented as delivered. */
 final class Atlas_Notifications {
-    private const EVENTS=array('booking.held','booking.paid_pending_confirmation','booking.confirmed','booking.exception','booking.review_required','booking.canceled','booking.refund_review_required','hold.released','payment.exception','refund.requested','refund.approved','refund.succeeded','support.shared_reply','support.triaged','support.internal_note','support.reply');
+    private const EVENTS=array('booking.held','booking.paid_pending_confirmation','booking.no_payment_required','booking.confirmed','booking.exception','booking.review_required','booking.canceled','booking.refund_review_required','hold.released','payment.exception','refund.requested','refund.approved','refund.succeeded','support.shared_reply','support.triaged','support.internal_note','support.reply');
     private static function events() {
         $values=apply_filters('atlas_notification_events',self::EVENTS);
         return is_array($values)?array_values(array_unique(array_filter($values,static function($v){return is_string($v) && preg_match('/^[a-z][a-z0-9_.]{2,99}$/D',$v);}))) : self::EVENTS;
@@ -56,17 +56,19 @@ final class Atlas_Notifications {
     public static function listing($r) {
         global $wpdb; $page=self::page($r); if (is_wp_error($page)) return $page;
         $rows=$wpdb->get_results($wpdb->prepare('SELECT id,event_type,locale,body,reference_id,read_at,created_at FROM '.self::table().' WHERE recipient_id=%d ORDER BY created_at DESC,id DESC LIMIT 26 OFFSET %d',get_current_user_id(),($page-1)*25),ARRAY_A);
+        if ($wpdb->last_error!=='') return self::error(self::t('Notifications are temporarily unavailable.','اعلان‌ها موقتاً در دسترس نیستند.'),503);
         return self::response(array('items'=>array_slice($rows,0,25),'page'=>$page,'has_more'=>count($rows)>25,'channel'=>'in_app'));
     }
     public static function mark_read($r) {
         global $wpdb;
         $table=self::table(); $id=(string)$r['id'];
-        $wpdb->query('START TRANSACTION');
         try {
+            if ($wpdb->query('START TRANSACTION')===false) throw new RuntimeException('transaction');
             $row=$wpdb->get_row($wpdb->prepare("SELECT id,read_at FROM $table WHERE id=%s AND recipient_id=%d FOR UPDATE",$id,get_current_user_id()));
             if (!$row) { $wpdb->query('ROLLBACK'); return self::error('Notification unavailable.',404); }
             if (!$row->read_at && ($wpdb->update($table,array('read_at'=>DB::now()),array('id'=>$id))===false || !DB::audit(get_current_user_id(),0,'notice.read',$id,'success'))) throw new RuntimeException('read');
-            $wpdb->query('COMMIT'); return self::response(array('id'=>$id,'state'=>'read'));
+            if ($wpdb->query('COMMIT')===false) throw new RuntimeException('commit');
+            return self::response(array('id'=>$id,'state'=>'read'));
         } catch (Throwable $e) { $wpdb->query('ROLLBACK'); return self::error('Could not record notification state.',503); }
     }
     /** Resolve only trusted persisted associations; never render raw event payload. */
@@ -96,12 +98,13 @@ final class Atlas_Notifications {
         $recipient=self::recipient($event);
         $recipients=apply_filters('atlas_notification_recipients',$recipient?array($recipient):array(),$event);
         if (!is_array($recipients) || count($recipients)>1000 || (!$recipients && !$recipient)) return false;
+        $delivered=true;
         foreach ($recipients as $recipient) {
             if (!is_array($recipient) || !isset($recipient['user'],$recipient['reference']) || !is_scalar($recipient['user']) || !ctype_digit((string)$recipient['user']) || !is_string($recipient['reference']) || strlen($recipient['reference'])>100) return false;
             if (!(int)$recipient['user']) continue; // Unassigned internal event: no customer disclosure.
-            if (!self::record_recipient($event,$recipient)) return false;
+            if (!self::record_recipient($event,$recipient)) $delivered=false;
         }
-        return true;
+        return $delivered;
     }
     private static function record_recipient($event,$recipient) {
         global $wpdb; $user=get_user_by('id',(int)$recipient['user']); if (!$user) return false;
@@ -110,12 +113,20 @@ final class Atlas_Notifications {
         $template=$wpdb->get_row($wpdb->prepare('SELECT id,body FROM '.self::table('templates').' WHERE event_type=%s AND locale=%s AND state=%s ORDER BY version DESC LIMIT 1',$event['event_type'],$locale,'approved'));
         if (!$template) return false; // Missing review is an observable queue failure, never a delivery claim.
         $body=strtr($template->body,array('{reference}'=>(string)$recipient['reference']));
-        $wpdb->query('START TRANSACTION');
         try {
+            if ($wpdb->query('START TRANSACTION')===false) throw new RuntimeException('transaction');
             $id=wp_generate_uuid4();
-            $sql=$wpdb->prepare("INSERT IGNORE INTO $table (id,event_id,recipient_id,event_type,template_id,locale,body,reference_id,created_at) VALUES (%s,%s,%d,%s,%s,%s,%s,%s,%s)",$id,$event['id'],$user->ID,$event['event_type'],$template->id,$locale,$body,$recipient['reference'],DB::now());
-            $inserted=$wpdb->query($sql); if ($inserted===false || ($inserted===1 && !DB::audit(0,0,'notice.record',$id,'success',$event['id']))) throw new RuntimeException('notice');
-            $wpdb->query('COMMIT'); return true;
+            $sql=$wpdb->prepare("INSERT INTO $table (id,event_id,recipient_id,event_type,template_id,locale,body,reference_id,created_at) VALUES (%s,%s,%d,%s,%s,%s,%s,%s,%s) ON DUPLICATE KEY UPDATE id=id",$id,$event['id'],$user->ID,$event['event_type'],$template->id,$locale,$body,$recipient['reference'],DB::now());
+            $inserted=$wpdb->query($sql);
+            if ($inserted===false || ($inserted===1 && !DB::audit(0,0,'notice.record',$id,'success',$event['id']))) {
+                throw new RuntimeException('notice');
+            }
+            if ($inserted===0 && !$wpdb->get_var($wpdb->prepare(
+                "SELECT id FROM $table WHERE event_id=%s AND recipient_id=%d",
+                $event['id'],$user->ID
+            ))) throw new RuntimeException('notice identity');
+            if ($wpdb->query('COMMIT')===false) throw new RuntimeException('commit');
+            return true;
         } catch (Throwable $e) { $wpdb->query('ROLLBACK'); return false; }
     }
     public static function template($r) {
@@ -127,47 +138,53 @@ final class Atlas_Notifications {
             || preg_match('/\{(?!reference\})[^}]*\}/',$b['body'])) return self::error('A supported event, language, bounded text and review reason are required.');
         $table=self::table('templates'); $lock='atlas_notice_template_'.md5($wpdb->prefix.$b['event_type'].$b['locale']);
         if ((string)$wpdb->get_var($wpdb->prepare('SELECT GET_LOCK(%s,0)',$lock))!=='1') return self::error('Template is being reviewed.',409);
-        $wpdb->query('START TRANSACTION');
         try {
+            if ($wpdb->query('START TRANSACTION')===false) throw new RuntimeException('transaction');
             $version=1+(int)$wpdb->get_var($wpdb->prepare("SELECT MAX(version) FROM $table WHERE event_type=%s AND locale=%s",$b['event_type'],$b['locale'])); $id=wp_generate_uuid4();
             if (!$wpdb->insert($table,array('id'=>$id,'event_type'=>$b['event_type'],'locale'=>$b['locale'],'version'=>$version,'state'=>$b['approve']?'approved':'draft','body'=>sanitize_textarea_field($b['body']),'reviewed_by'=>get_current_user_id(),'reason'=>sanitize_text_field($b['reason']),'created_at'=>DB::now())) || !DB::audit(get_current_user_id(),0,'notice.template',$id,'success',$b['reason'])) throw new RuntimeException('template');
-            $wpdb->query('COMMIT'); return self::response(array('id'=>$id,'version'=>$version,'state'=>$b['approve']?'approved':'draft'));
+            if ($wpdb->query('COMMIT')===false) throw new RuntimeException('commit');
+            return self::response(array('id'=>$id,'version'=>$version,'state'=>$b['approve']?'approved':'draft'));
         } catch (Throwable $e) { $wpdb->query('ROLLBACK'); return self::error('Template could not be recorded.',503); }
         finally { $wpdb->get_var($wpdb->prepare('SELECT RELEASE_LOCK(%s)',$lock)); }
     }
     public static function operations($r) {
         global $wpdb; if (!Auth::agency()) return self::error('Agency authority required.',403); $page=self::page($r); if (is_wp_error($page)) return $page;
         $rows=$wpdb->get_results($wpdb->prepare('SELECT id,event_type,status,attempts,available_at,created_at FROM '.DB::table('outbox').' WHERE status IN (%s,%s,%s) ORDER BY created_at,id LIMIT 26 OFFSET %d','pending','processing','failed',($page-1)*25),ARRAY_A);
+        if ($wpdb->last_error!=='') return self::error(self::t('Notifications are temporarily unavailable.','اعلان‌ها موقتاً در دسترس نیستند.'),503);
         return self::response(array('items'=>array_slice($rows,0,25),'page'=>$page,'has_more'=>count($rows)>25));
     }
     public static function retry($r) {
         global $wpdb; if (!Auth::agency()) return self::error('Agency authority required.',403); $b=$r->get_json_params();
         if (!is_array($b) || array_diff(array_keys($b),array('id','reason')) || !is_string($b['id']??null) || !preg_match('/^[a-f0-9-]{36}$/D',$b['id']) || !is_string($b['reason']??null) || trim($b['reason'])==='' || strlen($b['reason'])>190) return self::error('Event reference and retry reason required.');
-        $wpdb->query('START TRANSACTION');
         try {
+            if ($wpdb->query('START TRANSACTION')===false) throw new RuntimeException('transaction');
             $ok=$wpdb->update(DB::table('outbox'),array('status'=>'pending','attempts'=>0,'claimed_at'=>null,'available_at'=>DB::now()),array('id'=>$b['id'],'status'=>'failed'));
             if ($ok!==1) { $wpdb->query('ROLLBACK'); return self::error('Failed event unavailable.',409); }
             if (!DB::audit(get_current_user_id(),0,'notice.retry',$b['id'],'success',$b['reason'])) throw new RuntimeException('audit');
-            $wpdb->query('COMMIT'); return self::response(array('id'=>$b['id'],'state'=>'pending'));
+            if ($wpdb->query('COMMIT')===false) throw new RuntimeException('commit');
+            return self::response(array('id'=>$b['id'],'state'=>'pending'));
         } catch (Throwable $e) { $wpdb->query('ROLLBACK'); return self::error('Retry could not be recorded.',503); }
     }
     public static function panel() {
         if (!is_user_logged_in()) return ''; $r=new WP_REST_Request('GET','/');
         $r->set_param('page',isset($_GET['notice_page']) && is_scalar($_GET['notice_page'])?max(1,absint($_GET['notice_page'])):1);
-        $result=self::listing($r); if (is_wp_error($result)) return ''; $data=$result->get_data();
-        $html='<details><summary>'.esc_html(self::t('Account notifications','اعلان‌های حساب')).'</summary><p>'.esc_html(self::t('These notices are recorded in your account. Email or SMS delivery is separate.','این اعلان‌ها در حساب ثبت می‌شوند. تحویل ایمیل یا پیامک جداست.')).'</p><ul>';
+        $result=self::listing($r);
+        if (is_wp_error($result)) return '<p role="status">'.esc_html($result->get_error_message()).'</p>';
+        $data=$result->get_data();
+        $html='<details id="atlas-account-notices"'.(isset($_GET['notice_page'])?' open':'').'><summary>'.esc_html(self::t('Account notifications','اعلان‌های حساب')).'</summary><p>'.esc_html(self::t('These notices are recorded in your account. Email or SMS delivery is separate.','این اعلان‌ها در حساب ثبت می‌شوند. تحویل ایمیل یا پیامک جداست.')).'</p><ul>';
+        if (!$data['items']) $html.='<li>'.esc_html(self::t('No notifications on this page.','اعلانی در این صفحه نیست.')).'</li>';
         foreach ($data['items'] as $row) {
             $html.='<li><p>'.nl2br(esc_html($row['body'])).'</p><bdi dir="ltr">'.esc_html($row['created_at']).'</bdi>';
             if (!$row['read_at']) $html.=self::form_start('read').'<input type="hidden" name="id" value="'.esc_attr($row['id']).'"><button>'.esc_html(self::t('Mark read','خوانده شد')).'</button></form>';
             $html.='</li>';
         }
-        $html.='</ul>'; if ($data['page']>1) $html.='<a href="'.esc_url(add_query_arg('notice_page',$data['page']-1)).'">'.esc_html(self::t('Previous','قبل')).'</a> '; if ($data['has_more']) $html.='<a href="'.esc_url(add_query_arg('notice_page',$data['page']+1)).'">'.esc_html(self::t('Next','بعد')).'</a>';
+        $html.='</ul>'; if ($data['page']>1) $html.='<a href="'.esc_url(add_query_arg('notice_page',$data['page']-1).'#atlas-account-notices').'">'.esc_html(self::t('Previous','قبل')).'</a> '; if ($data['has_more']) $html.='<a href="'.esc_url(add_query_arg('notice_page',$data['page']+1).'#atlas-account-notices').'">'.esc_html(self::t('Next','بعد')).'</a>';
         $html.='</details>'; if (!Auth::agency()) return $html;
-        $html.='<details><summary>'.esc_html(self::t('Notification operations and template review','عملیات اعلان و بازبینی قالب')).'</summary>'.self::form_start('template').'<label>'.esc_html(self::t('Event','رویداد')).'<select name="event_type">';
+        $html.='<details id="atlas-notice-queue"'.(isset($_GET['notice_queue_page'])?' open':'').'><summary>'.esc_html(self::t('Notification operations and template review','عملیات اعلان و بازبینی قالب')).'</summary>'.self::form_start('template').'<label>'.esc_html(self::t('Event','رویداد')).'<select name="event_type">';
         foreach (self::events() as $event) $html.='<option>'.esc_html($event).'</option>';
         $html.='</select></label><label>'.esc_html(self::t('Language','زبان')).'<select name="locale"><option value="en">English</option><option value="fa">فارسی</option></select></label><label>'.esc_html(self::t('Notice text; {reference} inserts the private account reference','متن اعلان؛ {reference} شناسه خصوصی حساب را درج می‌کند')).'<textarea name="body" required maxlength="2000"></textarea></label><label>'.esc_html(self::t('Review reason','دلیل بازبینی')).'<input name="reason" required maxlength="190"></label><label><input type="checkbox" name="approve" value="1">'.esc_html(self::t('Approve this version for account notices','تأیید این نسخه برای اعلان‌های حساب')).'</label><button>'.esc_html(self::t('Save new version','ذخیره نسخه جدید')).'</button></form>';
         $r->set_param('page',isset($_GET['notice_queue_page']) && is_scalar($_GET['notice_queue_page'])?max(1,absint($_GET['notice_queue_page'])):1); $queue=self::operations($r);
-        if (!is_wp_error($queue)) { $q=$queue->get_data(); $html.='<ul>'; foreach ($q['items'] as $row) { $html.='<li><bdi dir="ltr">'.esc_html($row['id'].' '.$row['event_type'].' '.$row['status'].' '.$row['attempts']).'</bdi>'; if ($row['status']==='failed') $html.=self::form_start('retry').'<input type="hidden" name="id" value="'.esc_attr($row['id']).'"><label>'.esc_html(self::t('Retry reason','دلیل تلاش مجدد')).'<input name="reason" required maxlength="190"></label><button>'.esc_html(self::t('Retry','تلاش مجدد')).'</button></form>'; $html.='</li>'; } $html.='</ul>'; if ($q['page']>1) $html.='<a href="'.esc_url(add_query_arg('notice_queue_page',$q['page']-1)).'">'.esc_html(self::t('Previous','قبل')).'</a> '; if ($q['has_more']) $html.='<a href="'.esc_url(add_query_arg('notice_queue_page',$q['page']+1)).'">'.esc_html(self::t('Next','بعد')).'</a>'; }
+        if (!is_wp_error($queue)) { $q=$queue->get_data(); $html.='<ul>'; foreach ($q['items'] as $row) { $html.='<li><bdi dir="ltr">'.esc_html($row['id'].' '.$row['event_type'].' '.$row['status'].' '.$row['attempts']).'</bdi>'; if ($row['status']==='failed') $html.=self::form_start('retry').'<input type="hidden" name="id" value="'.esc_attr($row['id']).'"><label>'.esc_html(self::t('Retry reason','دلیل تلاش مجدد')).'<input name="reason" required maxlength="190"></label><button>'.esc_html(self::t('Retry','تلاش مجدد')).'</button></form>'; $html.='</li>'; } $html.='</ul>'; if ($q['page']>1) $html.='<a href="'.esc_url(add_query_arg('notice_queue_page',$q['page']-1).'#atlas-notice-queue').'">'.esc_html(self::t('Previous','قبل')).'</a> '; if ($q['has_more']) $html.='<a href="'.esc_url(add_query_arg('notice_queue_page',$q['page']+1).'#atlas-notice-queue').'">'.esc_html(self::t('Next','بعد')).'</a>'; }
         return $html.'</details>';
     }
     private static function form_start($task) { return '<form method="post" action="'.esc_url(admin_url('admin-post.php')).'">'.wp_nonce_field('atlas_notice_action','_wpnonce',true,false).'<input type="hidden" name="action" value="atlas_notice_action"><input type="hidden" name="task" value="'.esc_attr($task).'">'; }
